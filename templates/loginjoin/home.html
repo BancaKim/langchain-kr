@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}로그인{% endblock %}
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/loginjoin.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% endblock %}
+{% block content %}
+<div class="home-container">
+    <div class="home-content">
+        <div class="home-left-section">
+            <h1 class="home-title">기업금융 <br/><br/>Total-Solution Spoon</h1><br/>
+            <p class="home-description">기업금융을 보다 더 쉽게!</p>
+        </div>
+        <div class="home-right-section">
+            <h2 class="home-welcome">Spoon 서비스에 오신 것을 환영합니다!</h2>
+            <p class="home-subtitle">어려운 기업금융에 대한 솔루션을 제공하는 Spoon입니다.</p>
+            <form id="homeLoginForm" action="/login" method="post" class="home-form">
+                <div class="home-form-group">
+                    <label for="username">사용자 이름:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="home-form-group">
+                    <label for="password">비밀번호:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="home-buttons">
+                    <button type="submit" class="home-button">로그인</button>
+                </div>
+            </form>
+            <a href="/join" class="home-signup-link">회원이 아직 아니신가요? <span>회원가입</span>하세요</a>
+        </div>
+    </div>
+</div>
+{% if message %}
+<script>
+    Swal.fire({
+        title: '{{ message }}',
+        icon: '{{ message_icon }}',
+        showConfirmButton: false,
+        timer: 1500
+    }).then(() => {
+        window.location.href = "{{ url }}";
+    });
+</script>
+{% endif %}
+{% endblock %}

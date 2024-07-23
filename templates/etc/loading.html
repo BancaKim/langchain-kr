@@ -1,0 +1,33 @@
+<!-- templates/loading.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Loading</title>
+    <style>
+        .spinner {
+            margin: 100px auto;
+            width: 50px;
+            height: 50px;
+            border: 5px solid lightgray;
+            border-top-color: blue;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="spinner"></div>
+    <script>
+        // JavaScript to simulate loading process
+        setTimeout(() => {
+            window.location.href = "/main"; // Redirect to the main page after loading
+        }, 3000); // Simulate 3 seconds loading time
+    </script>
+</body>
+</html>

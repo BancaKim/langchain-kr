@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}AI심사보고서{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="/static/css/style.css">
+{% endblock %}
+
+{% block content %}
+
+        <span>AI심사보고서&gt;업체검색</span>
+        <h1>심사보고서 업체 검색</h1>
+
+        <input id="company_name" placeholder="회사명 입력">
+        <button id="company_search">검색</button>
+
+        <script>
+
+            document.querySelector("button#company_search").addEventListener("click", (e) => {
+                e.target
+                
+                const data = {   
+                    }
+                    
+                    
+                fetch("/api/joinList", {
+                    method: "post",
+                    body: JSON.stringify(data),
+                    headers: {
+                        'Content-type' : 'application/json'
+                    }
+                })
+                .then(function(response){
+                    return response.json();
+                })
+                .then(result => {
+                    // 리스트로 넘어오니 작업 필요
+                    console.log(result)
+                    result.forEach((user, idx) => {
+                        console.log(user)				
+                    })
+                })
+                .catch(error => {
+                    console.error(error);
+                })
+            })	
+
+
+        </script>
+        
+
+{% endblock %}

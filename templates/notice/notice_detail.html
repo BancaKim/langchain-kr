@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}공지사항 상세{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/style.css">
+<style>
+    .spinner {
+        display: none;
+        margin: 100px auto;
+        width: 100px; /* 크기 조절 */
+        height: 100px; /* 크기 조절 */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="detail">
+    <div class="page-title">
+        <div class="container">
+            <h3>공지사항 상세</h3>
+        </div>
+    </div>
+
+    <div class="container detail-content" id="noticeContent" style="display: none;">
+        <h1>{{ notice.title }}</h1>
+        <p>{{ notice.content }}</p>
+        <p><strong>작성자:</strong> {{ notice.username }}</p>
+        <p><strong>등록일:</strong> {{ notice.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+        
+        <hr>
+        {% if username == 'admin' %}
+        <a href="/notices/update/{{ notice.id }}" class="btn btn-dark">수정</a>
+        <form action="/notices/delete/{{ notice.id }}" method="post" style="display: inline;">
+            <button type="submit" class="btn btn-danger">삭제</button>
+        </form>
+        {% endif %}
+        <button onclick="location.href='/notices'" class="btn btn-dark">목록으로</button>
+    </div>
+
+    <div class="spinner" id="loadingSpinner">
+        <img src="/static/images/loading.gif" alt="Loading">
+    </div>
+</section>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const spinner = document.getElementById("loadingSpinner");
+        const content = document.getElementById("noticeContent");
+
+        spinner.style.display = "block";
+
+        // 서버 요청 시 인위적 지연 추가
+        setTimeout(function() {
+            spinner.style.display = "none";
+            content.style.display = "block";
+        }, 3000);  // 3초 지연
+    });
+</script>
+{% endblock %}

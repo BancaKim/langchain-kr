@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Q&A 상세{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/style.css">
+{% endblock %}
+
+{% block content %}
+<section class="detail">
+    <div class="page-title">
+        <div class="container">
+            <h3>Q&A 상세</h3>
+        </div>
+    </div>
+
+    <div class="container detail-content">
+        <h1>{{ qna.title }}</h1>
+        <p>{{ qna.content }}</p>
+        <p><strong>작성자:</strong> {{ qna.username }}</p>
+        <p><strong>등록일:</strong> {{ qna.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+        <hr>
+        <h5>답글</h5>
+        <ul>
+            {% for reply in replies %}
+            <li>
+                <p>{{ reply.content }}</p>
+                <p><strong>작성자:</strong> {{ reply.username }}</p>
+                <p><strong>등록일:</strong> {{ reply.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+            </li>
+            {% endfor %}
+        </ul>
+        <form action="/qnas/{{ qna.id }}/reply" method="post">
+            <div class="form-group">
+                <label for="content">답글 내용</label>
+                <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-dark">답글 달기</button>
+            <br/><br/><br/><br/>
+        </form>
+        {% if username == qna.username %}
+        <a href="/qnas/update/{{ qna.id }}" class="btn btn-dark">수정</a>
+        <form action="/qnas/delete/{{ qna.id }}" method="post" style="display: inline;">
+            <button type="submit" class="btn btn-danger">삭제</button>
+        </form>
+        {% endif %}
+        <button onclick="location.href='/qnas'" class="btn btn-dark">목록으로</button>
+    </div>
+</section>
+{% endblock %}

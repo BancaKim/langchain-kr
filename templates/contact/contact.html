@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}게시판 글 작성{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="/static/css/style.css">
+{% endblock %}
+
+{% block content %}
+<section class="create">
+<div class="container">
+    <form method="post" action="/contact" enctype="multipart/form-data">
+        <h1>섭외등록 글 작성</h1>
+        <div class="form-group">
+            <label for="title">제목</label>
+            <input type="text" id="title" name="title" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="content">내용</label>
+            <textarea id="content" name="content" rows="5" class="form-control" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="file">파일 첨부 (선택 사항)</label>
+            <input type="file" id="file" name="file" class="form-control">
+        </div>
+        <button type="submit" class="btn btn-dark">등록</button>
+    </form>
+</div>
+
+<div class="container">
+    <h1>게시글 목록</h1>
+    <table class="board-table">
+        <thead>
+            <tr>
+                <th>번호</th>
+                <th>제목</th>
+                <th>내용</th>
+                <th>파일</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for post in posts %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ post.title }}</td>
+                <td>{{ post.content }}</td>
+                <td>
+                    {% if post.file_path %}
+                    <a href="/download/{{ post.file_path|basename }}">다운로드</a>
+                    {% else %}
+                    파일 없음
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</section>
+{% endblock %}

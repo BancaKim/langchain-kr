@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>카카오 지도 API 테스트</title>
+    <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=40220001d314c78a28466f105d33b75d&libraries=services"></script>
+    <style>
+        #map {
+            width: 100%;
+            height: 350px;
+        }
+    </style>
+</head>
+<body>
+    <h1>카카오 지도</h1>
+    <div id="map"></div>
+
+    <script>
+        // kakao.maps가 제대로 정의되었는지 확인
+        if (typeof kakao !== 'undefined' && kakao.maps) {
+            var mapContainer = document.getElementById('map');
+            var mapOption = { 
+                center: new kakao.maps.LatLng(37.566826, 126.9786567), // 지도의 중심 좌표
+                level: 3 // 지도의 확대 수준
+            };
+            var map = new kakao.maps.Map(mapContainer, mapOption); 
+        } else {
+            console.error("카카오 지도 API가 로드되지 않았습니다.");
+        }
+    </script>
+</body>
+</html>

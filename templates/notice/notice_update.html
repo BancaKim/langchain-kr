@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}공지사항 수정{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/style.css">
+{% endblock %}
+
+{% block content %}
+<section class="create">
+    <div class="container">
+        <div class="page-title">
+            <h3>공지사항 수정</h3>
+        </div>
+        <form action="/notices/update/{{ notice.id }}" method="post">
+            <div class="form-group">
+                <label for="username">작성자</label>
+                <input type="text" class="form-control" id="username" name="username" value="{{ username }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="title">제목</label>
+                <input type="text" class="form-control" id="title" name="title" value="{{ notice.title }}" required>
+            </div>
+            <div class="form-group">
+                <label for="content">내용</label>
+                <textarea class="form-control" id="content" name="content" rows="5" required>{{ notice.content }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-dark">수정</button>
+        </form>
+        <button onclick="location.href='/notices'" class="btn btn-dark">목록으로</button>
+    </div>
+</section>
+{% endblock %}

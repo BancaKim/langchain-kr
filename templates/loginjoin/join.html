@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}회원가입{% endblock %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/loginjoin.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% endblock %}
+
+{% block content %}
+<div class="home-container">
+    <div class="home-content">
+        <div class="home-left-section">
+            <h1 class="home-title">기업금융 <br /><br />Total-Solution Spoon</h1><br />
+            <p class="home-description">기업금융을 보다 더 쉽게!</p>
+        </div>
+        <div class="home-right-section">
+            <h2 class="home-welcome">Spoon 회원가입</h2>
+            <p class="home-subtitle">Spoon 서비스의 회원이 되어 다양한 기능을 이용해보세요.</p>
+            <form id="signupForm" onsubmit="submitSignupForm(event)" class="home-form">
+                <div class="home-form-group">
+                    <label for="signup_username">사용자 이름:</label>
+                    <input type="text" id="signup_username" name="username" required>
+                </div>
+                <div class="home-form-group">
+                    <label for="signup_email">이메일:</label>
+                    <input type="email" id="signup_email" name="email" required>
+                </div>
+                <div class="home-form-group"> 
+                    <label for="signup_password">비밀번호:</label>
+                    <input type="password" id="signup_password" name="password" required>
+                </div>
+                <div class="home-buttons">
+                    <button type="submit" class="home-button">회원가입</button>
+                </div>
+            </form>
+            <a href="/home" class="home-signup-link">이미 회원이신가요? <span>로그인</span>하세요</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    function submitSignupForm(event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const data = {
+            username: formData.get('username'),
+            email: formData.get('email'),
+            password: formData.get('password')
+        };
+        fetch('/signup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            Swal.fire({
+                title: result.message,
+                icon: result.message_icon,
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => {
+                if (result.url) {
+                    window.location.href = result.url;
+                }
+            });
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            Swal.fire({
+                title: '회원가입 중 오류가 발생했습니다.',
+                icon: 'error',
+                showConfirmButton: false,
+                timer: 1500
+            });
+        });
+    }
+</script>
+
+{% if message %}
+<script>
+    Swal.fire({
+        title: '{{ message }}',
+        icon: '{{ message_icon }}',
+        showConfirmButton: false,
+        timer: 1500
+    }).then(() => {
+        window.location.href = "{{ url }}";
+    });
+</script>
+{% endif %}
+
+{% endblock %}

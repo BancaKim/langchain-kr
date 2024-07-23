@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}섭외등록 - 채팅{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/style.css">
+<style>
+    .chat-container {
+        margin-top: 50px;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+    }
+    .chat-box {
+        max-width: 800px;
+        width: 100%;
+        padding: 2rem;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        margin: 1rem;
+    }
+    .chat-log {
+        height: 400px;
+        overflow-y: scroll;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    .chat-log p {
+        margin: 0.5rem 0;
+    }
+    .chat-input {
+        display: flex;
+        width: 100%;
+    }
+    .chat-input input {
+        flex-grow: 1;
+        padding: 0.75rem;
+        border: 1px solid #ced4da;
+        border-radius: 5px 0 0 5px;
+        box-sizing: border-box;
+    }
+    .chat-input button {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0 5px 5px 0;
+        background-color: #555;
+        color: white;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        box-sizing: border-box;
+    }
+    .chat-input button:hover {
+        background-color: #ced4da;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% if username is none %}
+<script>
+    alert("로그인이 필요합니다.");
+    window.location.href = "/login"; // 로그인 페이지로 리디렉션
+</script>
+{% else %}
+<div class="chat-container">
+    <h1>섭외등록 채팅</h1>
+    <div class="chat-box">
+        <div class="chat-log" id="chat-log">
+            <!-- Chat messages will appear here -->
+        </div>
+        <div class="chat-input">
+            <input type="text" id="chat-input" placeholder="메시지를 입력하세요..." autofocus>
+            <button onclick="sendMessage()">보내기</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const username = "{{ username }}"; // 템플릿에서 username 주입
+    const ws = new WebSocket(`ws://${location.host}/ws/chat/${username}`);
+    const chatLog = document.getElementById('chat-log');
+    const chatInput = document.getElementById('chat-input');
+
+    ws.onmessage = function(event) {
+        const message = document.createElement('p');
+        message.textContent = event.data;
+        chatLog.appendChild(message);
+        chatLog.scrollTop = chatLog.scrollHeight;
+    };
+
+    function sendMessage() {
+        const message = chatInput.value;
+        if (message) {
+            ws.send(message);
+            chatInput.value = '';
+            chatInput.focus();
+        }
+    }
+
+    chatInput.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}

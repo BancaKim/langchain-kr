@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}공지사항 작성{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/style.css">
+<style>
+    .spinner {
+        display: none;
+        margin: 100px auto;
+        width: 50px;
+        height: 50px;
+        border: 5px solid lightgray;
+        border-top-color: rgb(217, 255, 0);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="create">
+    <div class="container">
+        <div class="page-title">
+            <h3>공지사항 작성</h3>
+        </div>
+        <form id="noticeForm" action="/notices/create" method="post">
+            <div class="form-group">
+                <label for="username">작성자</label>
+                <input type="text" class="form-control" id="username" name="username" value="{{ username }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="title">제목</label>
+                <input type="text" class="form-control" id="title" name="title" required>
+            </div>
+            <div class="form-group">
+                <label for="content">내용</label>
+                <textarea class="form-control" id="content" name="content" rows="5" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-dark">등록</button>
+        </form>
+        <div class="spinner" id="loadingSpinner"></div>
+        <button onclick="location.href='/notices'" class="btn btn-dark">목록으로</button>
+    </div>
+</section>
+
+<script>
+    document.getElementById('noticeForm').addEventListener('submit', function() {
+        document.getElementById('loadingSpinner').style.display = 'block';
+    });
+</script>
+{% endblock %}

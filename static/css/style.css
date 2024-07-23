@@ -1,0 +1,367 @@
+/* 기존 스타일 수정 및 추가 */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+section.notice {
+  padding: 80px 0;
+}
+
+.page-title {
+  margin-bottom: 60px;
+}
+.page-title h3 {
+  font-size: 28px;
+  color: #333333;
+  font-weight: 400;
+  text-align: center;
+}
+
+#board-search .search-window {
+  padding: 15px 0;
+  background-color: #f9f7f9;
+}
+#board-search .search-window .search-wrap {
+  position: relative;
+  margin: 0 auto;
+  width: 80%;
+  max-width: 564px;
+}
+#board-search .search-window .search-wrap input {
+  height: 40px;
+  width: 100%;
+  font-size: 14px;
+  padding: 7px 14px;
+  border: 1px solid #ccc;
+}
+#board-search .search-window .search-wrap input:focus {
+  border-color: #333;
+  outline: 0;
+  border-width: 1px;
+}
+#board-search .search-window .search-wrap .btn {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 108px;
+  padding: 0;
+  font-size: 16px;
+}
+
+.board-table {
+  font-size: 13px;
+  width: 100%;
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+}
+
+.board-table a {
+  color: #333;
+  display: inline-block;
+  line-height: 1.4;
+  word-break: break-all;
+  vertical-align: middle;
+}
+.board-table a:hover {
+  text-decoration: underline;
+}
+.board-table th {
+  text-align: center;
+}
+
+.board-table .th-num {
+  width: 100px;
+  text-align: center;
+}
+
+.board-table .th-date {
+  width: 200px;
+}
+
+.board-table th, .board-table td {
+  padding: 14px 0;
+}
+
+.board-table tbody td {
+  border-top: 1px solid #e7e7e7;
+  text-align: center;
+}
+
+.board-table tbody th {
+  padding-left: 28px;
+  padding-right: 14px;
+  border-top: 1px solid #e7e7e7;
+  text-align: left;
+}
+
+.board-table tbody th p {
+  display: none;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0 30px;
+  font-size: 15px;
+  font-weight: 400;
+  background: transparent;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  -ms-touch-action: manipulation;
+  touch-action: manipulation;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  border: 1px solid transparent;
+  text-transform: uppercase;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  border-radius: 0;
+  -webkit-transition: all 0.3s;
+  -moz-transition: all 0.3s;
+  -ms-transition: all 0.3s;
+  -o-transition: all 0.3s;
+  transition: all 0.3s;
+}
+
+.btn-dark {
+  background: #555;
+  color: #fff;
+}
+
+.btn-dark:hover, .btn-dark:focus {
+  background: #373737;
+  border-color: #373737;
+  color: #fff;
+}
+
+.btn-primary {
+  background: #007bff;
+  color: #fff;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+  background: #0056b3;
+  border-color: #0056b3;
+  color: #fff;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: #fff;
+}
+
+.btn-secondary:hover, .btn-secondary:focus {
+  background: #5a6268;
+  border-color: #5a6268;
+  color: #fff;
+}
+
+/* reset */
+
+* {
+  list-style: none;
+  text-decoration: none;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+.clearfix:after {
+  content: '';
+  display: block;
+  clear: both;
+}
+.container {
+  width: 1100px;
+  margin: 0 auto;
+}
+.blind {
+  position: absolute;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  margin: -1px;
+  width: 1px;
+  height: 1px;
+}
+
+.detail {
+  padding: 80px 0;
+}
+
+.detail .page-title h3 {
+  font-size: 28px;
+  color: #333333;
+  font-weight: 400;
+  text-align: center;
+}
+
+.detail-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.detail-content h1 {
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.detail-content p {
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.detail-content strong {
+  color: #333;
+}
+
+.detail-content h5 {
+  font-size: 20px;
+  color: #333;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.detail-content ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.detail-content ul li {
+  border-top: 1px solid #e7e7e7;
+  padding: 10px 0;
+}
+
+.detail-content .form-group {
+  margin-bottom: 20px;
+}
+
+.detail-content .form-control {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.detail-content .btn {
+  padding: 10px 20px;
+  font-size: 16px;
+  color: #fff;
+  background-color: #555;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.detail-content .btn:hover {
+  background-color: #373737;
+}
+
+.detail-content .btn-secondary {
+  background-color: #6c757d;
+}
+
+.detail-content .btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+
+.create .container {
+  padding: 15px;
+  background-color: #f9f7f9;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  max-width: 800px;
+  margin: 30px auto;
+}
+.create .form-group {
+  margin-bottom: 15px;
+}
+.create .form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+.create .form-control {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+.create .form-control:focus {
+  border-color: #333;
+  outline: none;
+}
+.create button {
+  margin-top: 10px;
+}
+
+
+.contact-container {
+  margin-top: 50px;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+.contact-form {
+  max-width: 600px;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin: 1rem;
+  width: 100%;
+}
+.contact-form h1 {
+  font-size: 1.5rem;
+  color: #555;
+  margin-bottom: 2rem;
+}
+.contact-form .form-group {
+  margin-bottom: 1rem;
+  width: 100%;
+}
+.contact-form .form-group label {
+  margin-bottom: .5rem;
+  color: #888;
+  text-align: left;
+  display: block;
+}
+.contact-form .form-group input,
+.contact-form .form-group textarea {
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.contact-form .form-group input:focus,
+.contact-form .form-group textarea:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, .25);
+}
+.contact-form .form-group textarea {
+  resize: vertical;
+}
+.contact-form .btn {
+  padding: 0.75rem;
+  border: none;
+  border-radius: 5px;
+  background-color: #555;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+.contact-form .btn:hover {
+  background-color: #ced4da;
+}
