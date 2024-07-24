@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}AI심사보고서{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const streamContent = document.getElementById('streamContent');
+
+        async function fetchContent() {
+            // SweetAlert2를 사용하여 5초 동안 로딩 화면 표시
+            await Swal.fire({
+                title: 'AI 심사보고서 생성중',
+                html: '잠시만 기다려주세요...',
+                timer: 5000,
+                timerProgressBar: true,
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            try {
+                const response = await fetch('/credit/stream-content/{{reportContent.rcept_no}}');
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    const chunk = decoder.decode(value, { stream: true });
+                    streamContent.innerHTML += chunk;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                streamContent.textContent = '내용을 불러오는 중 오류가 발생했습니다.';
+                // 오류 발생 시 alert 표시
+                Swal.fire({
+                    icon: 'error',
+                    title: '오류 발생',
+                    text: '심사보고서를 불러오는 중 문제가 발생했습니다.'
+                });
+            }
+        }
+
+        fetchContent();
+    });
+</script>
+<style>
+    #streamContent {
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+</style>
+<link rel="stylesheet" href="/static/css/review_detail.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/font.css">
+{% endblock %}
+
+
+
+{% block content %}
+
+<br><br>
+<span class="block text-right text-xl mb-2">AI심사보고서 > 보고서 현황</span>
+<br><br>
+<div class="text-center mb-4">
+    <h1 class="text-5xl font-bold">심사보고서 종합의견</h1>
+</div>
+
+<br>
+
+<!--
+<p><strong>순서:</strong> {{reportContent.report_num}}</p>
+<p><strong>회사코드:</strong> {{reportContent.corp_code}}</p>
+<p><strong>회사명:</strong> {{reportContent.corp_name}}</p>
+<p><strong>보고서명:</strong> {{reportContent.report_nm}}</p>
+<p><strong>보고서번호:</strong> {{reportContent.rcept_no}}</p>
+-->
+
+<div id="streamContent" 
+    class="max-w-4xl mx-auto my-8 p-6 bg-white rounded-lg shadow-md dark:bg-gray-800 dark:text-gray-200">
+</div>
+
+
+<div class="btn-group my-4 flex justify-center">
+    <button onclick="history.back()"
+        class="px-4 py-2 text-white rounded-md hover:bg-[#6a46b0] focus:ring-4 focus:ring-[#9a7ce0] focus:outline-none"
+        style="background-color: #7F56D9;">
+        뒤로가기
+    </button>
+    &nbsp;    &nbsp;
+
+    <button onclick="history.back()"
+        class="px-4 py-2 text-white rounded-md hover:bg-[#6a46b0] focus:ring-4 focus:ring-[#9a7ce0] focus:outline-none"
+        style="background-color: #7F56D9;">
+        바로등급
+    </button>
+
+</div>
+
+{% endblock %}

@@ -5,9 +5,8 @@
   font-style: normal;
 }
 body{
-  font-family: 'NPSfontBold';
-}
-
+ font-family: 'NPSfontBold'; 
+} 
 /* 기존 스타일 수정 및 추가 */
 table {
   border-collapse: collapse;
