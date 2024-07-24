@@ -1,6 +1,5 @@
-{% extends "base.html" %}
+{% include 'header.html' %}
 
-{% block title %}공지사항 작성{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="/static/css/style.css">
@@ -55,3 +54,5 @@
     });
 </script>
 {% endblock %}
+
+{% include 'footer.html' %}
