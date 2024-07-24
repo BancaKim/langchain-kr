@@ -1,6 +1,8 @@
+import asyncio
 from math import ceil
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Form
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from fastapi.templating import Jinja2Templates
 from models.baro_models import CompanyInfo
@@ -115,11 +117,9 @@ async def read_credit(
 
 @credit.get("/reviewDetail/{rcept_no}")
 async def readcredit(request: Request, rcept_no: str, db: Session = Depends(get_db)):
-
     reportContent = (
         db.query(ReportContent).filter(ReportContent.rcept_no == rcept_no).first()
     )
-    print(reportContent)
     return templates.TemplateResponse(
         "creditreview/review_detail.html",
         {
@@ -127,3 +127,21 @@ async def readcredit(request: Request, rcept_no: str, db: Session = Depends(get_
             "reportContent": reportContent,
         },
     )
+
+
+@credit.get("/stream-content/{rcept_no}")
+async def stream_content(rcept_no: str, db: Session = Depends(get_db)):
+    reportContent = (
+        db.query(ReportContent).filter(ReportContent.rcept_no == rcept_no).first()
+    )
+    content = reportContent.report_content if reportContent else ""
+
+    async def content_generator():
+        for char in content:
+            if char == "\n":
+                yield "<br>"  # HTML 줄바꿈 태그
+            else:
+                yield char
+            await asyncio.sleep(0.005)  # 50ms 딜레이
+
+    return StreamingResponse(content_generator(), media_type="text/html")
