@@ -1,6 +1,4 @@
-{% extends "base.html" %}
-
-{% block title %}AI심사보고서{% endblock %}
+{% include 'header.html' %}
 
 {% block head %}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -54,7 +52,6 @@
         word-break: break-word;
     }
 </style>
-<link rel="stylesheet" href="/static/css/review_detail.css">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
@@ -84,7 +81,7 @@
 -->
 
 <div id="streamContent" 
-    class="max-w-4xl mx-auto my-8 p-6 bg-white rounded-lg shadow-md dark:bg-gray-800 dark:text-gray-200">
+    class="max-w-4xl mx-auto my-8 p-6 bg-white rounded-lg shadow-md dark:bg-gray-800 dark:text-gray-200 min-h-400">
 </div>
 
 
@@ -105,3 +102,5 @@
 </div>
 
 {% endblock %}
+
+{% include 'footer.html' %}
