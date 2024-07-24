@@ -3,7 +3,8 @@
 {% block title %}AI심사보고서{% endblock %}
 
 {% block head %}
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/review_search.css">  
+
 {% endblock %}
 
 {% block content %}
@@ -11,42 +12,116 @@
         <span>AI심사보고서&gt;업체검색</span>
         <h1>심사보고서 업체 검색</h1>
 
-        <input id="company_name" placeholder="회사명 입력">
-        <button id="company_search">검색</button>
+        <div class="search-container">
+            <input id="company_name" placeholder="회사명 입력">
+            <button id="search_button">검색</button>
+        </div>
+        <table id="company_table">
+            <thead>
+                <tr>
+                    <th>순서</th>
+                    <th>회사코드</th>
+                    <th>회사명</th>
+                    <th>공시보고서명</th>
+                    <th>보고서번호</th>
+                    <th>공시등록일</th>
+                    <th>비고</th>
+                </tr>
+            </thead>
+            <tbody id="company_list">
+                {% for reportContent in reportContents %}
+                <tr>
+                    <td>{{reportContent.report_num}}</td>
+                    <td>{{reportContent.corp_code}}</td>
+                    <td>{{reportContent.corp_name}}</td>
+                    <td>{{reportContent.report_nm}}</td>
+                    <td>{{reportContent.rcept_no}}</td>
+                    <td>{{reportContent.rcept_dt}}</td>
+                    <td><a href="/credit/reviewDetail/{{reportContent.rcept_no}}"><button>보고서 생성</button></a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
-        <script>
+        <div id="pagination">
+            {% for i in range(1, total_pages + 1) %}
+                {% if i == page %}
+                    <span>{{ i }}</span>
+                {% else %}
+                    <a href="?page={{ i }}&name={{ search_term or '' }}">{{ i }}</a>
+                {% endif %}
+            {% endfor %}
+        </div>
 
-            document.querySelector("button#company_search").addEventListener("click", (e) => {
-                e.target
-                
-                const data = {   
-                    }
-                    
-                    
-                fetch("/api/joinList", {
-                    method: "post",
-                    body: JSON.stringify(data),
-                    headers: {
-                        'Content-type' : 'application/json'
-                    }
-                })
-                .then(function(response){
-                    return response.json();
-                })
-                .then(result => {
-                    // 리스트로 넘어오니 작업 필요
-                    console.log(result)
-                    result.forEach((user, idx) => {
-                        console.log(user)				
-                    })
-                })
-                .catch(error => {
-                    console.error(error);
-                })
-            })	
+    <script>
+        let currentPage = {{page}};
+        const perPage = {{per_page}};
 
+        async function searchCompanies() {
+            const name = document.getElementById('company_name').value;
+            try {
+                const response = await fetch(`credit/api/companies/search?name=${encodeURIComponent(name)}&page=1&per_page=${perPage}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                updateTable(data);
+                updatePagination(data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
 
-        </script>
+        function updateTable(data) {
+            const tableBody = document.getElementById('company_list');
+            tableBody.innerHTML = '';
+            data.reportContents.forEach((company, index) => {
+                const row = `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${company.corp_code}</td>
+                        <td>${company.corp_name}</td>
+                        <td>${company.report_nm}</td>
+                        <td>${company.rcept_no}</td>
+                        <td>${company.rcept_dt}</td>
+                        <td><button onclick="generateReport('${company.corp_code}')">보고서 생성</button></td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        function updatePagination(data) {
+            const paginationDiv = document.getElementById('pagination');
+            paginationDiv.innerHTML = '';
+            for (let i = 1; i <= data.total_pages; i++) {
+                if (i === data.page) {
+                    paginationDiv.innerHTML += `<span>${i}</span> `;
+                } else {
+                    paginationDiv.innerHTML += `<a href="#" onclick="changePage(${i})">${i}</a> `;
+                }
+            }
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            const name = document.getElementById('company_name').value;
+            window.location.href = `?page=${page}&name=${encodeURIComponent(name)}`;
+        }
+
+        function generateReport(corpCode) {
+            console.log(`Generating report for company with code: ${corpCode}`);
+            // 여기에 보고서 생성 로직을 구현하세요
+        }
+
+        document.getElementById('search_button').addEventListener('click', searchCompanies);
+
+        document.getElementById('company_name').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchCompanies();
+            }
+        });
+    </script>
         
 
 {% endblock %}
