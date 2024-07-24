@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}AI심사보고서{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="/static/css/review_detail.css"> 
+
+{% endblock %}
+
+{% block content %}
+
+        <span>AI심사보고서&gt;보고서 보기</span>
+        <h1>심사보고서</h1>
+
+        <table class="company_table">
+            <tr>
+                <th>순서</th>
+                <td>{{reportContent.report_num}}</td>
+            </tr>
+            <tr>
+                <th>회사코드</th>
+                <td>{{reportContent.corp_code}}</td>
+            </tr>
+            <tr>
+                <th>회사명</th>
+                <td>{{reportContent.corp_name}}</td>
+            </tr>
+            <tr>
+                <th>보고서명</th>
+                <td>{{reportContent.report_nm}}</td>
+            </tr>
+            <tr>
+                <th>보고서번호</th>
+                <td>{{reportContent.rcept_no}}</td>
+            </tr>          
+            <tr>
+                <th>종합의견</th>
+                <td>{{reportContent.report_content}}<td>
+            </tr>
+        </table>
+        <div class="btn-group">
+            <a href="/credit/creditReview/"><button>이전으로 가기</button></a>
+
+    <script>
+    </script>
+        
+
+{% endblock %}
