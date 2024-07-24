@@ -47,3 +47,10 @@ async def search_corp(search_type: str, search_value: str, request: Request):
 async def autocomplete(search_type: str, query: str):
     suggestions = get_autocomplete_suggestions(search_type, query)
     return JSONResponse(content=suggestions)
+
+
+
+
+@baro.get("/template")
+async def read_join(request: Request):
+    return templates.TemplateResponse("/template.html", {"request": request})
