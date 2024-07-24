@@ -56,6 +56,34 @@
     {% else %}
         <p>No FS2023 information found for the given corp code.</p>
     {% endif %}
+
+    <h1>FS2022</h1>
+    {% if fs2022 %}
+        <ul>
+            <li>ID: {{ fs2022.id }}</li>
+            <li>Base Date: {{ fs2022.baseDate }}</li>
+            <li>Business Year: {{ fs2022.bizYear }}</li>
+            <li>Juridical Number: {{ fs2022.jurir_no }}</li>
+            <li>Currency: {{ fs2022.currency }}</li>
+            <li>FS Code: {{ fs2022.fsCode }}</li>
+            <li>FS Name: {{ fs2022.fsName }}</li>
+            <li>Total Asset 2022: {{ fs2022.totalAsset2022 }}</li>
+            <li>Total Debt 2022: {{ fs2022.totalDebt2022 }}</li>
+            <li>Total Equity 2022: {{ fs2022.totalEquity2022 }}</li>
+            <li>Capital 2022: {{ fs2022.capital2022 }}</li>
+            <li>Revenue 2022: {{ fs2022.revenue2022 }}</li>
+            <li>Operating Income 2022: {{ fs2022.operatingIncome2022 }}</li>
+            <li>Earning Before Tax 2022: {{ fs2022.earningBeforeTax2022 }}</li>
+            <li>Net Income 2022: {{ fs2022.netIncome2022 }}</li>
+            <li>Debt Ratio 2022: {{ fs2022.debtRatio2022 }}</li>
+            <li>Margin 2022: {{ fs2022.margin2022 }}</li>
+            <li>Turnover 2022: {{ fs2022.turnover2022 }}</li>
+            <li>Leverage 2022: {{ fs2022.leverage2022 }}</li>
+            <li>Created At: {{ fs2022.created_at }}</li>
+        </ul>
+    {% else %}
+        <p>No FS2022 information found for the given corp code.</p>
+    {% endif %}
 </body>
 </html>
 

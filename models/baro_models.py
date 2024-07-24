@@ -48,3 +48,27 @@ class FS2023(Base):
     turnover2023 = Column(Numeric(20, 3))
     leverage2023 = Column(Numeric(20, 3))
     created_at = Column(TIMESTAMP)
+    
+class FS2022(Base):
+    __tablename__ = 'FS2022'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    baseDate = Column(Date)
+    bizYear = Column(String(50))
+    jurir_no = Column(String(50))
+    currency = Column(String(10))
+    fsCode = Column(String(10))
+    fsName = Column(String(100))
+    totalAsset2022 = Column(BigInteger)
+    totalDebt2022 = Column(BigInteger)
+    totalEquity2022 = Column(BigInteger)
+    capital2022 = Column(BigInteger)
+    revenue2022 = Column(BigInteger)
+    operatingIncome2022 = Column(BigInteger)
+    earningBeforeTax2022 = Column(BigInteger)
+    netIncome2022 = Column(BigInteger)
+    debtRatio2022 = Column(Numeric(10, 2))
+    margin2022 = Column(Numeric(20, 3))
+    turnover2022 = Column(Numeric(20, 3))
+    leverage2022 = Column(Numeric(20, 3))
+    created_at = Column(TIMESTAMP)
