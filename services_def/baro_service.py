@@ -2,7 +2,7 @@
 from typing import List
 from database import SessionLocal
 from sqlalchemy.orm import Session
-from models.baro_models import CompanyInfo, FS2023
+from models.baro_models import CompanyInfo, FS2023, FS2022
 
 
 def get_company_info(db: Session, jurir_no: str):
@@ -10,6 +10,9 @@ def get_company_info(db: Session, jurir_no: str):
 
 def get_FS2023(db: Session, jurir_no: str):
     return db.query(FS2023).filter(FS2023.jurir_no == jurir_no).first()
+
+def get_FS2022(db: Session, jurir_no: str):
+    return db.query(FS2022).filter(FS2022.jurir_no == jurir_no).first()
     
 
 def get_corp_info_code(corp_code: str):
