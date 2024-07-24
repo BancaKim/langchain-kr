@@ -2,8 +2,15 @@
 from typing import List
 from database import SessionLocal
 from sqlalchemy.orm import Session
-from models.baro_models import CompanyInfo
+from models.baro_models import CompanyInfo, FS2023
 
+
+def get_company_info(db: Session, jurir_no: str):
+    return db.query(CompanyInfo).filter(CompanyInfo.jurir_no == jurir_no).first()
+
+def get_FS2023(db: Session, jurir_no: str):
+    return db.query(FS2023).filter(FS2023.jurir_no == jurir_no).first()
+    
 
 def get_corp_info_code(corp_code: str):
     db: Session = SessionLocal()
