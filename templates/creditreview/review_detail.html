@@ -3,11 +3,11 @@
 {% block title %}AI심사보고서{% endblock %}
 
 {% block head %}
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
         const streamContent = document.getElementById('streamContent');
-        
+
         async function fetchContent() {
             // SweetAlert2를 사용하여 5초 동안 로딩 화면 표시
             await Swal.fire({
@@ -47,31 +47,61 @@
 
         fetchContent();
     });
-    </script>
-    <style>
-        #streamContent {
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-    </style>
-    <link rel="stylesheet" href="/static/css/review_detail.css"> 
+</script>
+<style>
+    #streamContent {
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+</style>
+<link rel="stylesheet" href="/static/css/review_detail.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/font.css">
 {% endblock %}
 
+
+
 {% block content %}
-<h1>AI심사보고서 > 보고서 보기</h1>
 
-<h2>심사보고서</h2>
+<br><br>
+<span class="block text-right text-xl mb-2">AI심사보고서 > 보고서 현황</span>
+<br><br>
+<div class="text-center mb-4">
+    <h1 class="text-5xl font-bold">심사보고서 종합의견</h1>
+</div>
 
+<br>
+
+<!--
 <p><strong>순서:</strong> {{reportContent.report_num}}</p>
 <p><strong>회사코드:</strong> {{reportContent.corp_code}}</p>
 <p><strong>회사명:</strong> {{reportContent.corp_name}}</p>
 <p><strong>보고서명:</strong> {{reportContent.report_nm}}</p>
 <p><strong>보고서번호:</strong> {{reportContent.rcept_no}}</p>
+-->
 
-<h3>종합의견</h3>
-<div id="streamContent"></div>
-
-<div class="btn-group">
-    <button onclick="history.back()">이전으로 가기</button>
+<div id="streamContent" 
+    class="max-w-4xl mx-auto my-8 p-6 bg-white rounded-lg shadow-md dark:bg-gray-800 dark:text-gray-200">
 </div>
+
+
+<div class="btn-group my-4 flex justify-center">
+    <button onclick="history.back()"
+        class="px-4 py-2 text-white rounded-md hover:bg-[#6a46b0] focus:ring-4 focus:ring-[#9a7ce0] focus:outline-none"
+        style="background-color: #7F56D9;">
+        뒤로가기
+    </button>
+    &nbsp;    &nbsp;
+
+    <button onclick="history.back()"
+        class="px-4 py-2 text-white rounded-md hover:bg-[#6a46b0] focus:ring-4 focus:ring-[#9a7ce0] focus:outline-none"
+        style="background-color: #7F56D9;">
+        바로등급
+    </button>
+
+</div>
+
 {% endblock %}
