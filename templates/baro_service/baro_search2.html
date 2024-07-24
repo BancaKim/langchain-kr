@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}기업 정보{% endblock %}
+{% block head %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="/static/js/search.js" defer></script>
+
+<style>
+    /* styles.css */
+    body {
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+    }
+
+    .container {
+        width: 80%;
+        margin: auto;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .page-title {
+        background-color: #333;
+        color: #fff;
+        padding: 10px 0;
+        text-align: center;
+    }
+
+    #board-search {
+        margin-bottom: 20px;
+    }
+
+    .search-window {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .search-wrap {
+        display: flex;
+        margin-top: 10px;
+    }
+
+    #search_value {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+
+    .btn-dark {
+        background-color: #333;
+        color: #fff;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .btn-dark:hover {
+        background-color: #555;
+    }
+
+    .info-sections {
+        margin-top: 20px;
+    }
+
+    .info-section {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        padding: 15px;
+    }
+
+    .info-section h2 {
+        margin-top: 0;
+        color: #333;
+    }
+
+    footer {
+        text-align: center;
+        padding: 10px;
+        background-color: #333;
+        color: #fff;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+    }
+
+    ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    ul li {
+        padding: 5px 0;
+        border-bottom: 1px solid #ddd;
+    }
+</style>
+
+{% endblock %}
+{% block content %}
+<div class="page-title">
+    <div class="container">
+        <h3>기업 정보</h3>
+    </div>
+</div>
+
+<div id="board-search">
+    <div class="container">
+        <div class="search-window">
+            <select name="search_type" id="search_type">
+                <option value="corp_name">업체명</option>
+                <option value="jurir_no">법인번호</option>
+                <option value="corp_code">회사코드</option>
+            </select>
+            <div class="search-wrap">
+                <input type="search" id="search_value" placeholder="검색어 입력" oninput="showSuggestions()" />
+                <button onclick="searchCorp()" class="btn btn-dark">조회</button>
+                <div id="suggestions" class="suggestions"></div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="info-sections">
+    <div class="container">
+        <div class="info-section" id="company-overview">
+            <h2>기업 개황</h2>
+            <div id="result"></div>
+        </div>
+        <div class="info-section" id="credit-rating">
+            <h2>신용 등급</h2>
+            <p>신용 등급: AA+</p>
+            <p>발급일: 2024-06-15</p>
+        </div>
+        <div class="info-section" id="stock-status">
+            <h2>주가 현황</h2>
+            <p>현재 주가: 65,000원</p>
+            <p>변동률: +1.2%</p>
+        </div>
+        <div class="info-section" id="financials">
+            <h2>재무 영역</h2>
+            <p>매출액: 300조원</p>
+            <p>순이익: 30조원</p>
+            <p>자산: 500조원</p>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
