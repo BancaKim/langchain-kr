@@ -44,7 +44,7 @@ async def create_review(db: Session = Depends(get_db)):
 async def get_companies(
     db: Session = Depends(get_db),
     page: int = Query(1, ge=1),
-    per_page: int = Query(20, ge=1, le=100),
+    per_page: int = Query(10, ge=1, le=100),
 ):
     total = db.query(CompanyInfo).count()
     companies = (
@@ -66,7 +66,7 @@ async def search_companies(
     name: Optional[str] = Query(None),
     search_type: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
-    per_page: int = Query(20, ge=1, le=100),
+    per_page: int = Query(10, ge=1, le=100),
 ):
     # Determine the column to filter on based on search_type
     if search_type == "company_name":
@@ -87,7 +87,7 @@ async def search_companies(
 
     total = query.count()
     total_pages = ceil(total / per_page)
-
+    print(total_pages)
     # Apply pagination
     reportContents = query.offset((page - 1) * per_page).limit(per_page).all()
 
@@ -99,15 +99,13 @@ async def search_companies(
         "total_pages": total_pages,
     }
 
-
-
 @credit.get("/creditReview/")
 async def read_credit(
     request: Request,
     db: Session = Depends(get_db),
     name: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
-    per_page: int = Query(20, ge=1, le=100),
+    per_page: int = Query(10, ge=1, le=100),
 ):
     query = db.query(ReportContent)
     if name:
@@ -115,6 +113,7 @@ async def read_credit(
 
     total = query.count()
     total_pages = ceil(total / per_page)
+    print(total_pages)
     reportContents = query.offset((page - 1) * per_page).limit(per_page).all()
 
     return templates.TemplateResponse(

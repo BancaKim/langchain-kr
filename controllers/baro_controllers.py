@@ -44,37 +44,13 @@ async def read_join(request: Request):
     return templates.TemplateResponse("baro_service/baro_search.html", {"request": request})
 
 
-"""
-@baro.get("/baro_info")
-async def search_corp(search_type: str, search_value: str, request: Request):
-    
-    if search_type == "corp_code":
-        selectedcompany = get_corp_info_code(search_value)
-    elif search_type == "corp_name":
-        selectedcompany = get_corp_info_name(search_value)
-    elif search_type == "jurir_no":
-        selectedcompany = get_corp_info_jurir_no(search_value)
-    else:
-        return JSONResponse(content={"error": "Invalid search type"}, status_code=400)
-
-    #print(type(selectedcompany))
-    #print(selectedcompany.corp_code)
-    
-    if selectedcompany:
-        company_info = CompanyInfoSchema.from_orm(selectedcompany)
-        print("A:" + company_info.json())
-        return JSONResponse(content=company_info.dict())
-    
-    
-    
-@baro.get("/autocomplete")
-async def autocomplete(search_type: str, query: str):
-    suggestions = get_autocomplete_suggestions(search_type, query)
-    return JSONResponse(content=suggestions)
-"""
-
-
 
 @baro.get("/template")
 async def read_join(request: Request):
     return templates.TemplateResponse("/template.html", {"request": request})
+
+
+
+@baro.get("/test1234")
+async def read_join(request: Request):
+    return templates.TemplateResponse("baro_service/test.html", {"request": request})
