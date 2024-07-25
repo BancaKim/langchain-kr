@@ -1,167 +1,168 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Company Info</title>
-<style>
+{% include 'header.html' %}
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+{% block head %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/font.css">
+<script src="/static/js/AI_search.js" defer></script>
+{% endblock %}
 
-body, html {
-    height: 100%;
-    font-family: Arial, sans-serif;
-}
+{% block content %}
 
-#board-search {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  
-}
 
-.container {
-    width: 100%;
-    max-width: 600px; /* 원하는 최대 너비 설정 */
-    padding: 20px;
-}
+<div class="bg-red-50">
+    <div class="rounded-lg p-8 w-9/12 mx-auto">
 
-#search-form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-}
+        <span class="block text-left text-xl mb-2">
+            <a href="/" class="mr-2">홈</a> &nbsp; | &nbsp;
+            <a href="/baro_companyList" class="ml-2">바로등급</a>
+        </span>
+        <br><br><br>
 
-#search_value {
-    width: 100%;
-    padding: 15px;
-    margin-bottom: 10px;
-    font-size: 1.2em;
-}
 
-.btn {
-    padding: 15px 20px;
-    font-size: 1.2em;
-    cursor: pointer;
-}
-li {
-    margin-right: 20px; /* 항목 간 간격 조절 */
-    white-space: nowrap;
-    border: 1px solid black; /* 검은색 실선 테두리 추가 */
-    padding: 5px; /* 테두리와 내용 간 간격 */
-}
-</style>
-
-</head>
-<body>
-
-    <div id="board-search">
-        <div class="container">
-            <form id="search-form" action="/baro_companyList" method="GET">
-                <input type="search" name="search_value" id="search_value" placeholder="검색어 입력" />
-                <button type="submit" class="btn btn-dark">조회</button>
-            </form>
+        <div class="text-center mb-4">
+            <h1 class="text-5xl font-bold">ML 기반 바로등급 서비스</h1>
         </div>
+        <br><br><br>
+
+
+        <!-- 검색란 -->
+        <div class="w-full max-w-4xl mx-auto">
+            <div class="relative flex">
+                <!-- 검색 타입 선택 -->
+                <div class="relative w-48">
+                    <select id="search_type"
+                        class="block w-full py-2.5 px-4 text-base font-medium text-gray-900 bg-gray-50 border-gray-300 rounded-s-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600">
+                        <option value="company_name">회사명</option>
+                        <option value="company_code">회사코드</option>
+                    </select>
+                </div>
+                <!-- 검색 입력 필드 -->
+                <div class="relative w-full">
+                    <input type="search" id="company_name" name="company_name"
+                        class="block p-2.5 w-full text-base text-gray-900 bg-gray-50 rounded-e-lg border-s-gray-50 border-s-2 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-s-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
+                        placeholder="정보를 입력하세요..." required />
+                    <!-- 자동완성 결과 표시 -->
+                    <div id="autocomplete-results"
+                        class="absolute top-full left-0 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-10 hidden">
+                        <!-- JavaScript로 동적으로 결과 항목을 추가합니다. -->
+                    </div>
+                </div>
+                <!-- 검색 버튼 -->
+                <button type="submit" id="search_button"
+                    class="absolute top-0 end-0 p-2.5 text-sm font-medium h-full text-white bg-purple-700 rounded-e-lg border border-blue-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 20 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <br><br><br>
     </div>
+</div>
 
-    {% if search_company_list %}
-    <h1>검색결과</h1>
-    <ul>
-        {% for company in search_company_list %}
-        <li>
-            <a href="/baro_companyInfo?jurir_no={{ company.jurir_no }}">{{ company.corp_name }}</a>    
-            <span>Corp Code: {{ company.corp_code }}</span>
-            <span>Corp Name: {{ company.corp_name }}</span>
-            <span>Corp Name (Eng): {{ company.corp_name_eng }}</span>
-            <span>Stock Name: {{ company.stock_name }}</span>
-            <span>Stock Code: {{ company.stock_code }}</span>
-            <!-- <span>CEO Name: {{ company.ceo_nm }}</span>
-            <span>Corp Class: {{ company.corp_cls }}</span>
-            <span>Juridical Number: {{ company.jurir_no }}</span>
-            <span>Business Registration Number: {{ company.bizr_no }}</span>
-            <span>Address: {{ company.adres }}</span>
-            <span>Homepage URL: {{ company.hm_url }}</span>
-            <span>IR URL: {{ company.ir_url }}</span>
-            <span>Phone Number: {{ company.phn_no }}</span>
-            <span>Fax Number: {{ company.fax_no }}</span>
-            <span>Industry Code: {{ company.induty_code }}</span>
-            <span>Establishment Date: {{ company.est_dt }}</span>
-            <span>Accounting Month: {{ company.acc_mt }}</span> -->
-        </li>
-        {% endfor %}
-    </ul>
-{% else %}
+<br><br>
+<div class="flex justify-center">
+    <!-- 너비를 줄이기 위해 max-w-screen-lg를 사용 -->
+    <div class="container mx-auto p-6 max-w-screen-lg">
+        <!-- 나의 업체현황 -->
+        <section class="mb-10">
+            <h1 class="text-3xl font-bold text-gray-800 mb-4">관심 업체 목록</h1>
 
-{% endif %}
+            {% if my_company_list %}
+            <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
+                <thead class="bg-gray-100 text-gray-600 uppercase text-base">
+                    <tr>
+                        <th class="px-6 py-3 border-b">회사코드</th>
+                        <th class="px-6 py-3 border-b">회사명</th>
+                        <th class="px-6 py-3 border-b">회사영문명</th>
+                        <th class="px-6 py-3 border-b">주식상장명</th>
+                        <th class="px-6 py-3 border-b">주식코드</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-700 text-base">
+                    {% for company in my_company_list %}
+                    <tr>
+                        <td class="px-6 py-4 border-b">
+                            <a href="/baro_companyInfo?jurir_no={{ company.jurir_no }}"
+                                class="text-purple-500 hover:underline">{{ company.corp_code }}</a>
+                        </td>
+                        <td class="px-6 py-4 border-b">{{ company.corp_name }}</td>
+                        <td class="px-6 py-4 border-b">{{ company.corp_name_eng }}</td>
+                        <td class="px-6 py-4 border-b">{{ company.stock_name }}</td>
+                        <td class="px-6 py-4 border-b">{{ company.stock_code }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-gray-600">No companies found.</p>
+            {% endif %}
+        </section>
 
+        <br><br>
 
-    <h1>나의 업체현황(임시)</h1>
-    {% if my_company_list %}
-        <ul>
-            {% for company in my_company_list %}
-            <li>
-                <a href="/baro_companyInfo?jurir_no={{ company.jurir_no }}">{{ company.corp_name }}</a>    
-                    <span>Corp Code: {{ company.corp_code }}</span>
-                    <span>Corp Name: {{ company.corp_name }}</span>
-                    <span>Corp Name (Eng): {{ company.corp_name_eng }}</span>
-                    <span>Stock Name: {{ company.stock_name }}</span>
-                    <span>Stock Code: {{ company.stock_code }} 이하 주석처리</span>
-                    <!-- <span>CEO Name: {{ company.ceo_nm }}</span>
-                    <span>Corp Class: {{ company.corp_cls }}</span>
-                    <span>Juridical Number: {{ company.jurir_no }}</span>
-                    <span>Business Registration Number: {{ company.bizr_no }}</span>
-                    <span>Address: {{ company.adres }}</span>
-                    <span>Homepage URL: {{ company.hm_url }}</span>
-                    <span>IR URL: {{ company.ir_url }}</span>
-                    <span>Phone Number: {{ company.phn_no }}</span>
-                    <span>Fax Number: {{ company.fax_no }}</span>
-                    <span>Industry Code: {{ company.induty_code }}</span>
-                    <span>Estabspanshment Date: {{ company.est_dt }}</span>
-                    <span>Accounting Month: {{ company.acc_mt }}</span> -->
-         
-            </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No companies found.</p>
-    {% endif %}
+        <!-- 최근 조회한 업체 현황 -->
+        <section>
+            <h1 class="text-3xl font-bold text-gray-800 mb-4">최근 조회 업체 목록</h1>
 
-    <h1>최근 조회한 업체 현황(임시)</h1>
+            {% if recent_view_list %}
+            <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
+                <thead class="bg-gray-100 text-gray-600 uppercase text-base">
+                    <tr>
+                        <th class="px-6 py-3 border-b">회사코드</th>
+                        <th class="px-6 py-3 border-b">회사명</th>
+                        <th class="px-6 py-3 border-b">회사영문명</th>
+                        <th class="px-6 py-3 border-b">주식상장명</th>
+                        <th class="px-6 py-3 border-b">주식코드</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-700 text-base">
+                    {% for company in recent_view_list %}
+                    <tr>
+                        <td class="px-6 py-4 border-b">
+                            <a href="/baro_companyInfo?jurir_no={{ company.jurir_no }}"
+                                class="text-purple-500 hover:underline">{{ company.corp_code }}</a>
+                        </td>
+                        <td class="px-6 py-4 border-b">{{ company.corp_name }}</td>
+                        <td class="px-6 py-4 border-b">{{ company.corp_name_eng }}</td>
+                        <td class="px-6 py-4 border-b">{{ company.stock_name }}</td>
+                        <td class="px-6 py-4 border-b">{{ company.stock_code }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-gray-600">No companies found.</p>
+            {% endif %}
+        </section>
+    </div>
+</div>
 
-    {% if recent_view_list %}
-        <ul>
-            {% for company in recent_view_list %}
-            <li>
-                <a href="/baro_companyInfo?jurir_no={{ company.jurir_no }}">{{ company.corp_name }}</a>    
-                    <span>Corp Code: {{ company.corp_code }}</span>
-                    <span>Corp Name: {{ company.corp_name }}</span>
-                    <span>Corp Name (Eng): {{ company.corp_name_eng }}</span>
-                    <span>Stock Name: {{ company.stock_name }}</span>
-                    <span>Stock Code: {{ company.stock_code }} 이하 주석처리</span>
-                    <!-- <span>CEO Name: {{ company.ceo_nm }}</span>
-                    <span>Corp Class: {{ company.corp_cls }}</span>
-                    <span>Juridical Number: {{ company.jurir_no }}</span>
-                    <span>Business Registration Number: {{ company.bizr_no }}</span>
-                    <span>Address: {{ company.adres }}</span>
-                    <span>Homepage URL: {{ company.hm_url }}</span>
-                    <span>IR URL: {{ company.ir_url }}</span>
-                    <span>Phone Number: {{ company.phn_no }}</span>
-                    <span>Fax Number: {{ company.fax_no }}</span>
-                    <span>Industry Code: {{ company.induty_code }}</span>
-                    <span>Estabspanshment Date: {{ company.est_dt }}</span>
-                    <span>Accounting Month: {{ company.acc_mt }}</span> -->
-         
-            </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No companies found.</p>
-    {% endif %}
-</body>
-</html>
+<script>
+    async function searchCompanies() {
+        const name = document.getElementById('company_name').value;
+        const searchType = document.getElementById('search_type').value; // Get the selected search type
 
-</body>
-</html>
+        try {
+            const response = await fetch(`/baro_companyInfo2?name=${encodeURIComponent(name)}&search_type=${encodeURIComponent(searchType)}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+
+    document.getElementById('search_button').addEventListener('click', searchCompanies);
+
+</script>
+{% endblock %}
+{% include 'footer.html' %}
