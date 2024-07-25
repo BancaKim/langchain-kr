@@ -1,0 +1,26 @@
+{% include 'header.html' %}
+
+{% block head %}
+<style>
+    table {
+        border:1px solid #333;
+    }
+    tr {
+        border: 1px solid #333;
+    }
+    td {
+        border: 1px solid #333;
+    }
+
+</style>
+{% endblock %}
+
+
+
+{% block content %}
+<h1>해외채무보증내역</h1>
+{{ table | safe }}
+<h2>테이블 끝</h2>
+{% endblock %}
+
+{% include 'footer.html' %}
