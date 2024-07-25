@@ -337,7 +337,9 @@ async def search_qnas(
 async def create_qna_page(request: Request):
     username = request.session.get("username")
     if not username:
-        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+        return templates.TemplateResponse(
+            "qna/qna_create.html", {"request": request, "username": username, "login_required": True}
+        )
     return templates.TemplateResponse(
         "qna/qna_create.html", {"request": request, "username": username}
     )
@@ -352,7 +354,9 @@ async def create_qna(
 ):
     username = request.session.get("username")
     if not username:
-        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+        return templates.TemplateResponse(
+            "qna/qna_create.html", {"request": request, "username": username, "login_required": True}
+        )
     user = db.query(User).filter(User.username == username).first()
     new_qna = Qna(title=title, content=content,
                 user_id=user.id, username=user.username)
@@ -460,13 +464,14 @@ async def submit_contact_form(
     name: str = Form(...),
     email: str = Form(...),
     message: str = Form(...),
+    
     db: Session = Depends(get_db),
 ):
     send_email(
         background_tasks,
-        "Contact Form Submission",
+        "섭외등록 내용이 도착했습니다",
         "sjung8009@naver.com",
-        f"Name: {name}\nEmail: {email}\nMessage: {message}",
+        f"업체(키맨) 이름: {name}\n업체(키맨) 이메일: {email}\n섭외 메모: {message}",
     )
     return templates.TemplateResponse(
         "contact/contact2.html",

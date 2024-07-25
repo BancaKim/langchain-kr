@@ -1,9 +1,8 @@
 {% include 'header.html' %}
 
-
-
 {% block head %}
 <link rel="stylesheet" href="/static/css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 {% endblock %}
 
 {% block content %}
@@ -33,5 +32,23 @@
         <button onclick="location.href='/qnas'" class="btn btn-dark">목록으로</button>
     </div>
 </section>
+
+{% if login_required %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        Swal.fire({
+            title: '로그인이 필요합니다.',
+            icon: 'warning',
+            confirmButtonText: '확인'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "/login"; // 로그인 페이지로 리디렉션
+            }
+        });
+        
+    });
+</script>
+{% endif %}
 {% endblock %}
 {% include 'footer.html' %}
