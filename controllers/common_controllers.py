@@ -42,7 +42,6 @@ templates = Jinja2Templates(directory="templates")
 
 
 # 파일 업로드 관련
-
 UPLOAD_DIR = "uploads"
 if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
@@ -55,22 +54,16 @@ def basename(value):
 templates.env.filters["basename"] = basename
 
 # 로그인화면이동
-
-
 @router.get('/home')
 async def read_root(request: Request):
     return templates.TemplateResponse('loginjoin/home.html', {"request": request})
 
 # 회원 가입 페이지
-
-
 @router.get("/join")
 async def read_join(request: Request):
     return templates.TemplateResponse("loginjoin/join.html", {"request": request})
 
 # 회원 가입
-
-
 @router.post("/signup")
 async def signup(signup_data: UserCreate, db: Session = Depends(get_db)):
     existing_user = db.query(User).filter(
@@ -151,7 +144,7 @@ async def list_notices(request: Request, db: Session = Depends(get_db)):
     notices = db.query(Notice).all()
     return templates.TemplateResponse(
         "notice/notice.html", {"request": request,
-                               "notices": notices, "username": username}
+                            "notices": notices, "username": username}
     )
 
 
@@ -185,7 +178,7 @@ async def search_notices(
         notices = db.query(Notice).all()
     return templates.TemplateResponse(
         "notice/notice.html", {"request": request,
-                               "notices": notices, "username": username}
+                            "notices": notices, "username": username}
     )
 
 
@@ -303,7 +296,7 @@ async def list_qnas(request: Request, db: Session = Depends(get_db)):
     qnas = db.query(Qna).all()
     return templates.TemplateResponse(
         "qna/qna.html", {"request": request,
-                         "qnas": qnas, "username": username}
+                        "qnas": qnas, "username": username}
     )
 
 
@@ -335,7 +328,7 @@ async def search_qnas(
         qnas = db.query(Qna).all()
     return templates.TemplateResponse(
         "qna/qna.html", {"request": request,
-                         "qnas": qnas, "username": username}
+                        "qnas": qnas, "username": username}
     )
 
 
@@ -362,7 +355,7 @@ async def create_qna(
         raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
     user = db.query(User).filter(User.username == username).first()
     new_qna = Qna(title=title, content=content,
-                  user_id=user.id, username=user.username)
+                user_id=user.id, username=user.username)
     db.add(new_qna)
     db.commit()
     db.refresh(new_qna)
@@ -449,6 +442,7 @@ async def create_reply(
     return RedirectResponse(url=f"/qnas/{qna_id}", status_code=303)
 
 
+
 # 섭외등록 페이지
 @router.get("/contact2")
 async def read_contact(request: Request):
@@ -487,7 +481,7 @@ async def create_post_page(request: Request, db: Session = Depends(get_db)):
     username = request.session.get("username")
     return templates.TemplateResponse(
         "contact/contact.html", {"request": request,
-                                 "posts": posts, "username": username}
+                                "posts": posts, "username": username}
     )
 
 
@@ -515,8 +509,6 @@ async def create_post(
     return RedirectResponse(url="/contact", status_code=303)
 
 # 카카오 지도 API
-
-
 @router.get("/search", response_class=HTMLResponse)
 async def get_search_page(request: Request):
     kakao_map_api_key = os.getenv("KAKAO_MAP_API_KEY")
@@ -563,3 +555,13 @@ async def websocket_endpoint(websocket: WebSocket, username: str):
     except WebSocketDisconnect:
         manager.disconnect(username)
         await manager.broadcast(f"{username} 사용자가 채팅에서 퇴장하였습니다.")
+        
+        
+# 기능홈페이지
+@router.get("/contact4")
+async def read_contact(request: Request):
+    username = request.session.get("username")
+    return templates.TemplateResponse(
+        "contact/contact4.html", {"request": request, "username": username}
+    )
+
