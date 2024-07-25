@@ -1,0 +1,168 @@
+{% include 'header.html' %}
+
+{% block head %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/font.css">
+<script src="/static/js/AI_search.js" defer></script>
+{% endblock %}
+
+{% block content %}
+
+
+<div class="bg-red-50">
+    <div class="rounded-lg p-8 w-9/12 mx-auto">
+
+        <span class="block text-left text-xl mb-2">
+            <a href="/" class="mr-2">홈</a> &nbsp; | &nbsp;
+            <a href="/baro_companyList" class="ml-2">바로등급</a>
+        </span>
+        <br><br><br>
+
+
+        <div class="text-center mb-4">
+            <h1 class="text-5xl font-bold">ML 기반 바로등급 서비스</h1>
+        </div>
+        <br><br><br>
+
+
+        <!-- 검색란 -->
+        <div class="w-full max-w-4xl mx-auto">
+            <div class="relative flex">
+                <!-- 검색 타입 선택 -->
+                <div class="relative w-48">
+                    <select id="search_type"
+                        class="block w-full py-2.5 px-4 text-base font-medium text-gray-900 bg-gray-50 border-gray-300 rounded-s-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600">
+                        <option value="company_name">회사명</option>
+                        <option value="company_code">회사코드</option>
+                    </select>
+                </div>
+                <!-- 검색 입력 필드 -->
+                <div class="relative w-full">
+                    <input type="search" id="company_name" name="company_name"
+                        class="block p-2.5 w-full text-base text-gray-900 bg-gray-50 rounded-e-lg border-s-gray-50 border-s-2 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-s-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
+                        placeholder="정보를 입력하세요..." required />
+                    <!-- 자동완성 결과 표시 -->
+                    <div id="autocomplete-results"
+                        class="absolute top-full left-0 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-10 hidden">
+                        <!-- JavaScript로 동적으로 결과 항목을 추가합니다. -->
+                    </div>
+                </div>
+                <!-- 검색 버튼 -->
+                <button type="submit" id="search_button"
+                    class="absolute top-0 end-0 p-2.5 text-sm font-medium h-full text-white bg-purple-700 rounded-e-lg border border-blue-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 20 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <br><br><br>
+    </div>
+</div>
+
+<br><br>
+<div class="flex justify-center">
+    <!-- 너비를 줄이기 위해 max-w-screen-lg를 사용 -->
+    <div class="container mx-auto p-6 max-w-screen-lg">
+        <!-- 나의 업체현황 -->
+        <section class="mb-10">
+            <h1 class="text-3xl font-bold text-gray-800 mb-4">관심 업체 목록</h1>
+
+            {% if my_company_list %}
+            <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
+                <thead class="bg-gray-100 text-gray-600 uppercase text-base">
+                    <tr>
+                        <th class="px-6 py-3 border-b">회사코드</th>
+                        <th class="px-6 py-3 border-b">회사명</th>
+                        <th class="px-6 py-3 border-b">회사영문명</th>
+                        <th class="px-6 py-3 border-b">주식상장명</th>
+                        <th class="px-6 py-3 border-b">주식코드</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-700 text-base">
+                    {% for company in my_company_list %}
+                    <tr>
+                        <td class="px-6 py-4 border-b">
+                            <a href="/baro_companyInfo?jurir_no={{ company.jurir_no }}"
+                                class="text-purple-500 hover:underline">{{ company.corp_code }}</a>
+                        </td>
+                        <td class="px-6 py-4 border-b">{{ company.corp_name }}</td>
+                        <td class="px-6 py-4 border-b">{{ company.corp_name_eng }}</td>
+                        <td class="px-6 py-4 border-b">{{ company.stock_name }}</td>
+                        <td class="px-6 py-4 border-b">{{ company.stock_code }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-gray-600">No companies found.</p>
+            {% endif %}
+        </section>
+
+        <br><br>
+
+        <!-- 최근 조회한 업체 현황 -->
+        <section>
+            <h1 class="text-3xl font-bold text-gray-800 mb-4">최근 조회 업체 목록</h1>
+
+            {% if recent_view_list %}
+            <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
+                <thead class="bg-gray-100 text-gray-600 uppercase text-base">
+                    <tr>
+                        <th class="px-6 py-3 border-b">회사코드</th>
+                        <th class="px-6 py-3 border-b">회사명</th>
+                        <th class="px-6 py-3 border-b">회사영문명</th>
+                        <th class="px-6 py-3 border-b">주식상장명</th>
+                        <th class="px-6 py-3 border-b">주식코드</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-700 text-base">
+                    {% for company in recent_view_list %}
+                    <tr>
+                        <td class="px-6 py-4 border-b">
+                            <a href="/baro_companyInfo?jurir_no={{ company.jurir_no }}"
+                                class="text-purple-500 hover:underline">{{ company.corp_code }}</a>
+                        </td>
+                        <td class="px-6 py-4 border-b">{{ company.corp_name }}</td>
+                        <td class="px-6 py-4 border-b">{{ company.corp_name_eng }}</td>
+                        <td class="px-6 py-4 border-b">{{ company.stock_name }}</td>
+                        <td class="px-6 py-4 border-b">{{ company.stock_code }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-gray-600">No companies found.</p>
+            {% endif %}
+        </section>
+    </div>
+</div>
+
+<script>
+    async function searchCompanies() {
+        const name = document.getElementById('company_name').value;
+        const searchType = document.getElementById('search_type').value; // Get the selected search type
+
+        try {
+            const response = await fetch(`/baro_companyInfo2?name=${encodeURIComponent(name)}&search_type=${encodeURIComponent(searchType)}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+
+    document.getElementById('search_button').addEventListener('click', searchCompanies);
+
+</script>
+{% endblock %}
+{% include 'footer.html' %}
