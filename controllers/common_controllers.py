@@ -2,11 +2,15 @@ from email.mime.text import MIMEText
 import os
 import shutil
 import smtplib
+import logging
+import sys
 import time
+from typing import Optional
 from dotenv import load_dotenv
 from fastapi import (
     APIRouter,
     BackgroundTasks,
+    Body,
     File,
     Query,
     Request,
@@ -19,6 +23,7 @@ from fastapi import (
 )
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, HTMLResponse
+from pydantic import BaseModel
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from models.common_models import Contact, Post, User, Notice, Qna, Reply
@@ -34,6 +39,10 @@ from schemas.common_schemas import (
 from services_def.email_utils import send_email
 from services_def.connection_manager import manager
 import urllib.parse
+
+# logger = logging.getLogger('uvicorn.error')
+# logger.setLevel(logging.DEBUG)
+
 
 load_dotenv()  # .env 파일 로드
 
@@ -570,3 +579,22 @@ async def read_contact(request: Request):
         "contact/contact4.html", {"request": request, "username": username}
     )
 
+# 비밀번호 가져오기
+CHAT_PASSWORD = os.getenv("CHAT_PASSWORD")
+
+
+
+class PasswordVerification(BaseModel):
+    password: str
+
+@router.post("/verify_password2")
+async def verify_password2(data: PasswordVerification):
+    correct_password = CHAT_PASSWORD  
+    
+    logging.info(f"Received password verification request. Password: {data.password}")
+    # logger = logging.getLogger(data.password)
+    # logger.debug(data.password)
+    
+    result = data.password == correct_password
+    logging.info(f"Verifying password. Result: {result}")
+    return {"success": result}
