@@ -41,7 +41,7 @@ async def read_companyList(request: Request, search_value: str = "", db: Session
     recent_view_list = get_company_info_list(db, recent_jurir_no) if recent_jurir_no else []
     
     return templates.TemplateResponse(
-        "baro_service/baro_companyList.html", 
+        "baro_service/baro_companyList2.html", 
         {
             "request": request,
             "search_company_list": search_company_list,
