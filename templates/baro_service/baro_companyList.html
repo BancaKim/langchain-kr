@@ -53,6 +53,18 @@ li {
     border: 1px solid black; /* 검은색 실선 테두리 추가 */
     padding: 5px; /* 테두리와 내용 간 간격 */
 }
+
+table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid black;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
 </style>
 
 </head>
@@ -69,30 +81,43 @@ li {
 
     {% if search_company_list %}
     <h1>검색결과</h1>
-    <ul>
-        {% for company in search_company_list %}
-        <li>
-            <a href="/baro_companyInfo?jurir_no={{ company.jurir_no }}">{{ company.corp_name }}</a>    
-            <span>Corp Code: {{ company.corp_code }}</span>
-            <span>Corp Name: {{ company.corp_name }}</span>
-            <span>Corp Name (Eng): {{ company.corp_name_eng }}</span>
-            <span>Stock Name: {{ company.stock_name }}</span>
-            <span>Stock Code: {{ company.stock_code }}</span>
-            <!-- <span>CEO Name: {{ company.ceo_nm }}</span>
-            <span>Corp Class: {{ company.corp_cls }}</span>
-            <span>Juridical Number: {{ company.jurir_no }}</span>
-            <span>Business Registration Number: {{ company.bizr_no }}</span>
-            <span>Address: {{ company.adres }}</span>
-            <span>Homepage URL: {{ company.hm_url }}</span>
-            <span>IR URL: {{ company.ir_url }}</span>
-            <span>Phone Number: {{ company.phn_no }}</span>
-            <span>Fax Number: {{ company.fax_no }}</span>
-            <span>Industry Code: {{ company.induty_code }}</span>
-            <span>Establishment Date: {{ company.est_dt }}</span>
-            <span>Accounting Month: {{ company.acc_mt }}</span> -->
-        </li>
-        {% endfor %}
-    </ul>
+    <table>
+        <thead>
+            <tr>
+                <th>법인명</th>
+                <th>대표자명</th>
+                <th>상장구분</th>
+                <th>법인번호</th>
+                <th>사업자번호</th>
+                <th>총자산</th>
+                <th>부채</th>
+                <th>자기자본</th>
+                <th>매출</th>
+                <th>영업이익</th>
+                <th>순이익</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for company in search_company_list %}
+            <tr>
+                <td>{{ company.corp_name }}</td>
+                <td>{{ company.ceo_nm }}</td>
+                <td>{{ company.corp_cls }}</td>
+                <td>{{ company.company_jurir_no }}</td>
+                <td>{{ company.bizr_no }}</td>
+                <td>{{ company.totalAsset2023 }}억원</td>
+                <td>{{ company.totalDebt2023 }}억원</td>
+                <td>{{ company.totalEquity2023 }}억원</td>
+                <td>{{ company.revenue2023 }}억원</td>
+                <td>{{ company.operatingIncome2023 }}억원</td>
+                <td>{{ company.earningBeforeTax2023 }}억원</td>
+                <td>
+                    <a href="/baro_companyInfo?jurir_no={{ company.company_jurir_no }}">Details</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 {% else %}
 
 {% endif %}
@@ -100,66 +125,89 @@ li {
 
     <h1>나의 업체현황(임시)</h1>
     {% if my_company_list %}
-        <ul>
+    <table>
+        <thead>
+            <tr>
+                <th>법인명</th>
+                <th>대표자명</th>
+                <th>상장구분</th>
+                <th>법인번호</th>
+                <th>사업자번호</th>
+                <th>총자산</th>
+                <th>부채</th>
+                <th>자기자본</th>
+                <th>매출</th>
+                <th>영업이익</th>
+                <th>순이익</th>
+            </tr>
+        </thead>
+        <tbody>
             {% for company in my_company_list %}
-            <li>
-                <a href="/baro_companyInfo?jurir_no={{ company.jurir_no }}">{{ company.corp_name }}</a>    
-                    <span>Corp Code: {{ company.corp_code }}</span>
-                    <span>Corp Name: {{ company.corp_name }}</span>
-                    <span>Corp Name (Eng): {{ company.corp_name_eng }}</span>
-                    <span>Stock Name: {{ company.stock_name }}</span>
-                    <span>Stock Code: {{ company.stock_code }} 이하 주석처리</span>
-                    <!-- <span>CEO Name: {{ company.ceo_nm }}</span>
-                    <span>Corp Class: {{ company.corp_cls }}</span>
-                    <span>Juridical Number: {{ company.jurir_no }}</span>
-                    <span>Business Registration Number: {{ company.bizr_no }}</span>
-                    <span>Address: {{ company.adres }}</span>
-                    <span>Homepage URL: {{ company.hm_url }}</span>
-                    <span>IR URL: {{ company.ir_url }}</span>
-                    <span>Phone Number: {{ company.phn_no }}</span>
-                    <span>Fax Number: {{ company.fax_no }}</span>
-                    <span>Industry Code: {{ company.induty_code }}</span>
-                    <span>Estabspanshment Date: {{ company.est_dt }}</span>
-                    <span>Accounting Month: {{ company.acc_mt }}</span> -->
-         
-            </li>
+            <tr>
+                <td>{{ company.corp_name }}</td>
+                <td>{{ company.ceo_nm }}</td>
+                <td>{{ company.corp_cls }}</td>
+                <td>{{ company.company_jurir_no }}</td>
+                <td>{{ company.bizr_no }}</td>
+                <td>{{ company.totalAsset2023 }}억원</td>
+                <td>{{ company.totalDebt2023 }}억원</td>
+                <td>{{ company.totalEquity2023 }}억원</td>
+                <td>{{ company.revenue2023 }}억원</td>
+                <td>{{ company.operatingIncome2023 }}억원</td>
+                <td>{{ company.earningBeforeTax2023 }}억원</td>
+                <td>
+                    <a href="/baro_companyInfo?jurir_no={{ company.company_jurir_no }}">Details</a>
+                </td>
+            </tr>
             {% endfor %}
-        </ul>
-    {% else %}
-        <p>No companies found.</p>
-    {% endif %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No companies found.</p>
+{% endif %}
 
     <h1>최근 조회한 업체 현황(임시)</h1>
-
     {% if recent_view_list %}
-        <ul>
+    <table>
+        <thead>
+            <tr>
+                <th>법인명</th>
+                <th>대표자명</th>
+                <th>상장구분</th>
+                <th>법인번호</th>
+                <th>사업자번호</th>
+                <th>총자산</th>
+                <th>부채</th>
+                <th>자기자본</th>
+                <th>매출</th>
+                <th>영업이익</th>
+                <th>순이익</th>
+            </tr>
+        </thead>
+        <tbody>
             {% for company in recent_view_list %}
-            <li>
-                <a href="/baro_companyInfo?jurir_no={{ company.jurir_no }}">{{ company.corp_name }}</a>    
-                    <span>Corp Code: {{ company.corp_code }}</span>
-                    <span>Corp Name: {{ company.corp_name }}</span>
-                    <span>Corp Name (Eng): {{ company.corp_name_eng }}</span>
-                    <span>Stock Name: {{ company.stock_name }}</span>
-                    <span>Stock Code: {{ company.stock_code }} 이하 주석처리</span>
-                    <!-- <span>CEO Name: {{ company.ceo_nm }}</span>
-                    <span>Corp Class: {{ company.corp_cls }}</span>
-                    <span>Juridical Number: {{ company.jurir_no }}</span>
-                    <span>Business Registration Number: {{ company.bizr_no }}</span>
-                    <span>Address: {{ company.adres }}</span>
-                    <span>Homepage URL: {{ company.hm_url }}</span>
-                    <span>IR URL: {{ company.ir_url }}</span>
-                    <span>Phone Number: {{ company.phn_no }}</span>
-                    <span>Fax Number: {{ company.fax_no }}</span>
-                    <span>Industry Code: {{ company.induty_code }}</span>
-                    <span>Estabspanshment Date: {{ company.est_dt }}</span>
-                    <span>Accounting Month: {{ company.acc_mt }}</span> -->
-         
-            </li>
+            <tr>
+                <td>{{ company.corp_name }}</td>
+                <td>{{ company.ceo_nm }}</td>
+                <td>{{ company.corp_cls }}</td>
+                <td>{{ company.company_jurir_no }}</td>
+                <td>{{ company.bizr_no }}</td>
+                <td>{{ company.totalAsset2023 }}억원</td>
+                <td>{{ company.totalDebt2023 }}억원</td>
+                <td>{{ company.totalEquity2023 }}억원</td>
+                <td>{{ company.revenue2023 }}억원</td>
+                <td>{{ company.operatingIncome2023 }}억원</td>
+                <td>{{ company.earningBeforeTax2023 }}억원</td>
+                <td>
+                    <a href="/baro_companyInfo?jurir_no={{ company.company_jurir_no }}">Details</a>
+                </td>
+            </tr>
             {% endfor %}
-        </ul>
-    {% else %}
-        <p>No companies found.</p>
-    {% endif %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No companies found.</p>
+{% endif %}
 </body>
 </html>
 
