@@ -24,6 +24,54 @@ class CompanyInfo(Base):
     est_dt = Column(String(8))
     acc_mt = Column(String(2))
     
+class StockData(Base):
+    __tablename__ = 'stock_data'
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    ticker = Column(String(10))
+    corp_code = Column(String(10))
+    corp_name = Column(String(255))
+    listing_date = Column(Date)
+    latest_date = Column(Date)
+    latest_price = Column(Float)
+    cagr_since_listing = Column(Float)
+    vol_since_listing = Column(Float)
+    cagr_1y = Column(Float)
+    vol_1y = Column(Float)
+    cagr_3y = Column(Float)
+    vol_3y = Column(Float)
+    cagr_5y = Column(Float)
+    vol_5y = Column(Float)
+    stock_count = Column(Integer)
+    per_value = Column(String(10))
+    pbr_value = Column(String(10))
+    market_capitalization = Column(Float)
+    timestamp = Column(TIMESTAMP)
+    reference = Column(String(255))
+    
+class FS2022(Base):
+    __tablename__ = 'FS2022'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    baseDate = Column(Date)
+    bizYear = Column(String(50))
+    jurir_no = Column(String(50))
+    currency = Column(String(10))
+    fsCode = Column(String(10))
+    fsName = Column(String(100))
+    totalAsset2022 = Column(BigInteger)
+    totalDebt2022 = Column(BigInteger)
+    totalEquity2022 = Column(BigInteger)
+    capital2022 = Column(BigInteger)
+    revenue2022 = Column(BigInteger)
+    operatingIncome2022 = Column(BigInteger)
+    earningBeforeTax2022 = Column(BigInteger)
+    netIncome2022 = Column(BigInteger)
+    debtRatio2022 = Column(Numeric(10, 2))
+    margin2022 = Column(Numeric(20, 3))
+    turnover2022 = Column(Numeric(20, 3))
+    leverage2022 = Column(Numeric(20, 3))
+    created_at = Column(TIMESTAMP)
     
 class FS2023(Base):
     __tablename__ = 'FS2023'
@@ -48,9 +96,9 @@ class FS2023(Base):
     turnover2023 = Column(Numeric(20, 3))
     leverage2023 = Column(Numeric(20, 3))
     created_at = Column(TIMESTAMP)
-    
-class FS2022(Base):
-    __tablename__ = 'FS2022'
+
+class FS2021(Base):
+    __tablename__ = 'FS2021'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     baseDate = Column(Date)
@@ -59,16 +107,40 @@ class FS2022(Base):
     currency = Column(String(10))
     fsCode = Column(String(10))
     fsName = Column(String(100))
-    totalAsset2022 = Column(BigInteger)
-    totalDebt2022 = Column(BigInteger)
-    totalEquity2022 = Column(BigInteger)
-    capital2022 = Column(BigInteger)
-    revenue2022 = Column(BigInteger)
-    operatingIncome2022 = Column(BigInteger)
-    earningBeforeTax2022 = Column(BigInteger)
-    netIncome2022 = Column(BigInteger)
-    debtRatio2022 = Column(Numeric(10, 2))
-    margin2022 = Column(Numeric(20, 3))
-    turnover2022 = Column(Numeric(20, 3))
-    leverage2022 = Column(Numeric(20, 3))
+    totalAsset2021 = Column(BigInteger)
+    totalDebt2021 = Column(BigInteger)
+    totalEquity2021 = Column(BigInteger)
+    capital2021 = Column(BigInteger)
+    revenue2021 = Column(BigInteger)
+    operatingIncome2021 = Column(BigInteger)
+    earningBeforeTax2021 = Column(BigInteger)
+    netIncome2021 = Column(BigInteger)
+    debtRatio2021 = Column(Numeric(10, 2))
+    margin2021 = Column(Numeric(20, 3))
+    turnover2021 = Column(Numeric(20, 3))
+    leverage2021 = Column(Numeric(20, 3))
+    created_at = Column(TIMESTAMP)
+    
+class FS2020(Base):
+    __tablename__ = 'FS2020'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    baseDate = Column(Date)
+    bizYear = Column(String(50))
+    jurir_no = Column(String(50))
+    currency = Column(String(10))
+    fsCode = Column(String(10))
+    fsName = Column(String(100))
+    totalAsset2020 = Column(BigInteger)
+    totalDebt2020 = Column(BigInteger)
+    totalEquity2020 = Column(BigInteger)
+    capital2020 = Column(BigInteger)
+    revenue2020 = Column(BigInteger)
+    operatingIncome2020 = Column(BigInteger)
+    earningBeforeTax2020 = Column(BigInteger)
+    netIncome2020 = Column(BigInteger)
+    debtRatio2020 = Column(Numeric(10, 2))
+    margin2020 = Column(Numeric(20, 3))
+    turnover2020 = Column(Numeric(20, 3))
+    leverage2020 = Column(Numeric(20, 3))
     created_at = Column(TIMESTAMP)
