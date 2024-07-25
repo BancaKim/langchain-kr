@@ -1,20 +1,10 @@
 
 from typing import List
 from database import SessionLocal
+from sqlalchemy import func, cast, Integer
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from models.baro_models import CompanyInfo, FS2023, FS2022, FS2021, FS2020, StockData
-
-
-# CRUD 함수 (이전에 정의한 대로 사용)
-# def search_company(db: Session, keyword: str) -> List[str]:
-#     keyword_pattern = f"%{keyword}%"
-#     results = db.query(CompanyInfo.jurir_no).filter(
-#         (CompanyInfo.corp_name.like(keyword_pattern)) |
-#         (CompanyInfo.jurir_no == keyword) |
-#         (CompanyInfo.bizr_no == keyword)
-#     ).all()
-#     return [result.jurir_no for result in results]
 
 def search_company(db: Session, keyword: str) -> List[str]:
 
@@ -32,13 +22,52 @@ def search_company(db: Session, keyword: str) -> List[str]:
     print(f"Found jurir_no: {jurir_nos}")  # 터미널에 출력
     return jurir_nos
 
-# def search_company(db: Session, keyword: str):
-#     keyword_pattern = f"%{keyword}%"
-#     return db.query(CompanyInfo.jurir_no).filter(
-#         (CompanyInfo.corp_name.like(keyword_pattern)) |
-#         (CompanyInfo.jurir_no == keyword) |
-#         (CompanyInfo.bizr_no == keyword)
-#     ).all()
+def get_company_infoFS_list(db: Session, jurir_no_list: List[str]):
+    query = db.query(
+        CompanyInfo.corp_code,
+        CompanyInfo.corp_name,
+        CompanyInfo.corp_name_eng,
+        CompanyInfo.stock_name,
+        CompanyInfo.stock_code,
+        CompanyInfo.ceo_nm,
+        CompanyInfo.corp_cls,
+        CompanyInfo.jurir_no.label("company_jurir_no"),
+        CompanyInfo.bizr_no,
+        CompanyInfo.adres,
+        CompanyInfo.hm_url,
+        CompanyInfo.ir_url,
+        CompanyInfo.phn_no,
+        CompanyInfo.fax_no,
+        CompanyInfo.induty_code,
+        CompanyInfo.est_dt,
+        CompanyInfo.acc_mt,
+        FS2023.id,
+        FS2023.baseDate,
+        FS2023.bizYear,
+        FS2023.currency,
+        FS2023.fsCode,
+        FS2023.fsName,
+        cast(FS2023.totalAsset2023 / 100000000, Integer).label('totalAsset2023'),
+        cast(FS2023.totalDebt2023 / 100000000, Integer).label('totalDebt2023'),
+        cast(FS2023.totalEquity2023 / 100000000, Integer).label('totalEquity2023'),
+        cast(FS2023.capital2023 / 100000000, Integer).label('capital2023'),
+        cast(FS2023.revenue2023 / 100000000, Integer).label('revenue2023'),
+        cast(FS2023.operatingIncome2023 / 100000000, Integer).label('operatingIncome2023'),
+        cast(FS2023.earningBeforeTax2023 / 100000000, Integer).label('earningBeforeTax2023'),
+        cast(FS2023.netIncome2023 / 100000000, Integer).label('netIncome2023'),
+        FS2023.debtRatio2023,
+        FS2023.margin2023,
+        FS2023.turnover2023,
+        FS2023.leverage2023,
+        FS2023.created_at
+    ).join(FS2023, CompanyInfo.jurir_no == FS2023.jurir_no).filter(CompanyInfo.jurir_no.in_(jurir_no_list)).all()
+    
+    return query
+
+def get_company_info_list(db: Session, jurir_no_list: List[str]) -> List[CompanyInfo]:
+    return db.query(CompanyInfo).filter(CompanyInfo.jurir_no.in_(jurir_no_list)).all()
+
+
 
 def get_company_info_list(db: Session, jurir_no_list: List[str]) -> List[CompanyInfo]:
     return db.query(CompanyInfo).filter(CompanyInfo.jurir_no.in_(jurir_no_list)).all()
@@ -48,6 +77,9 @@ def get_company_info(db: Session, jurir_no: str):
 
 def get_Stock_data(db: Session, corp_code: str):
     return db.query(StockData).filter(StockData.corp_code == corp_code).first()
+
+def get_FS2023_list(db: Session, jurir_no_list: List[str]) -> List[FS2023]:
+    return db.query(FS2023).filter(FS2023.jurir_no.in_(jurir_no_list)).all()
 
 def get_FS2023(db: Session, jurir_no: str):
     return db.query(FS2023).filter(FS2023.jurir_no == jurir_no).first()
