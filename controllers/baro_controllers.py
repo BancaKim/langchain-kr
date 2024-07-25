@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy import distinct, text, func
 from schemas.baro_schemas import CompanyInfoSchema
 from services_def.baro_service import get_autocomplete_suggestions, get_corp_info_code, get_corp_info_jurir_no, get_corp_info_name, get_company_info
-from services_def.baro_service import get_FS2023, get_FS2022, get_FS2021, get_FS2020, get_Stock_data, get_company_info_list, search_company
+from services_def.baro_service import get_FS2023, get_FS2022, get_FS2021, get_FS2020, get_Stock_data, get_company_info_list, search_company, get_company_infoFS_list
 import logging
 from typing import List, Optional
 from models.baro_models import CompanyInfo
@@ -36,9 +36,12 @@ async def read_companyList(request: Request, search_value: str = "", db: Session
     jurir_no = search_company(db, search_value) if search_value else []
     my_jurir_no = ["1101110017990", "1101110019219", "1345110004412"]
     recent_jurir_no = ["1101110032154", "1201110018368", "1101110162191"]
-    search_company_list = get_company_info_list(db, jurir_no) if jurir_no else []
-    my_company_list = get_company_info_list(db, my_jurir_no) if my_jurir_no else []
-    recent_view_list = get_company_info_list(db, recent_jurir_no) if recent_jurir_no else []
+    
+    search_company_list = get_company_infoFS_list(db, jurir_no) if jurir_no else []
+    
+    my_company_list = get_company_infoFS_list(db, my_jurir_no) if my_jurir_no else []
+    
+    recent_view_list = get_company_infoFS_list(db, recent_jurir_no) if recent_jurir_no else []
     
     return templates.TemplateResponse(
         "baro_service/baro_companyList2.html", 
@@ -50,22 +53,6 @@ async def read_companyList(request: Request, search_value: str = "", db: Session
         }
     )
 
-
-# # 바로 등급 검색 페이지
-# @baro.get("/baro_companyList")
-# async def read_companyList(request: Request, jurir_no: List[str] = None, db: Session = Depends(get_db)):
-    
-#     jurir_no = ["1101110032154", "1201110018368", "1101110162191", "1101110017990", "1101110019219", "1345110004412"]
-#     if jurir_no:
-#         company_list = get_company_info_list(db, jurir_no)
-#     else:
-#         company_list = []
-        
-#     return templates.TemplateResponse("baro_service/baro_companyList.html", {"request": request, "company_list": company_list})
-
-
-
-## 버튼 클릭하면, 회사 상세정보 이동
 @baro.get("/baro_companyInfo", response_class=HTMLResponse)
 async def read_company_info(request: Request, jurir_no: str = Query(...), db: Session = Depends(get_db)):
     company_info = get_company_info(db, jurir_no)

@@ -1,9 +1,8 @@
 {% include 'header.html' %}
 
-
-
 {% block head %}
 <link rel="stylesheet" href="/static/css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
     .chat-container {
         margin-top: 50px;
@@ -63,8 +62,15 @@
 {% block content %}
 {% if username is none %}
 <script>
-    alert("로그인이 필요합니다.");
-    window.location.href = "/login"; // 로그인 페이지로 리디렉션
+    Swal.fire({
+        title: '로그인이 필요합니다.',
+        icon: 'warning',
+        confirmButtonText: '확인'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = "/login"; // 로그인 페이지로 리디렉션
+        }
+    });
 </script>
 {% else %}
 <div class="chat-container">

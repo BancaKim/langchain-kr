@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Company Info</title>
+<style>
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body, html {
+    height: 100%;
+    font-family: Arial, sans-serif;
+}
+
+#board-search {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  
+}
+
+.container {
+    width: 100%;
+    max-width: 600px; /* 원하는 최대 너비 설정 */
+    padding: 20px;
+}
+
+#search-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+#search_value {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 10px;
+    font-size: 1.2em;
+}
+
+.btn {
+    padding: 15px 20px;
+    font-size: 1.2em;
+    cursor: pointer;
+}
+li {
+    margin-right: 20px; /* 항목 간 간격 조절 */
+    white-space: nowrap;
+    border: 1px solid black; /* 검은색 실선 테두리 추가 */
+    padding: 5px; /* 테두리와 내용 간 간격 */
+}
+
+table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid black;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+</style>
+
+</head>
+<body>
+
+    <div id="board-search">
+        <div class="container">
+            <form id="search-form" action="/baro_companyList" method="GET">
+                <input type="search" name="search_value" id="search_value" placeholder="검색어 입력" />
+                <button type="submit" class="btn btn-dark">조회</button>
+            </form>
+        </div>
+    </div>
+
+    {% if search_company_list %}
+    <h1>검색결과</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>법인명</th>
+                <th>대표자명</th>
+                <th>상장구분</th>
+                <th>법인번호</th>
+                <th>사업자번호</th>
+                <th>총자산</th>
+                <th>부채</th>
+                <th>자기자본</th>
+                <th>매출</th>
+                <th>영업이익</th>
+                <th>순이익</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for company in search_company_list %}
+            <tr>
+                <td>{{ company.corp_name }}</td>
+                <td>{{ company.ceo_nm }}</td>
+                <td>{{ company.corp_cls }}</td>
+                <td>{{ company.company_jurir_no }}</td>
+                <td>{{ company.bizr_no }}</td>
+                <td>{{ company.totalAsset2023 }}억원</td>
+                <td>{{ company.totalDebt2023 }}억원</td>
+                <td>{{ company.totalEquity2023 }}억원</td>
+                <td>{{ company.revenue2023 }}억원</td>
+                <td>{{ company.operatingIncome2023 }}억원</td>
+                <td>{{ company.earningBeforeTax2023 }}억원</td>
+                <td>
+                    <a href="/baro_companyInfo?jurir_no={{ company.company_jurir_no }}">Details</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+
+{% endif %}
+
+
+    <h1>나의 업체현황(임시)</h1>
+    {% if my_company_list %}
+    <table>
+        <thead>
+            <tr>
+                <th>법인명</th>
+                <th>대표자명</th>
+                <th>상장구분</th>
+                <th>법인번호</th>
+                <th>사업자번호</th>
+                <th>총자산</th>
+                <th>부채</th>
+                <th>자기자본</th>
+                <th>매출</th>
+                <th>영업이익</th>
+                <th>순이익</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for company in my_company_list %}
+            <tr>
+                <td>{{ company.corp_name }}</td>
+                <td>{{ company.ceo_nm }}</td>
+                <td>{{ company.corp_cls }}</td>
+                <td>{{ company.company_jurir_no }}</td>
+                <td>{{ company.bizr_no }}</td>
+                <td>{{ company.totalAsset2023 }}억원</td>
+                <td>{{ company.totalDebt2023 }}억원</td>
+                <td>{{ company.totalEquity2023 }}억원</td>
+                <td>{{ company.revenue2023 }}억원</td>
+                <td>{{ company.operatingIncome2023 }}억원</td>
+                <td>{{ company.earningBeforeTax2023 }}억원</td>
+                <td>
+                    <a href="/baro_companyInfo?jurir_no={{ company.company_jurir_no }}">Details</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No companies found.</p>
+{% endif %}
+
+    <h1>최근 조회한 업체 현황(임시)</h1>
+    {% if recent_view_list %}
+    <table>
+        <thead>
+            <tr>
+                <th>법인명</th>
+                <th>대표자명</th>
+                <th>상장구분</th>
+                <th>법인번호</th>
+                <th>사업자번호</th>
+                <th>총자산</th>
+                <th>부채</th>
+                <th>자기자본</th>
+                <th>매출</th>
+                <th>영업이익</th>
+                <th>순이익</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for company in recent_view_list %}
+            <tr>
+                <td>{{ company.corp_name }}</td>
+                <td>{{ company.ceo_nm }}</td>
+                <td>{{ company.corp_cls }}</td>
+                <td>{{ company.company_jurir_no }}</td>
+                <td>{{ company.bizr_no }}</td>
+                <td>{{ company.totalAsset2023 }}억원</td>
+                <td>{{ company.totalDebt2023 }}억원</td>
+                <td>{{ company.totalEquity2023 }}억원</td>
+                <td>{{ company.revenue2023 }}억원</td>
+                <td>{{ company.operatingIncome2023 }}억원</td>
+                <td>{{ company.earningBeforeTax2023 }}억원</td>
+                <td>
+                    <a href="/baro_companyInfo?jurir_no={{ company.company_jurir_no }}">Details</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No companies found.</p>
+{% endif %}
+</body>
+</html>
+
+</body>
+</html>
