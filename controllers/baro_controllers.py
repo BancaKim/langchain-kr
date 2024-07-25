@@ -66,12 +66,13 @@ async def read_company_info(request: Request, jurir_no: str = Query(...), db: Se
     # logger.info(f"company_info.corp_code: {company_info.corp_code}")
     return templates.TemplateResponse("baro_service/baro_companyInfo.html", {"request": request, "company_info": company_info, "fs2023": FS2023, "fs2022": FS2022, "fs2021": FS2021, "fs2020": FS2020, "stock_data" : stock_data})
 
-@baro.get("/baro_companyInfo2")
+
+@baro.post("/baro_companyInfo2")
 async def read_company_info(
     request: Request,
     db: Session = Depends(get_db),
-    name: Optional[str] = Query(None),
-    search_type: Optional[str] = Query(None)
+    name: Optional[str] = Form(None),
+    search_type: Optional[str] = Form(None)
 ):
     try:
         query = db.query(CompanyInfo)
@@ -127,7 +128,7 @@ async def read_company_info(
         print("An error occurred:", str(e))
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
-
+    
 @baro.get("/test1234")
 async def read_join(request: Request):
     return templates.TemplateResponse("baro_service/test.html", {"request": request})
