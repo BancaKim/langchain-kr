@@ -492,6 +492,11 @@
   padding-bottom: 0;
 }
 
+.uui-padding-vertical-xhuge1 {
+  padding-top: 5rem;
+  padding-bottom: 0;
+}
+
 .uui-container-small {
   width: 100%;
   max-width: 48rem;
@@ -1013,8 +1018,9 @@
   padding-right: 2rem;
 }
 
-.image-3 {
+.spoonlogo {
   position: relative;
+  width: 73.39px !important;
 }
 
 @media screen and (min-width: 1920px) {

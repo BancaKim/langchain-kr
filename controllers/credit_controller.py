@@ -1,19 +1,16 @@
 import asyncio
 from math import ceil
-from typing import Optional
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Form
 from fastapi.responses import JSONResponse, StreamingResponse
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 from fastapi.templating import Jinja2Templates
-import urllib3
+from database import SessionLocal
 from models.baro_models import CompanyInfo
 from models.credit_models import ReportContent
-from schemas.credit_schemas import ReportContentSchema
-from services_def.credit_companyinfo import get_corp_info_name, get_corp_info_code, get_autocomplete_suggestions
+from services_def.credit_companyinfo import get_autocomplete_suggestions
 from services_def.credit_review_create import summarize_report
-import requests
-import pandas as pd
-import os
 from dotenv import load_dotenv
 from services_def.dependencies import get_db
 
@@ -47,7 +44,7 @@ async def create_review(db: Session = Depends(get_db)):
 async def get_companies(
     db: Session = Depends(get_db),
     page: int = Query(1, ge=1),
-    per_page: int = Query(20, ge=1, le=100),
+    per_page: int = Query(10, ge=1, le=100),
 ):
     total = db.query(CompanyInfo).count()
     companies = (
@@ -67,25 +64,40 @@ async def get_companies(
 async def search_companies(
     db: Session = Depends(get_db),
     name: Optional[str] = Query(None),
+    search_type: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
-    per_page: int = Query(20, ge=1, le=100),
+    per_page: int = Query(10, ge=1, le=100),
 ):
+    # Determine the column to filter on based on search_type
+    if search_type == "company_name":
+        column = "corp_name"
+    elif search_type == "company_code":
+        column = "corp_code"
+    else:
+        raise ValueError("Invalid search type")
+
+    # Build the query
     query = db.query(ReportContent)
+    
     if name:
-        query = query.filter(ReportContent.corp_name.ilike(f"%{name}%"))
+        if search_type == "company_name":
+            query = query.filter(ReportContent.corp_name.ilike(f"%{name}%"))
+        elif search_type == "company_code":
+            query = query.filter(ReportContent.corp_code.ilike(f"%{name}%"))
 
     total = query.count()
     total_pages = ceil(total / per_page)
+    print(total_pages)
+    # Apply pagination
     reportContents = query.offset((page - 1) * per_page).limit(per_page).all()
 
     return {
-        "reportContents": reportContents,
+        "reportContents": [content.to_dict() for content in reportContents],  # Ensure you have a method to convert SQLAlchemy objects to dict
         "page": page,
         "per_page": per_page,
         "total": total,
         "total_pages": total_pages,
     }
-
 
 @credit.get("/creditReview/")
 async def read_credit(
@@ -93,7 +105,7 @@ async def read_credit(
     db: Session = Depends(get_db),
     name: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
-    per_page: int = Query(20, ge=1, le=100),
+    per_page: int = Query(10, ge=1, le=100),
 ):
     query = db.query(ReportContent)
     if name:
@@ -101,6 +113,7 @@ async def read_credit(
 
     total = query.count()
     total_pages = ceil(total / per_page)
+    print(total_pages)
     reportContents = query.offset((page - 1) * per_page).limit(per_page).all()
 
     return templates.TemplateResponse(
@@ -149,26 +162,28 @@ async def stream_content(rcept_no: str, db: Session = Depends(get_db)):
     return StreamingResponse(content_generator(), media_type="text/html")
 
 
-@credit.get("/credit_companyinfo")
-async def search_corp(search_type: str, search_value: str, request: Request):
-    
-    if search_type == "corp_code":
-        selectedcompany = get_corp_info_code(search_value)
-    elif search_type == "corp_name":
-        selectedcompany = get_corp_info_name(search_value)
-    else:
-        return JSONResponse(content={"error": "Invalid search type"}, status_code=400)
-
-    print(type(selectedcompany))
-    print(selectedcompany.corp_code)
-    
-    if selectedcompany:
-        company_info = ReportContentSchema.from_orm(selectedcompany)
-        print("A:" + company_info.json())
-        return JSONResponse(content=company_info.dict())
-
-
-@credit.get("/autocomplete")
-async def autocomplete(search_type: str, query: str):
-    suggestions = get_autocomplete_suggestions(search_type, query)
-    return JSONResponse(content=suggestions)
+@credit.get("/autocomplete", response_model=List[str])
+async def autocomplete(query: str, search_type: str = Query("company_name", enum=["company_name", "company_code"])):
+    db = SessionLocal()
+    print(search_type)
+    try:
+        # Determine the column based on search_type
+        if search_type == "company_name":
+            column = "corp_name"
+            print(column)
+        elif search_type == "company_code":
+            column = "corp_code"
+            print(column)
+        else:
+            raise ValueError("Invalid search type")
+   
+        sql_query = text(f"""
+            SELECT {column}
+            FROM report_content
+            WHERE {column} LIKE :query
+            LIMIT 5
+        """)
+        results = db.execute(sql_query, {'query': f'{query}%'}).fetchall()
+        return [row[0] for row in results]  # Return list of results
+    finally:
+        db.close()

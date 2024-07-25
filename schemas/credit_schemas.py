@@ -13,3 +13,6 @@ class ReportContentSchema(BaseModel):
 
     class Config:
         from_attributes = True
+
+class AutocompleteResult(BaseModel):
+    result: str

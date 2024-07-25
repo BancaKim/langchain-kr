@@ -1,6 +1,4 @@
-{% extends "base.html" %}
-
-{% block title %}AI심사보고서{% endblock %}
+{% include 'header.html' %}
 
 {% block head %}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -54,7 +52,6 @@
         word-break: break-word;
     }
 </style>
-<link rel="stylesheet" href="/static/css/review_detail.css">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
@@ -65,28 +62,64 @@
 
 
 {% block content %}
+<div class="bg-purple-100">
+    <div class="rounded-lg p-8 w-9/12 mx-auto">
 
-<br><br>
-<span class="block text-right text-xl mb-2">AI심사보고서 > 보고서 현황</span>
-<br><br>
-<div class="text-center mb-4">
-    <h1 class="text-5xl font-bold">심사보고서 종합의견</h1>
+        <span class="block text-left text-xl mb-2">
+            <a href="/" class="mr-2">홈</a> &nbsp; | &nbsp;
+            <a href="/credit/creditReview" class="ml-2">AI심사보고서</a> &nbsp; | &nbsp;
+            <span>종합의견</span>
+        </span>
+        <br><br><br><br>
+
+
+        <div class="text-center mb-4">
+            <h1 class="text-5xl font-bold">심사보고서 종합의견</h1>
+            <h2></h2>
+        </div>
+        <br><br><br><br>
+    </div>
 </div>
-
 <br>
 
-<!--
-<p><strong>순서:</strong> {{reportContent.report_num}}</p>
-<p><strong>회사코드:</strong> {{reportContent.corp_code}}</p>
-<p><strong>회사명:</strong> {{reportContent.corp_name}}</p>
-<p><strong>보고서명:</strong> {{reportContent.report_nm}}</p>
-<p><strong>보고서번호:</strong> {{reportContent.rcept_no}}</p>
--->
+<div class="container mx-auto my-8 px-6">
+    <div class="flex flex-col md:flex-row gap-12">
+        <!-- 기업정보 영역 -->
+        <div class="flex-1 bg-white rounded-lg shadow-lg">
+            <div class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg">
+                <h2 class="text-xl font-semibold text-gray-800">기업정보</h2>
+            </div>
+            <div class="p-6">
+                <p class="mb-2 text-gray-700"><strong>순서:</strong> {{reportContent.report_num}}</p>
+                <p class="mb-2 text-gray-700"><strong>회사코드:</strong> {{reportContent.corp_code}}</p>
+                <p class="mb-2 text-gray-700"><strong>회사명:</strong> {{reportContent.corp_name}}</p>
+                <p class="mb-2 text-gray-700"><strong>보고서명:</strong> {{reportContent.report_nm}}</p>
+                <p class="mb-2 text-gray-700"><strong>보고서번호:</strong> {{reportContent.rcept_no}}</p>
+            </div>
+        </div>
 
-<div id="streamContent" 
-    class="max-w-4xl mx-auto my-8 p-6 bg-white rounded-lg shadow-md dark:bg-gray-800 dark:text-gray-200">
+        <!-- 심사보고서 영역 -->
+        <div class="flex-1 bg-white rounded-lg shadow-lg">
+            <div class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg">
+                <h2 class="text-xl font-semibold text-gray-800">종합의견</h2>
+            </div>
+            <div id="streamContent" class="p-6">
+            </div>
+        </div>
+    </div>
 </div>
 
+<style>
+    .container {
+        max-width: 80%;
+    }
+
+    .min-h-600 {
+        min-height: 600px;
+    }
+</style>
+
+<br><br>
 
 <div class="btn-group my-4 flex justify-center">
     <button onclick="history.back()"
@@ -94,7 +127,8 @@
         style="background-color: #7F56D9;">
         뒤로가기
     </button>
-    &nbsp;    &nbsp;
+
+    &nbsp; &nbsp; &nbsp; &nbsp;
 
     <button onclick="history.back()"
         class="px-4 py-2 text-white rounded-md hover:bg-[#6a46b0] focus:ring-4 focus:ring-[#9a7ce0] focus:outline-none"
@@ -104,4 +138,8 @@
 
 </div>
 
+<br><br><br><br>
+
 {% endblock %}
+
+{% include 'footer.html' %}

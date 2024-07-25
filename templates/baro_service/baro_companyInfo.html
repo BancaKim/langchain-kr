@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Company Info</title>
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 10px;
+}
+
+.box {
+    color: rgb(0, 0, 0);
+    padding : 10px;
+    border: 2px solid black; /* 검은색 테두리 추가 */
+    width: 100%; /* 부모의 너비를 채우도록 설정 */
+}
+</style>
+
+</head>
+<body>
+
+    <div class="container">
+        <div class="box">
+            <h1>Company Information</h1>
+            {% if company_info %}
+                <ul>
+                    <li>Corp Code: {{ company_info.corp_code }}</li>
+                    <li>Corp Name: {{ company_info.corp_name }}</li>
+                    <li>Corp Name (Eng): {{ company_info.corp_name_eng }}</li>
+                    <li>Stock Name: {{ company_info.stock_name }}</li>
+                    <li>Stock Code: {{ company_info.stock_code }}</li>
+                    <li>CEO Name: {{ company_info.ceo_nm }}</li>
+                    <li>Corp Class: {{ company_info.corp_cls }}</li>
+                    <li>Juridical Number: {{ company_info.jurir_no }}</li>
+                    <li>Business Registration Number: {{ company_info.bizr_no }}</li>
+                    <li>Address: {{ company_info.adres }}</li>
+                    <li>Homepage URL: {{ company_info.hm_url }}</li>
+                    <li>IR URL: {{ company_info.ir_url }}</li>
+                    <li>Phone Number: {{ company_info.phn_no }}</li>
+                    <li>Fax Number: {{ company_info.fax_no }}</li>
+                    <li>Industry Code: {{ company_info.induty_code }}</li>
+                    <li>Establishment Date: {{ company_info.est_dt }}</li>
+                    <li>Accounting Month: {{ company_info.acc_mt }}</li>
+                </ul>
+            {% else %}
+                <p>No information found for the given corp code.</p>
+            {% endif %}
+            
+        </div>
+
+        
+
+        <div class="box">
+            <h1>stock_data Information</h1>
+            {% if stock_data %}
+                <ul>
+                    <li>Corp Code: {{ stock_data.corp_code }}</li>
+                    <li>Corp Name: {{ stock_data.corp_name }}</li>
+                    <li>Listing Date: {{ stock_data.listing_date }}</li>
+                    <li>Latest Date: {{ stock_data.latest_date }}</li>
+                    <li>Latest Price: {{ stock_data.latest_price }}</li>
+                    <li>CAGR Since Listing: {{ stock_data.cagr_since_listing }}</li>
+                    <li>Volatility Since Listing: {{ stock_data.vol_since_listing }}</li>
+                    <li>CAGR 1 Year: {{ stock_data.cagr_1y }}</li>
+                    <li>Volatility 1 Year: {{ stock_data.vol_1y }}</li>
+                    <li>CAGR 3 Years: {{ stock_data.cagr_3y }}</li>
+                    <li>Volatility 3 Years: {{ stock_data.vol_3y }}</li>
+                    <li>CAGR 5 Years: {{ stock_data.cagr_5y }}</li>
+                    <li>Volatility 5 Years: {{ stock_data.vol_5y }}</li>
+                    <li>Stock Count: {{ stock_data.stock_count }}</li>
+                    <li>PER Value: {{ stock_data.per_value }}</li>
+                    <li>PBR Value: {{ stock_data.pbr_value }}</li>
+                    <li>Market Capitalization: {{ stock_data.market_capitalization }}</li>
+                    <li>Timestamp: {{ stock_data.timestamp }}</li>
+                    <li>Reference: {{ stock_data.reference }}</li>
+                </ul>
+            {% else %}
+                <p>No information found for the given corp code.</p>
+            {% endif %}
+            
+        </div>
+
+        <div class="box">
+            <h1>KB Credit Rate(임시)</h1>
+            <ul>
+                <li>AA+: 3.2%</li>
+                <li>AA: 87.3%</li>
+                <li>AA-: 7.5%</li>
+                <li>rating date: 2024-07-24</li>
+            </ul>
+
+            <h1>KB 거래현황(임시)</h1>
+            <ul>
+                <li>기업대출 : 493억원</li>
+                <li>핵심예금 : 133억원</li>
+                <li>총예금 : 483억원</li>
+                <li>퇴직연금 : 432억원</li>
+                <li>급여이체 : 2,323건</li>
+            </ul>
+            
+        </div>
+
+        <div class="box">
+            <h1>FS2023</h1>
+    {% if fs2023 %}
+        <ul>
+            <li>ID: {{ fs2023.id }}</li>
+            <li>Base Date: {{ fs2023.baseDate }}</li>
+            <li>Business Year: {{ fs2023.bizYear }}</li>
+            <li>Juridical Number: {{ fs2023.jurir_no }}</li>
+            <li>Currency: {{ fs2023.currency }}</li>
+            <li>FS Code: {{ fs2023.fsCode }}</li>
+            <li>FS Name: {{ fs2023.fsName }}</li>
+            <li>Total Asset 2023: {{ fs2023.totalAsset2023 }}</li>
+            <li>Total Debt 2023: {{ fs2023.totalDebt2023 }}</li>
+            <li>Total Equity 2023: {{ fs2023.totalEquity2023 }}</li>
+            <li>Capital 2023: {{ fs2023.capital2023 }}</li>
+            <li>Revenue 2023: {{ fs2023.revenue2023 }}</li>
+            <li>Operating Income 2023: {{ fs2023.operatingIncome2023 }}</li>
+            <li>Earning Before Tax 2023: {{ fs2023.earningBeforeTax2023 }}</li>
+            <li>Net Income 2023: {{ fs2023.netIncome2023 }}</li>
+            <li>Debt Ratio 2023: {{ fs2023.debtRatio2023 }}</li>
+            <li>Margin 2023: {{ fs2023.margin2023 }}</li>
+            <li>Turnover 2023: {{ fs2023.turnover2023 }}</li>
+            <li>Leverage 2023: {{ fs2023.leverage2023 }}</li>
+            <li>Created At: {{ fs2023.created_at }}</li>
+        </ul>
+    {% else %}
+        <p>No FS2023 information found for the given corp code.</p>
+    {% endif %}
+        </div>
+
+        <div class="box">
+            <h1>FS2022</h1>
+    {% if fs2022 %}
+        <ul>
+            <li>ID: {{ fs2022.id }}</li>
+            <li>Base Date: {{ fs2022.baseDate }}</li>
+            <li>Business Year: {{ fs2022.bizYear }}</li>
+            <li>Juridical Number: {{ fs2022.jurir_no }}</li>
+            <li>Currency: {{ fs2022.currency }}</li>
+            <li>FS Code: {{ fs2022.fsCode }}</li>
+            <li>FS Name: {{ fs2022.fsName }}</li>
+            <li>Total Asset 2022: {{ fs2022.totalAsset2022 }}</li>
+            <li>Total Debt 2022: {{ fs2022.totalDebt2022 }}</li>
+            <li>Total Equity 2022: {{ fs2022.totalEquity2022 }}</li>
+            <li>Capital 2022: {{ fs2022.capital2022 }}</li>
+            <li>Revenue 2022: {{ fs2022.revenue2022 }}</li>
+            <li>Operating Income 2022: {{ fs2022.operatingIncome2022 }}</li>
+            <li>Earning Before Tax 2022: {{ fs2022.earningBeforeTax2022 }}</li>
+            <li>Net Income 2022: {{ fs2022.netIncome2022 }}</li>
+            <li>Debt Ratio 2022: {{ fs2022.debtRatio2022 }}</li>
+            <li>Margin 2022: {{ fs2022.margin2022 }}</li>
+            <li>Turnover 2022: {{ fs2022.turnover2022 }}</li>
+            <li>Leverage 2022: {{ fs2022.leverage2022 }}</li>
+            <li>Created At: {{ fs2022.created_at }}</li>
+        </ul>
+    {% else %}
+        <p>No FS2022 information found for the given corp code.</p>
+    {% endif %}
+
+        </div>
+        
+        <div class="box">
+            <h1>FS2021</h1>
+    {% if fs2021 %}
+        <ul>
+            <li>ID: {{ fs2021.id }}</li>
+            <li>Base Date: {{ fs2021.baseDate }}</li>
+            <li>Business Year: {{ fs2021.bizYear }}</li>
+            <li>Juridical Number: {{ fs2021.jurir_no }}</li>
+            <li>Currency: {{ fs2021.currency }}</li>
+            <li>FS Code: {{ fs2021.fsCode }}</li>
+            <li>FS Name: {{ fs2021.fsName }}</li>
+            <li>Total Asset 2021: {{ fs2021.totalAsset2021 }}</li>
+            <li>Total Debt 2021: {{ fs2021.totalDebt2021 }}</li>
+            <li>Total Equity 2021: {{ fs2021.totalEquity2021 }}</li>
+            <li>Capital 2021: {{ fs2021.capital2021 }}</li>
+            <li>Revenue 2021: {{ fs2021.revenue2021 }}</li>
+            <li>Operating Income 2021: {{ fs2021.operatingIncome2021 }}</li>
+            <li>Earning Before Tax 2021: {{ fs2021.earningBeforeTax2021 }}</li>
+            <li>Net Income 2021: {{ fs2021.netIncome2021 }}</li>
+            <li>Debt Ratio 2021: {{ fs2021.debtRatio2021 }}</li>
+            <li>Margin 2021: {{ fs2021.margin2021 }}</li>
+            <li>Turnover 2021: {{ fs2021.turnover2021 }}</li>
+            <li>Leverage 2021: {{ fs2021.leverage2021 }}</li>
+            <li>Created At: {{ fs2021.created_at }}</li>
+        </ul>
+    {% else %}
+        <p>No FS2021 information found for the given corp code.</p>
+    {% endif %}
+        </div>
+        
+        <div class="box">
+            <h1>FS2020</h1>
+    {% if fs2020 %}
+        <ul>
+            <li>ID: {{ fs2020.id }}</li>
+            <li>Base Date: {{ fs2020.baseDate }}</li>
+            <li>Business Year: {{ fs2020.bizYear }}</li>
+            <li>Juridical Number: {{ fs2020.jurir_no }}</li>
+            <li>Currency: {{ fs2020.currency }}</li>
+            <li>FS Code: {{ fs2020.fsCode }}</li>
+            <li>FS Name: {{ fs2020.fsName }}</li>
+            <li>Total Asset 2020: {{ fs2020.totalAsset2020 }}</li>
+            <li>Total Debt 2020: {{ fs2020.totalDebt2020 }}</li>
+            <li>Total Equity 2020: {{ fs2020.totalEquity2020 }}</li>
+            <li>Capital 2020: {{ fs2020.capital2020 }}</li>
+            <li>Revenue 2020: {{ fs2020.revenue2020 }}</li>
+            <li>Operating Income 2020: {{ fs2020.operatingIncome2020 }}</li>
+            <li>Earning Before Tax 2020: {{ fs2020.earningBeforeTax2020 }}</li>
+            <li>Net Income 2020: {{ fs2020.netIncome2020 }}</li>
+            <li>Debt Ratio 2020: {{ fs2020.debtRatio2020 }}</li>
+            <li>Margin 2020: {{ fs2020.margin2020 }}</li>
+            <li>Turnover 2020: {{ fs2020.turnover2020 }}</li>
+            <li>Leverage 2020: {{ fs2020.leverage2020 }}</li>
+            <li>Created At: {{ fs2020.created_at }}</li>
+        </ul>
+    {% else %}
+        <p>No FS2020 information found for the given corp code.</p>
+    {% endif %}
+        </div>
+        
+      
+    </div>
+
+
+   
+
+
+
+
+
+   
+
+
+    
+
+    
+    
+
+    
+    
+
+    
+</body>
+</html>
+
+</body>
+</html>

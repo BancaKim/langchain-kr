@@ -13,3 +13,13 @@ class ReportContent(Base):
     rcept_no = Column(String(32))
     rcept_dt = Column(DateTime)
     report_content = Column(Text)
+
+    def to_dict(self):
+        return {
+            "corp_name": self.corp_name,
+            "corp_code": self.corp_code,
+            "report_num": self.report_num,
+            "report_nm": self.report_nm,
+            "rcept_no": self.rcept_no,
+            "rcept_dt": self.rcept_dt,
+        }
