@@ -8,13 +8,13 @@
     font-family: 'NPSfontBold';
 }  
 
-home-container {
+.home-container {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: calc(100vh - 60px); /* 네비게이션 바 높이를 고려 */
     padding: 20px;
-    background-color: #f8f9fa;
+    background-color: #f8f9fa;    
 }
 
 .home-content {
@@ -25,7 +25,7 @@ home-container {
     background-color: #ffffff;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+    overflow: hidden;   
 }
 
 .home-left-section {
