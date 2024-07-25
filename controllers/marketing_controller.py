@@ -14,15 +14,16 @@ from services_def.credit_review_create import summarize_report
 from dotenv import load_dotenv
 from services_def.dependencies import get_db
 
-credit = APIRouter(prefix="/credit")
+credit = APIRouter(prefix="/marketing")
 templates = Jinja2Templates(directory="templates")
+
 
 # .env 파일에서 환경 변수를 로드합니다
 load_dotenv()
 
 
-@credit.get("/createReview/")
-async def create_review(db: Session = Depends(get_db)):
+@credit.get("/globalList/")
+async def list_global (db: Session = Depends(get_db)):
     # finanical_summary_v1의 회사코드 리스트 가져오기
     # corp_code = "00164779"  # 에스케이하이닉스(주)
     # corp_code = "00126380"  # 삼성전자
@@ -46,75 +47,13 @@ async def create_review(db: Session = Depends(get_db)):
     return {"result": "DB success"}
 
 
-@credit.get("/api/companies")
-async def get_companies(
-    db: Session = Depends(get_db),
-    page: int = Query(1, ge=1),
-    per_page: int = Query(10, ge=1, le=100),
-):
-    total = db.query(CompanyInfo).count()
-    companies = (
-        db.query(CompanyInfo).offset((page - 1) * per_page).limit(per_page).all()
-    )
-
-    return {
-        "companies": companies,
-        "page": page,
-        "per_page": per_page,
-        "total": total,
-        "total_pages": ceil(total / per_page),
-    }
-
-
-@credit.get("/api/companies/search")
-async def search_companies(
-    db: Session = Depends(get_db),
-    name: Optional[str] = Query(None),
-    search_type: Optional[str] = Query(None),
-    page: int = Query(1, ge=1),
-    per_page: int = Query(10, ge=1, le=100),
-):
-    # Determine the column to filter on based on search_type
-    if search_type == "company_name":
-        column = "corp_name"
-    elif search_type == "company_code":
-        column = "corp_code"
-    else:
-        raise ValueError("Invalid search type")
-
-    # Build the query
-    query = db.query(ReportContent)
-
-    if name:
-        if search_type == "company_name":
-            query = query.filter(ReportContent.corp_name.ilike(f"%{name}%"))
-        elif search_type == "company_code":
-            query = query.filter(ReportContent.corp_code.ilike(f"%{name}%"))
-
-    total = query.count()
-    total_pages = ceil(total / per_page)
-    print(total_pages)
-    # Apply pagination
-    reportContents = query.offset((page - 1) * per_page).limit(per_page).all()
-
-    return {
-        "reportContents": [
-            content.to_dict() for content in reportContents
-        ],  # Ensure you have a method to convert SQLAlchemy objects to dict
-        "page": page,
-        "per_page": per_page,
-        "total": total,
-        "total_pages": total_pages,
-    }
-
-
-@credit.get("/creditReview/")
-async def read_credit(
+@credit.get("/glboalDetail/")
+async def read_global(
     request: Request,
     db: Session = Depends(get_db),
     name: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
-    per_page: int = Query(10, ge=1, le=100),
+    per_page: int = Query(20, ge=1, le=100),
 ):
     query = db.query(ReportContent)
     if name:
@@ -122,7 +61,6 @@ async def read_credit(
 
     total = query.count()
     total_pages = ceil(total / per_page)
-    print(total_pages)
     reportContents = query.offset((page - 1) * per_page).limit(per_page).all()
 
     return templates.TemplateResponse(
