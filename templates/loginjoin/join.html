@@ -1,6 +1,4 @@
-{% extends "base.html" %}
-
-{% block title %}회원가입{% endblock %}
+{% include 'header.html' %}
 
 {% block head %}
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
@@ -27,9 +25,46 @@
                     <label for="signup_email">이메일:</label>
                     <input type="email" id="signup_email" name="email" required>
                 </div>
-                <div class="home-form-group"> 
+                <div class="home-form-group">
                     <label for="signup_password">비밀번호:</label>
                     <input type="password" id="signup_password" name="password" required>
+                </div>
+                <div class="home-form-group">
+                    <label for="region_group">지역 그룹:</label>
+                    <select id="region_group" name="region_group" required onchange="updateRegionHeadquarters()">
+                        <option value="">선택하세요</option>
+                        <option value="1">강남지역그룹</option>
+                        <option value="2">경인지역그룹</option>
+                    </select>
+                </div>
+                <div class="home-form-group">
+                    <label for="region_headquarter">지역 본부:</label>
+                    <select id="region_headquarter" name="region_headquarter" required onchange="updateBranches()">
+                        <option value="">선택하세요</option>
+                    </select>
+                </div>
+                <div class="home-form-group">
+                    <label for="branch">지점:</label>
+                    <select id="branch" name="branch" required>
+                        <option value="">선택하세요</option>
+                    </select>
+                </div>
+                <div class="home-form-group">
+                    <label for="rank">직급:</label>
+                    <select id="rank" name="rank" required onchange="updatePositions()">
+                        <option value="">선택하세요</option>
+                        <option value="L0">L0</option>
+                        <option value="L1">L1</option>
+                        <option value="L2">L2</option>
+                        <option value="L3">L3</option>
+                        <option value="L4">L4</option>
+                    </select>
+                </div>
+                <div class="home-form-group">
+                    <label for="position">직위:</label>
+                    <select id="position" name="position" required>
+                        <option value="">선택하세요</option>
+                    </select>
                 </div>
                 <div class="home-buttons">
                     <button type="submit" class="home-button">회원가입</button>
@@ -39,15 +74,85 @@
         </div>
     </div>
 </div>
-
 <script>
+    function updateRegionHeadquarters() {
+        const regionGroupId = document.getElementById('region_group').value;
+        const regionHeadquarterSelect = document.getElementById('region_headquarter');
+        regionHeadquarterSelect.innerHTML = '<option value="">선택하세요</option>';
+        if (regionGroupId) {
+            fetch(`/api/region_headquarters/${regionGroupId}`)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(headquarter => {
+                        const option = document.createElement('option');
+                        option.value = headquarter.id;
+                        option.textContent = headquarter.name;
+                        regionHeadquarterSelect.appendChild(option);
+                    });
+                });
+        }
+        updateBranches();
+    }
+
+    function updateBranches() {
+        const regionHeadquarterId = document.getElementById('region_headquarter').value;
+        const branchSelect = document.getElementById('branch');
+        branchSelect.innerHTML = '<option value="">선택하세요</option>';
+        if (regionHeadquarterId) {
+            fetch(`/api/branches/${regionHeadquarterId}`)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(branch => {
+                        const option = document.createElement('option');
+                        option.value = branch.id;
+                        option.textContent = branch.name;
+                        branchSelect.appendChild(option);
+                    });
+                });
+        }
+    }
+
+    async function updatePositions() {
+        const rankSelect = document.getElementById('rank');
+        const rankId = rankSelect.value;
+        const positionSelect = document.getElementById('position');
+        positionSelect.innerHTML = '<option value="">선택하세요</option>';
+        if (rankId) {
+            try {
+                const response = await fetch(`/api/positions/${rankId}`);
+                if (response.ok) {
+                    const positions = await response.json();
+                    const uniquePositions = new Set();
+                    positions.forEach(position => {
+                        if (!uniquePositions.has(position.id)) {
+                            uniquePositions.add(position.id);
+                            const option = document.createElement('option');
+                            option.value = position.id;
+                            option.textContent = position.name;
+                            positionSelect.appendChild(option);
+                        }
+                    });
+                } else {
+                    console.error('Failed to fetch positions:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error fetching positions:', error);
+            }
+        }
+    }
+
     function submitSignupForm(event) {
         event.preventDefault();
         const formData = new FormData(event.target);
         const data = {
             username: formData.get('username'),
             email: formData.get('email'),
-            password: formData.get('password')
+            password: formData.get('password'),
+            region_group: formData.get('region_group'),
+            region_headquarter: formData.get('region_headquarter'),
+            branch: formData.get('branch'),
+            rank: formData.get('rank'),
+            position: formData.get('position')
         };
         fetch('/signup', {
             method: 'POST',
@@ -79,6 +184,7 @@
             });
         });
     }
+
 </script>
 
 {% if message %}
@@ -95,3 +201,5 @@
 {% endif %}
 
 {% endblock %}
+
+{% include 'footer.html' %}

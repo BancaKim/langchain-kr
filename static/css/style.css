@@ -1,3 +1,12 @@
+@font-face {
+  font-family: 'NPSfontBold';
+  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2310@1.0/NPSfontBold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+}
+body{
+ font-family: 'NPSfontBold'; 
+} 
 /* 기존 스타일 수정 및 추가 */
 table {
   border-collapse: collapse;

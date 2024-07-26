@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>섭외등록 선택 페이지</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .contact4-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 60px); /* 헤더와 푸터를 고려한 높이 */
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+
+        .contact4-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 800px;
+            width: 100%;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+        }
+
+        .contact4-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #444;
+            text-align: center;
+        }
+
+        .contact4-buttons {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .contact4-button {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+            background-color: #444;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .contact4-button:hover {
+            background-color: #888;
+        }
+    </style>
+</head>
+<body>
+    {% include 'header.html' %}
+    
+    <div class="contact4-container">
+        <div class="contact4-content">
+            <h1 class="contact4-title">섭외등록 선택 페이지</h1>
+            <div class="contact4-buttons">
+                <a href="/contact" class="contact4-button">파일 첨부 게시판형식</a>
+                <a href="/contact2" class="contact4-button">섭외등록 이메일 보내기</a>
+                <a href="/contact3" class="contact4-button">채팅 기능</a>
+                <a href="/search" class="contact4-button">카카오 지도 검색</a>
+            </div>
+        </div>
+    </div>
+    
+    {% include 'footer.html' %}
+</body>
+</html>

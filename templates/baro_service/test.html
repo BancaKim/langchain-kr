@@ -1,0 +1,341 @@
+{% include 'header.html' %}
+
+
+{% block head %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/font.css">
+{% endblock %}
+
+{% block content %}
+
+<!-- 선형 차트-->
+<div class="container mx-auto my-8 px-6">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-semibold mb-4">연도별 재무제표 추세</h2>
+        <div class="relative h-72">
+            <canvas id="financialTrendChart" class="absolute inset-0"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('financialTrendChart').getContext('2d');
+    const financialTrendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['2020', '2021', '2022', '2023'],
+            datasets: [{
+                label: '매출',
+                data: [50000, 60000, 70000, 80000],
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderWidth: 2
+            }, {
+                label: '순이익',
+                data: [5000, 7000, 8000, 9000],
+                borderColor: 'rgba(255, 99, 132, 1)',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: '연도'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: '금액'
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+
+<!--막대-->
+<div class="container mx-auto my-8 px-6">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-semibold mb-4">연도별 재무제표 비교</h2>
+        <div class="relative h-72">
+            <canvas id="financialBarChart" class="absolute inset-0"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx1 = document.getElementById('financialBarChart').getContext('2d');
+    const financialBarChart = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: ['2020', '2021', '2022', '2023'],
+            datasets: [{
+                label: '매출',
+                data: [50000, 60000, 70000, 80000],
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }, {
+                label: '순이익',
+                data: [5000, 7000, 8000, 9000],
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: '연도'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: '금액'
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+<!--영역-->
+<div class="container mx-auto my-8 px-6">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-semibold mb-4">연도별 매출 및 순이익</h2>
+        <div class="relative h-72">
+            <canvas id="areaChart" class="absolute inset-0"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx2 = document.getElementById('areaChart').getContext('2d');
+    const areaChart = new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: ['2020', '2021', '2022', '2023'],
+            datasets: [{
+                label: '매출',
+                data: [50000, 60000, 70000, 80000],
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                fill: true,
+                borderWidth: 2
+            }, {
+                label: '순이익',
+                data: [5000, 7000, 8000, 9000],
+                borderColor: 'rgba(255, 99, 132, 1)',
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                fill: true,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: '연도'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: '금액'
+                    }
+                }
+            }
+        }
+    });
+</script>
+<!-- 거품차트-->
+<div class="container mx-auto my-8 px-6">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-semibold mb-4">연도별 매출 및 순이익 분석</h2>
+        <div class="relative h-72">
+            <canvas id="bubbleChart" class="absolute inset-0"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx3 = document.getElementById('bubbleChart').getContext('2d');
+    const bubbleChart = new Chart(ctx3, {
+        type: 'bubble',
+        data: {
+            datasets: [{
+                label: '2020',
+                data: [{
+                    x: 50000, // 매출
+                    y: 5000,  // 순이익
+                    r: 10     // 버블 크기
+                }],
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }, {
+                label: '2021',
+                data: [{
+                    x: 60000,
+                    y: 7000,
+                    r: 12
+                }],
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+            // 추가 데이터셋을 여기에 추가할 수 있습니다
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: '매출'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: '순이익'
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+<!--누적영역--><div class="container mx-auto my-8 px-6">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-semibold mb-4">연도별 매출 및 순이익 추세</h2>
+        <div class="relative h-72">
+            <canvas id="stackedAreaChart" class="absolute inset-0"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx4 = document.getElementById('stackedAreaChart').getContext('2d');
+    const stackedAreaChart = new Chart(ctx4, {
+        type: 'line',
+        data: {
+            labels: ['2020', '2021', '2022', '2023'],
+            datasets: [{
+                label: '매출',
+                data: [50000, 60000, 70000, 80000],
+                backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 2,
+                fill: true
+            }, {
+                label: '순이익',
+                data: [5000, 7000, 8000, 9000],
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 2,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: '연도'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: '금액'
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+
+<div class="container mx-auto my-8 px-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- 총 매출 -->
+        <div class="p-6 bg-white rounded-lg shadow-md">
+            <h3 class="text-lg font-semibold mb-4">총 매출</h3>
+            <p class="text-3xl font-bold text-gray-800">$1,200,000</p>
+        </div>
+        <!-- 순이익 -->
+        <div class="p-6 bg-white rounded-lg shadow-md">
+            <h3 class="text-lg font-semibold mb-4">순이익</h3>
+            <p class="text-3xl font-bold text-gray-800">$450,000</p>
+        </div>
+        <!-- 총 자산 -->
+        <div class="p-6 bg-white rounded-lg shadow-md">
+            <h3 class="text-lg font-semibold mb-4">총 자산</h3>
+            <p class="text-3xl font-bold text-gray-800">$3,500,000</p>
+        </div>
+    </div>
+</div>
+
+<div class="container mx-auto my-8 px-6">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-semibold mb-4">재무정보</h2>
+        <table class="w-full text-left">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="py-2 px-4 border-b">항목</th>
+                    <th class="py-2 px-4 border-b">금액</th>
+                    <th class="py-2 px-4 border-b">변동률</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="py-2 px-4 border-b">총 매출</td>
+                    <td class="py-2 px-4 border-b">$1,200,000</td>
+                    <td class="py-2 px-4 border-b">+5%</td>
+                </tr>
+                <tr>
+                    <td class="py-2 px-4 border-b">순이익</td>
+                    <td class="py-2 px-4 border-b">$450,000</td>
+                    <td class="py-2 px-4 border-b">+3%</td>
+                </tr>
+                <tr>
+                    <td class="py-2 px-4 border-b">총 자산</td>
+                    <td class="py-2 px-4 border-b">$3,500,000</td>
+                    <td class="py-2 px-4 border-b">+7%</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% include 'footer.html' %}

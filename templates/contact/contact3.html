@@ -1,9 +1,8 @@
-{% extends "base.html" %}
-
-{% block title %}섭외등록 - 채팅{% endblock %}
+{% include 'header.html' %}
 
 {% block head %}
 <link rel="stylesheet" href="/static/css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
     .chat-container {
         margin-top: 50px;
@@ -63,8 +62,15 @@
 {% block content %}
 {% if username is none %}
 <script>
-    alert("로그인이 필요합니다.");
-    window.location.href = "/login"; // 로그인 페이지로 리디렉션
+    Swal.fire({
+        title: '로그인이 필요합니다.',
+        icon: 'warning',
+        confirmButtonText: '확인'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = "/login";
+        }
+    });
 </script>
 {% else %}
 <div class="chat-container">
@@ -81,24 +87,116 @@
 </div>
 
 <script>
-    const username = "{{ username }}"; // 템플릿에서 username 주입
-    const ws = new WebSocket(`ws://${location.host}/ws/chat/${username}`);
+    const username = "{{ username }}";
     const chatLog = document.getElementById('chat-log');
     const chatInput = document.getElementById('chat-input');
+    let ws;
 
-    ws.onmessage = function(event) {
-        const message = document.createElement('p');
-        message.textContent = event.data;
-        chatLog.appendChild(message);
-        chatLog.scrollTop = chatLog.scrollHeight;
-    };
+    async function verifyPassword(password) {
+        try {
+            console.log('Sending password verification request');
+            const response = await fetch('/verify_password2', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: password })
+            });
+            console.log('Received response:', response);
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Response data:', data);
+                return data.success;
+            } else {
+                console.error('Server responded with an error:', response.status, response.statusText);
+                const errorText = await response.text();
+                console.error('Error details:', errorText);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+        return false;
+    }
+
+    function showPasswordModal() {
+        Swal.fire({
+            title: '채팅방 비밀번호 입력',
+            input: 'password',
+            inputLabel: '비밀번호를 입력하세요',
+            inputPlaceholder: '비밀번호',
+            showCancelButton: false,
+            confirmButtonText: '확인',
+            inputValidator: async (value) => {
+                if (!value) {
+                    return '비밀번호를 입력하세요!';
+                }
+                console.log('Entered password:', value);
+                const isValid = await verifyPassword(value);
+                console.log('Password verification result:', isValid);
+                if (isValid) {
+                    console.log('Password is correct, initializing WebSocket');
+                    initWebSocket();
+                    return null;
+                } else {
+                    console.log('Password is incorrect');
+                    return '비밀번호가 틀렸습니다.';
+                }
+            }
+        });
+    }
+
+    function initWebSocket() {
+        console.log('Initializing WebSocket');
+        ws = new WebSocket(`ws://${location.host}/ws/chat/${username}`);
+        ws.onopen = function(event) {
+            console.log('WebSocket connection opened');
+            Swal.fire({
+                title: '연결 성공!',
+                text: '채팅방에 입장했습니다.',
+                icon: 'success',
+                confirmButtonText: '확인'
+            });
+        };
+        ws.onmessage = function(event) {
+            console.log('Received message:', event.data);
+            const message = document.createElement('p');
+            message.textContent = event.data;
+            chatLog.appendChild(message);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        };
+        ws.onerror = function(event) {
+            console.error('WebSocket error:', event);
+            Swal.fire({
+                title: '오류 발생',
+                text: 'WebSocket 연결 중 오류가 발생했습니다.',
+                icon: 'error',
+                confirmButtonText: '확인'
+            });
+        };
+        ws.onclose = function(event) {
+            console.log('WebSocket connection closed:', event);
+            Swal.fire({
+                title: '연결 종료',
+                text: '채팅방 연결이 종료되었습니다.',
+                icon: 'info',
+                confirmButtonText: '확인'
+            });
+        };
+    }
 
     function sendMessage() {
         const message = chatInput.value;
-        if (message) {
+        if (message && ws && ws.readyState === WebSocket.OPEN) {
+            console.log('Sending message:', message);
             ws.send(message);
             chatInput.value = '';
             chatInput.focus();
+        } else {
+            console.log('Cannot send message. WebSocket state:', ws ? ws.readyState : 'not initialized');
+            Swal.fire({
+                title: '메시지 전송 실패',
+                text: '채팅방에 연결되어 있지 않습니다.',
+                icon: 'error',
+                confirmButtonText: '확인'
+            });
         }
     }
 
@@ -107,6 +205,12 @@
             sendMessage();
         }
     });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM content loaded, showing password modal');
+        showPasswordModal();
+    });
 </script>
 {% endif %}
 {% endblock %}
+{% include 'footer.html' %}

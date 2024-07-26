@@ -4,8 +4,8 @@ from fastapi.templating import Jinja2Templates
 from database import Base, engine
 from controllers.common_controllers import router
 from controllers.baro_controllers import baro
+from controllers.credit_controller import credit
 from fastapi.staticfiles import StaticFiles
-from controllers.credit_controller import creditreview
 
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key="your-secret-key")
@@ -14,6 +14,7 @@ Base.metadata.create_all(bind=engine)
 
 app.include_router(router)
 app.include_router(baro)
+app.include_router(credit)
 
 templates = Jinja2Templates(directory="templates")
 
