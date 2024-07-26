@@ -63,7 +63,7 @@
         </div>
 
         <br><br><br>
-            </div>
+    </div>
 </div>
 
 <br><br><br>
@@ -96,17 +96,30 @@
                     <tr>
                         <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.corp_name }}</td>
                         <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.ceo_nm }}</td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.corp_cls }}</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap"> 
+                            {% if company.corp_cls == 'Y' %}
+                            유가 (Y)
+                            {% elif company.corp_cls == 'K' %}
+                            코스닥 (K)
+                            {% elif company.corp_cls == 'N' %}
+                            코넥스 (N)
+                            {% elif company.corp_cls == 'E' %}
+                            기타 (E)
+                            {% else %}
+                            {{ company.corp_cls }}
+                            {% endif %}</td>
                         <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.company_jurir_no }}</td>
                         <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.totalAsset2023 }} 억원</td>
                         <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.totalEquity2023 }} 억원</td>
                         <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.revenue2023 }} 억원</td>
                         <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.earningBeforeTax2023 }} 억원</td>
                         <td class="px-6 py-4 border-b whitespace-nowrap">
-                            <a href="/baro_companyInfo?jurir_no={{ company.company_jurir_no }}" class="text-purple-500 hover:underline">확인</a>
+                            <a href="/baro_companyInfo?jurir_no={{ company.company_jurir_no }}"
+                                class="text-purple-500 hover:underline">확인</a>
                         </td>
                         <td class="px-6 py-4 border-b whitespace-nowrap">
-                            <a href="/baro_companyInfo?jurir_no={{ company.company_jurir_no }}" class="text-purple-500 hover:underline">등록</a>
+                            <a href="/baro_companyInfo?jurir_no={{ company.company_jurir_no }}"
+                                class="text-purple-500 hover:underline">등록</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -116,7 +129,7 @@
             <p class="text-gray-600">No companies found.</p>
             {% endif %}
         </section>
-<br><br>
+        <br><br>
         <!-- 최근 조회한 업체 현황 -->
         <section>
             <h1 class="text-3xl font-bold text-gray-800 mb-4">최근 조회 목록</h1>
@@ -142,17 +155,31 @@
                     <tr>
                         <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.corp_name }}</td>
                         <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.ceo_nm }}</td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.corp_cls }}</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">
+                            {% if company.corp_cls == 'Y' %}
+                            유가 (Y)
+                            {% elif company.corp_cls == 'K' %}
+                            코스닥 (K)
+                            {% elif company.corp_cls == 'N' %}
+                            코넥스 (N)
+                            {% elif company.corp_cls == 'E' %}
+                            기타 (E)
+                            {% else %}
+                            {{ company.corp_cls }}
+                            {% endif %}
+                        </td>
                         <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.company_jurir_no }}</td>
                         <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.totalAsset2023 }} 억원</td>
                         <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.totalEquity2023 }} 억원</td>
                         <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.revenue2023 }} 억원</td>
                         <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.earningBeforeTax2023 }} 억원</td>
                         <td class="px-6 py-4 border-b whitespace-nowrap">
-                            <a href="/baro_companyInfo?jurir_no={{ company.company_jurir_no }}" class="text-purple-500 hover:underline">확인</a>
+                            <a href="/baro_companyInfo?jurir_no={{ company.company_jurir_no }}"
+                                class="text-purple-500 hover:underline">확인</a>
                         </td>
                         <td class="px-6 py-4 border-b whitespace-nowrap">
-                            <a href="/baro_companyInfo?jurir_no={{ company.company_jurir_no }}" class="text-purple-500 hover:underline">등록</a>
+                            <a href="/baro_companyInfo?jurir_no={{ company.company_jurir_no }}"
+                                class="text-purple-500 hover:underline">등록</a>
                         </td>
                     </tr>
                     {% endfor %}

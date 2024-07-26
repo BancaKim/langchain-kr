@@ -1,5 +1,10 @@
 
-from typing import List
+from datetime import datetime, timedelta
+from typing import Dict, List, Union
+from bs4 import BeautifulSoup
+from fastapi import requests
+import httpx
+from jinja2 import Template
 from database import SessionLocal
 from sqlalchemy import func, cast, Integer
 from sqlalchemy.orm import Session
@@ -131,3 +136,57 @@ def get_autocomplete_suggestions(search_type: str, query: str) -> List[str]:
         results = []
 
     return [result[0] for result in results]
+
+
+async def get_stockgraph(stock_code: str) -> Dict[str, List[Dict[str, Union[str, float]]]]:
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=90)
+    stock_data = []
+    max_pages = 9
+    page = 1
+
+    while page <= max_pages:
+        url = f"https://finance.naver.com/item/sise_day.nhn?code={stock_code}&page={page}"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        }
+
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, headers=headers)
+        
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        rows = soup.select("table.type2 tr")
+        if not rows or len(rows) == 0:
+            break  # 종료 조건: 더 이상 데이터가 없으면 종료
+
+        page_data = []
+        for row in rows:
+            cols = row.find_all('td')
+            if len(cols) > 1:
+                date_text = cols[0].get_text(strip=True)
+                if date_text:
+                    try:
+                        date = datetime.strptime(date_text, '%Y.%m.%d').strftime('%Y-%m-%d')
+                        if datetime.strptime(date, '%Y-%m-%d') >= start_date:
+                            open_price = float(cols[3].get_text(strip=True).replace(',', ''))
+                            high_price = float(cols[4].get_text(strip=True).replace(',', ''))
+                            low_price = float(cols[5].get_text(strip=True).replace(',', ''))
+                            close_price = float(cols[1].get_text(strip=True).replace(',', ''))
+                            page_data.append({
+                                "t": date,
+                                "o": open_price,
+                                "h": high_price,
+                                "l": low_price,
+                                "c": close_price
+                            })
+                    except ValueError:
+                        continue
+
+        stock_data.extend(page_data)
+
+        # 페이지 증가
+        page += 1
+
+    stock_data.reverse()  # 데이터를 오래된 순으로 정렬
+    return {"stock_data": stock_data[:90]}  # 최대 90일치 데이터만 반환
