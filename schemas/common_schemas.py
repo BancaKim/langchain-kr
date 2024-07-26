@@ -7,6 +7,11 @@ class UserCreate(BaseModel):
     username: str
     email: str
     password: str
+    region_group: int
+    region_headquarter: int
+    branch: int
+    rank: str  # 변경된 부분
+    position: int
 
 # 회원로그인시 데이터 검증
 class UserLogin(BaseModel):
