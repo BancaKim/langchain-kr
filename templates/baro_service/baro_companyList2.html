@@ -66,10 +66,11 @@
     </div>
 </div>
 
-<br><br>
+<br><br><br>
+
 <div class="flex justify-center">
     <!-- 너비를 줄이기 위해 max-w-screen-lg를 사용 -->
-    <div class="container mx-auto p-6 max-w-screen-lg">
+    <div class="container mx-auto p-6 ">
         <!-- 나의 업체현황 -->
         <section class="mb-10">
             <h1 class="text-3xl font-bold text-gray-800 mb-4">관심 업체 목록</h1>
@@ -77,25 +78,49 @@
             {% if my_company_list %}
             <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
                 <thead class="bg-gray-100 text-gray-600 uppercase text-base">
-                    <tr>
-                        <th class="px-6 py-3 border-b">회사코드</th>
-                        <th class="px-6 py-3 border-b">회사명</th>
-                        <th class="px-6 py-3 border-b">회사영문명</th>
-                        <th class="px-6 py-3 border-b">주식상장명</th>
-                        <th class="px-6 py-3 border-b">주식코드</th>
+                    <tr class="text-center">
+                        <th class="px-6 py-3 border-b">법인명</th>
+                        <th class="px-6 py-3 border-b">대표자명</th>
+                        <th class="px-6 py-3 border-b whitespace-nowrap">상장구분</th>
+                        <th class="px-6 py-3 border-b">법인번호</th>
+                        <th class="px-6 py-3 border-b">총자산</th>
+                        <th class="px-6 py-3 border-b">자기자본</th>
+                        <th class="px-6 py-3 border-b">매출</th>
+                        <th class="px-6 py-3 border-b">순이익</th>
+                        <th class="px-6 py-3 border-b">바로등급</th>
+                        <th class="px-6 py-3 border-b">업체등록</th>
                     </tr>
                 </thead>
-                <tbody class="text-gray-700 text-base">
+                <tbody class="text-gray-700 text-base text-center">
                     {% for company in my_company_list %}
                     <tr>
-                        <td class="px-6 py-4 border-b">
-                            <a href="/baro_companyInfo?jurir_no={{ company.jurir_no }}"
-                                class="text-purple-500 hover:underline">{{ company.corp_code }}</a>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.corp_name }}</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.ceo_nm }}</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap"> 
+                            {% if company.corp_cls == 'Y' %}
+                            유가 (Y)
+                            {% elif company.corp_cls == 'K' %}
+                            코스닥 (K)
+                            {% elif company.corp_cls == 'N' %}
+                            코넥스 (N)
+                            {% elif company.corp_cls == 'E' %}
+                            기타 (E)
+                            {% else %}
+                            {{ company.corp_cls }}
+                            {% endif %}</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.company_jurir_no }}</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.totalAsset2023 }} 억원</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.totalEquity2023 }} 억원</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.revenue2023 }} 억원</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.earningBeforeTax2023 }} 억원</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">
+                            <a href="/baro_companyInfo?jurir_no={{ company.company_jurir_no }}"
+                                class="text-purple-500 hover:underline">확인</a>
                         </td>
-                        <td class="px-6 py-4 border-b">{{ company.corp_name }}</td>
-                        <td class="px-6 py-4 border-b">{{ company.corp_name_eng }}</td>
-                        <td class="px-6 py-4 border-b">{{ company.stock_name }}</td>
-                        <td class="px-6 py-4 border-b">{{ company.stock_code }}</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">
+                            <a href="/baro_companyInfo?jurir_no={{ company.company_jurir_no }}"
+                                class="text-purple-500 hover:underline">등록</a>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -104,35 +129,58 @@
             <p class="text-gray-600">No companies found.</p>
             {% endif %}
         </section>
-
         <br><br>
-
         <!-- 최근 조회한 업체 현황 -->
         <section>
-            <h1 class="text-3xl font-bold text-gray-800 mb-4">최근 조회 업체 목록</h1>
+            <h1 class="text-3xl font-bold text-gray-800 mb-4">최근 조회 목록</h1>
 
             {% if recent_view_list %}
             <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
                 <thead class="bg-gray-100 text-gray-600 uppercase text-base">
-                    <tr>
-                        <th class="px-6 py-3 border-b">회사코드</th>
-                        <th class="px-6 py-3 border-b">회사명</th>
-                        <th class="px-6 py-3 border-b">회사영문명</th>
-                        <th class="px-6 py-3 border-b">주식상장명</th>
-                        <th class="px-6 py-3 border-b">주식코드</th>
+                    <tr class="text-center">
+                        <th class="px-6 py-3 border-b">법인명</th>
+                        <th class="px-6 py-3 border-b">대표자명</th>
+                        <th class="px-6 py-3 border-b whitespace-nowrap">상장구분</th>
+                        <th class="px-6 py-3 border-b">법인번호</th>
+                        <th class="px-6 py-3 border-b">총자산</th>
+                        <th class="px-6 py-3 border-b">자기자본</th>
+                        <th class="px-6 py-3 border-b">매출</th>
+                        <th class="px-6 py-3 border-b">순이익</th>
+                        <th class="px-6 py-3 border-b">바로등급</th>
+                        <th class="px-6 py-3 border-b">업체등록</th>
                     </tr>
                 </thead>
-                <tbody class="text-gray-700 text-base">
+                <tbody class="text-gray-700 text-base text-center">
                     {% for company in recent_view_list %}
                     <tr>
-                        <td class="px-6 py-4 border-b">
-                            <a href="/baro_companyInfo?jurir_no={{ company.jurir_no }}"
-                                class="text-purple-500 hover:underline">{{ company.corp_code }}</a>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.corp_name }}</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.ceo_nm }}</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">
+                            {% if company.corp_cls == 'Y' %}
+                            유가 (Y)
+                            {% elif company.corp_cls == 'K' %}
+                            코스닥 (K)
+                            {% elif company.corp_cls == 'N' %}
+                            코넥스 (N)
+                            {% elif company.corp_cls == 'E' %}
+                            기타 (E)
+                            {% else %}
+                            {{ company.corp_cls }}
+                            {% endif %}
                         </td>
-                        <td class="px-6 py-4 border-b">{{ company.corp_name }}</td>
-                        <td class="px-6 py-4 border-b">{{ company.corp_name_eng }}</td>
-                        <td class="px-6 py-4 border-b">{{ company.stock_name }}</td>
-                        <td class="px-6 py-4 border-b">{{ company.stock_code }}</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.company_jurir_no }}</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.totalAsset2023 }} 억원</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.totalEquity2023 }} 억원</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.revenue2023 }} 억원</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.earningBeforeTax2023 }} 억원</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">
+                            <a href="/baro_companyInfo?jurir_no={{ company.company_jurir_no }}"
+                                class="text-purple-500 hover:underline">확인</a>
+                        </td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">
+                            <a href="/baro_companyInfo?jurir_no={{ company.company_jurir_no }}"
+                                class="text-purple-500 hover:underline">등록</a>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -144,25 +192,40 @@
     </div>
 </div>
 
+<br><br>
+
 <script>
-    async function searchCompanies() {
+    async function searchCompanies(event) {
+        event.preventDefault(); // 기본 폼 제출 방지
+
         const name = document.getElementById('company_name').value;
-        const searchType = document.getElementById('search_type').value; // Get the selected search type
+        const searchType = document.getElementById('search_type').value;
 
-        try {
-            const response = await fetch(`/baro_companyInfo2?name=${encodeURIComponent(name)}&search_type=${encodeURIComponent(searchType)}`);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json();
+        // 동적으로 폼 생성
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/baro_companyInfo2';
 
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
+        // 폼에 필요한 입력 필드 추가
+        const nameField = document.createElement('input');
+        nameField.type = 'hidden';
+        nameField.name = 'name';
+        nameField.value = name;
+        form.appendChild(nameField);
+
+        const searchTypeField = document.createElement('input');
+        searchTypeField.type = 'hidden';
+        searchTypeField.name = 'search_type';
+        searchTypeField.value = searchType;
+        form.appendChild(searchTypeField);
+
+        // 폼을 문서에 추가하고 제출
+        document.body.appendChild(form);
+        form.submit();
     }
 
     document.getElementById('search_button').addEventListener('click', searchCompanies);
-
 </script>
+
 {% endblock %}
 {% include 'footer.html' %}

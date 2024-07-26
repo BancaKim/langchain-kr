@@ -6,225 +6,466 @@
 <link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
 <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
 <link rel="stylesheet" href="/static/css/font.css">
-<script src="/static/js/AI_search.js" defer></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
+
+
 {% endblock %}
 
-
-
 {% block content %}
-<div class="container">
-    <div class="box">
-        <h1>Company Information</h1>
-        {% if company_info %}
-        <ul>
-            <li>Corp Code: {{ company_info.corp_code }}</li>
-            <li>Corp Name: {{ company_info.corp_name }}</li>
-            <li>Corp Name (Eng): {{ company_info.corp_name_eng }}</li>
-            <li>Stock Name: {{ company_info.stock_name }}</li>
-            <li>Stock Code: {{ company_info.stock_code }}</li>
-            <li>CEO Name: {{ company_info.ceo_nm }}</li>
-            <li>Corp Class: {{ company_info.corp_cls }}</li>
-            <li>Juridical Number: {{ company_info.jurir_no }}</li>
-            <li>Business Registration Number: {{ company_info.bizr_no }}</li>
-            <li>Address: {{ company_info.adres }}</li>
-            <li>Homepage URL: {{ company_info.hm_url }}</li>
-            <li>IR URL: {{ company_info.ir_url }}</li>
-            <li>Phone Number: {{ company_info.phn_no }}</li>
-            <li>Fax Number: {{ company_info.fax_no }}</li>
-            <li>Industry Code: {{ company_info.induty_code }}</li>
-            <li>Establishment Date: {{ company_info.est_dt }}</li>
-            <li>Accounting Month: {{ company_info.acc_mt }}</li>
-        </ul>
-        {% else %}
-        <p>No information found for the given corp code.</p>
-        {% endif %}
-
+<div class="bg-red-50">
+    <div class="rounded-lg p-8 w-9/12 mx-auto">
+        <span class="block text-left text-xl mb-2">
+            <a href="/" class="mr-2">홈</a> &nbsp; | &nbsp;
+            <a href="/baro_companyList" class="ml-2">기업검색</a> &nbsp; | &nbsp;
+            <span>상세조회</span>
+        </span>
+        <br><br><br>
+        <div class="text-center mb-4">
+            <h1 class="text-5xl font-bold">업체 상세 현황</h1>
+        </div>
+        <br><br><br><br>
     </div>
+</div>
 
+<br>
+<div class="container mx-auto p-6 max-w-screen-xl">
+    <h2 class="text-4xl font-bold mb-10">{{ company_info.corp_name }}</h2>
+    <h2 class="text-3xl font-bold">기업 정보</h2>
+    <div class="grid grid-cols-3 gap-6">
+        <div class="box bg-white p-6 rounded-lg shadow-md">
+            {% if company_info %}
+            <br>
+            <ul class="list-disc pl-5 space-y-2">
+                <li>
+                    <p class="text-lg font-semibold mb-4">대표: {{ company_info.ceo_nm }}</p>
+                </li>
+                <li>
+                    <p class="text-lg font-semibold mb-4">법인구분:
+                        {% if company_info.corp_cls == 'Y' %}
+                        유가 (Y)
+                        {% elif company_info.corp_cls == 'K' %}
+                        코스닥 (K)
+                        {% elif company_info.corp_cls == 'N' %}
+                        코넥스 (N)
+                        {% elif company_info.corp_cls == 'E' %}
+                        기타 (E)
+                        {% else %}
+                        {{ company_info.corp_cls }}
+                        {% endif %}</p>
+                </li>
+                <li>
+                    <p class="text-lg font-semibold mb-4">주소: {{ company_info.adres }}</p>
+                </li>
+                <li>
+                    <p class="text-lg font-semibold mb-4">홈페이지: {{ company_info.hm_url }}</p>
+                </li>
+                <li>
+                    <p class="text-lg font-semibold mb-4">H.P: {{ company_info.phn_no }}</p>
+                </li>
+                <li>
+                    <p class="text-lg font-semibold mb-4">Fax: {{ company_info.fax_no }}</p>
+                </li>
+                <li>
+                    <p class="text-lg font-semibold mb-4">산업코드: {{ company_info.induty_code }}</p>
+                </li>
+            </ul>
+            {% else %}
+            <p class="text-gray-600">해당 기업은 금융감독원(Dart API)에서 정보를 제공받을 수 없습니다.</p>
+            {% endif %}
+        </div>
 
+        <!-- 추가 정보 영역 -->
+        <div class="box bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-3xl font-bold mb-4">신용등급</h2>
+            <section class="mb-6">
+                <p>신용등급 내용 추가 예정</p>
+            </section>
+        </div>
 
-    <div class="box">
-        <h1>stock_data Information</h1>
-        {% if stock_data %}
-        <ul>
-            <li>Corp Code: {{ stock_data.corp_code }}</li>
-            <li>Corp Name: {{ stock_data.corp_name }}</li>
-            <li>Listing Date: {{ stock_data.listing_date }}</li>
-            <li>Latest Date: {{ stock_data.latest_date }}</li>
-            <li>Latest Price: {{ stock_data.latest_price }}</li>
-            <li>CAGR Since Listing: {{ stock_data.cagr_since_listing }}</li>
-            <li>Volatility Since Listing: {{ stock_data.vol_since_listing }}</li>
-            <li>CAGR 1 Year: {{ stock_data.cagr_1y }}</li>
-            <li>Volatility 1 Year: {{ stock_data.vol_1y }}</li>
-            <li>CAGR 3 Years: {{ stock_data.cagr_3y }}</li>
-            <li>Volatility 3 Years: {{ stock_data.vol_3y }}</li>
-            <li>CAGR 5 Years: {{ stock_data.cagr_5y }}</li>
-            <li>Volatility 5 Years: {{ stock_data.vol_5y }}</li>
-            <li>Stock Count: {{ stock_data.stock_count }}</li>
-            <li>PER Value: {{ stock_data.per_value }}</li>
-            <li>PBR Value: {{ stock_data.pbr_value }}</li>
-            <li>Market Capitalization: {{ stock_data.market_capitalization }}</li>
-            <li>Timestamp: {{ stock_data.timestamp }}</li>
-            <li>Reference: {{ stock_data.reference }}</li>
-        </ul>
-        {% else %}
-        <p>No information found for the given corp code.</p>
-        {% endif %}
-
+        <!-- 추가 정보 영역 -->
+        <div class="box bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-3xl font-bold mb-4">신용등급</h2>
+            <section class="mb-6">
+                <p>신용등급 내용 추가 예정</p>
+            </section>
+        </div>
     </div>
-
-    <div class="box">
-        <h1>KB Credit Rate(임시)</h1>
-        <ul>
-            <li>AA+: 3.2%</li>
-            <li>AA: 87.3%</li>
-            <li>AA-: 7.5%</li>
-            <li>rating date: 2024-07-24</li>
-        </ul>
-
-        <h1>KB 거래현황(임시)</h1>
-        <ul>
-            <li>기업대출 : 493억원</li>
-            <li>핵심예금 : 133억원</li>
-            <li>총예금 : 483억원</li>
-            <li>퇴직연금 : 432억원</li>
-            <li>급여이체 : 2,323건</li>
-        </ul>
-
-    </div>
-
-    <div class="box">
-        <h1>FS2023</h1>
-        {% if fs2023 %}
-        <ul>
-            <li>ID: {{ fs2023.id }}</li>
-            <li>Base Date: {{ fs2023.baseDate }}</li>
-            <li>Business Year: {{ fs2023.bizYear }}</li>
-            <li>Juridical Number: {{ fs2023.company_jurir_no }}</li>
-            <li>Currency: {{ fs2023.currency }}</li>
-            <li>FS Code: {{ fs2023.fsCode }}</li>
-            <li>FS Name: {{ fs2023.fsName }}</li>
-            <li>Total Asset 2023: {{ fs2023.totalAsset2023 }}</li>
-            <li>Total Debt 2023: {{ fs2023.totalDebt2023 }}</li>
-            <li>Total Equity 2023: {{ fs2023.totalEquity2023 }}</li>
-            <li>Capital 2023: {{ fs2023.capital2023 }}</li>
-            <li>Revenue 2023: {{ fs2023.revenue2023 }}</li>
-            <li>Operating Income 2023: {{ fs2023.operatingIncome2023 }}</li>
-            <li>Earning Before Tax 2023: {{ fs2023.earningBeforeTax2023 }}</li>
-            <li>Net Income 2023: {{ fs2023.netIncome2023 }}</li>
-            <li>Debt Ratio 2023: {{ fs2023.debtRatio2023 }}</li>
-            <li>Margin 2023: {{ fs2023.margin2023 }}</li>
-            <li>Turnover 2023: {{ fs2023.turnover2023 }}</li>
-            <li>Leverage 2023: {{ fs2023.leverage2023 }}</li>
-            <li>Created At: {{ fs2023.created_at }}</li>
-        </ul>
-        {% else %}
-        <p>No FS2023 information found for the given corp code.</p>
-        {% endif %}
-    </div>
-
-    <div class="box">
-        <h1>FS2022</h1>
-        {% if fs2022 %}
-        <ul>
-            <li>ID: {{ fs2022.id }}</li>
-            <li>Base Date: {{ fs2022.baseDate }}</li>
-            <li>Business Year: {{ fs2022.bizYear }}</li>
-            <li>Juridical Number: {{ fs2022.jurir_no }}</li>
-            <li>Currency: {{ fs2022.currency }}</li>
-            <li>FS Code: {{ fs2022.fsCode }}</li>
-            <li>FS Name: {{ fs2022.fsName }}</li>
-            <li>Total Asset 2022: {{ fs2022.totalAsset2022 }}</li>
-            <li>Total Debt 2022: {{ fs2022.totalDebt2022 }}</li>
-            <li>Total Equity 2022: {{ fs2022.totalEquity2022 }}</li>
-            <li>Capital 2022: {{ fs2022.capital2022 }}</li>
-            <li>Revenue 2022: {{ fs2022.revenue2022 }}</li>
-            <li>Operating Income 2022: {{ fs2022.operatingIncome2022 }}</li>
-            <li>Earning Before Tax 2022: {{ fs2022.earningBeforeTax2022 }}</li>
-            <li>Net Income 2022: {{ fs2022.netIncome2022 }}</li>
-            <li>Debt Ratio 2022: {{ fs2022.debtRatio2022 }}</li>
-            <li>Margin 2022: {{ fs2022.margin2022 }}</li>
-            <li>Turnover 2022: {{ fs2022.turnover2022 }}</li>
-            <li>Leverage 2022: {{ fs2022.leverage2022 }}</li>
-            <li>Created At: {{ fs2022.created_at }}</li>
-        </ul>
-        {% else %}
-        <p>No FS2022 information found for the given corp code.</p>
-        {% endif %}
-
-    </div>
-
-    <div class="box">
-        <h1>FS2021</h1>
-        {% if fs2021 %}
-        <ul>
-            <li>ID: {{ fs2021.id }}</li>
-            <li>Base Date: {{ fs2021.baseDate }}</li>
-            <li>Business Year: {{ fs2021.bizYear }}</li>
-            <li>Juridical Number: {{ fs2021.jurir_no }}</li>
-            <li>Currency: {{ fs2021.currency }}</li>
-            <li>FS Code: {{ fs2021.fsCode }}</li>
-            <li>FS Name: {{ fs2021.fsName }}</li>
-            <li>Total Asset 2021: {{ fs2021.totalAsset2021 }}</li>
-            <li>Total Debt 2021: {{ fs2021.totalDebt2021 }}</li>
-            <li>Total Equity 2021: {{ fs2021.totalEquity2021 }}</li>
-            <li>Capital 2021: {{ fs2021.capital2021 }}</li>
-            <li>Revenue 2021: {{ fs2021.revenue2021 }}</li>
-            <li>Operating Income 2021: {{ fs2021.operatingIncome2021 }}</li>
-            <li>Earning Before Tax 2021: {{ fs2021.earningBeforeTax2021 }}</li>
-            <li>Net Income 2021: {{ fs2021.netIncome2021 }}</li>
-            <li>Debt Ratio 2021: {{ fs2021.debtRatio2021 }}</li>
-            <li>Margin 2021: {{ fs2021.margin2021 }}</li>
-            <li>Turnover 2021: {{ fs2021.turnover2021 }}</li>
-            <li>Leverage 2021: {{ fs2021.leverage2021 }}</li>
-            <li>Created At: {{ fs2021.created_at }}</li>
-        </ul>
-        {% else %}
-        <p>No FS2021 information found for the given corp code.</p>
-        {% endif %}
-    </div>
-
-    <div class="box">
-        <h1>FS2020</h1>
-        {% if fs2020 %}
-        <ul>
-            <li>ID: {{ fs2020.id }}</li>
-            <li>Base Date: {{ fs2020.baseDate }}</li>
-            <li>Business Year: {{ fs2020.bizYear }}</li>
-            <li>Juridical Number: {{ fs2020.jurir_no }}</li>
-            <li>Currency: {{ fs2020.currency }}</li>
-            <li>FS Code: {{ fs2020.fsCode }}</li>
-            <li>FS Name: {{ fs2020.fsName }}</li>
-            <li>Total Asset 2020: {{ fs2020.totalAsset2020 }}</li>
-            <li>Total Debt 2020: {{ fs2020.totalDebt2020 }}</li>
-            <li>Total Equity 2020: {{ fs2020.totalEquity2020 }}</li>
-            <li>Capital 2020: {{ fs2020.capital2020 }}</li>
-            <li>Revenue 2020: {{ fs2020.revenue2020 }}</li>
-            <li>Operating Income 2020: {{ fs2020.operatingIncome2020 }}</li>
-            <li>Earning Before Tax 2020: {{ fs2020.earningBeforeTax2020 }}</li>
-            <li>Net Income 2020: {{ fs2020.netIncome2020 }}</li>
-            <li>Debt Ratio 2020: {{ fs2020.debtRatio2020 }}</li>
-            <li>Margin 2020: {{ fs2020.margin2020 }}</li>
-            <li>Turnover 2020: {{ fs2020.turnover2020 }}</li>
-            <li>Leverage 2020: {{ fs2020.leverage2020 }}</li>
-            <li>Created At: {{ fs2020.created_at }}</li>
-        </ul>
-        {% else %}
-        <p>No FS2020 information found for the given corp code.</p>
-        {% endif %}
-    </div>
-
-
 </div>
 
 
 
 
+<!-- 주가 정보 ---------------------------------------------------------------------------------------------------------------------->
+<div class="container max-w-screen-xl mx-auto p-6">
+    <h2 class="text-3xl font-bold mb-6">주가 정보</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- 가로 1: 시가총액, PER, PBR을 세로로 배치 -->
+        <div class="col-span-1 flex flex-col space-y-6">
+            <!-- 시가총액 -->
+            <div class="p-6 bg-white rounded-lg shadow-md">
+                <h3 class="text-2xl font-semibold mb-4">시가총액</h3>
+                <p class="text-3xl font-bold text-gray-800">
+                    {{ "{:,}".format(stock_data.market_capitalization // 1000) }} 천원
+                </p>
+            </div>
+            <!-- PER -->
+            <div class="p-6 bg-white rounded-lg shadow-md">
+                <h3 class="text-2xl font-semibold mb-4">PER</h3>
+                <p class="text-3xl font-bold text-gray-800">{{ stock_data.per_value }}</p>
+            </div>
+            <!-- PBR -->
+            <div class="p-6 bg-white rounded-lg shadow-md">
+                <h3 class="text-2xl font-semibold mb-4">PBR</h3>
+                <p class="text-3xl font-bold text-gray-800">{{ stock_data.pbr_value }}</p>
+            </div>
+        </div>
+
+        <!-- 가로 2: 누적 성장·변동률 추세 그래프 -->
+        <div class="col-span-2 bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-semibold mb-4">주가 성장·변동률 추세</h2>
+            <div class="relative h-80">
+                <canvas id="financialTrendChart" class="absolute inset-0"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('financialTrendChart').getContext('2d');
+        const financialTrendChart = new Chart(ctx, {
+            type: 'line', // 꺾은선 그래프
+            data: {
+                labels: ['5년', '3년', '1년'],
+                datasets: [
+                    {
+                        label: '성장률',
+                        data: [
+                            {{ stock_data.cagr_5y }},
+                            {{ stock_data.cagr_3y }},
+                            {{ stock_data.cagr_1y }}
+                        ],
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderWidth: 2,
+                        fill: true // 꺾은선 그래프의 영역을 채우기
+                    },
+                    {
+                        label: '변동률',
+                        data: [
+                            {{ stock_data.vol_5y }},
+                            {{ stock_data.vol_3y }},
+                            {{ stock_data.vol_1y }}
+                        ],
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderWidth: 2,
+                        fill: true // 꺾은선 그래프의 영역을 채우기
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, // 부모 요소에 맞게 조정
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: '누적 기간'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: '백분율(%)'
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+<!-- 재무 정보 ---------------------------------------------------------------------------------------------------------------------->
+
+<div class="container max-w-screen-xl mx-auto p-6">
+    <h2 class="text-3xl font-bold mb-4">재무 정보</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="p-6 bg-white rounded-lg shadow-md">
+            <h3 class="text-2xl font-semibold mb-4">23년 매출액</h3>
+            <p class="text-3xl font-bold text-gray-800">
+                {{ fs2023.revenue2023 }}
+            </p>
+        </div>
+        <div class="p-6 bg-white rounded-lg shadow-md">
+            <h3 class="text-2xl font-semibold mb-4">23년 영업이익</h3>
+            <p class="text-3xl font-bold text-gray-800">{{ fs2023.operatingIncome2023 }}</p>
+        </div>
+        <div class="p-6 bg-white rounded-lg shadow-md">
+            <h3 class="text-2xl font-semibold mb-4">23년 자본총계</h3>
+            <p class="text-3xl font-bold text-gray-800">{{ fs2023.totalEquity2023 }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="container max-w-screen-xl mx-auto p-6">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-2xl font-semibold mb-4">매출액·영업이익 현황</h3>
+        <!-- 연도별 재무제표 비교 -->
+        <div class="relative h-72">
+            <canvas id="financialBarChart1" class="absolute inset-0"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx1 = document.getElementById('financialBarChart1').getContext('2d');
+        const financialBarChart = new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: ['2020', '2021', '2022', '2023'],
+                datasets: [
+                    {
+                        label: '매출액',
+                        data: [
+                            {{ fs2020.revenue2020 }},
+                            {{ fs2021.revenue2021 }},
+                            {{ fs2022.revenue2022 }},
+                            {{ fs2023.revenue2023 }}
+                        ],
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: '영업이익',
+                        data: [
+                            {{ fs2020.operatingIncome2020 }},
+                            {{ fs2021.operatingIncome2021 }},
+                            {{ fs2022.operatingIncome2022 }},
+                            {{ fs2023.operatingIncome2023 }}
+                        ],
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: '연도'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: '금액 (억원)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value / 100000000 + ' 억원';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+<div class="container max-w-screen-xl mx-auto p-6">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-semibold mb-4">연도별 재무정보</h2>
+        <table class="text-lg w-full text-left border-collapse">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="py-2 px-4 border-b">항목</th>
+                    <th class="py-2 px-4 border-b">2020</th>
+                    <th class="py-2 px-4 border-b">2021</th>
+                    <th class="py-2 px-4 border-b">2022</th>
+                    <th class="py-2 px-4 border-b">2023</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="py-2 px-4 border-b">총 매출</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2020.revenue2020 }}</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2021.revenue2021 }}</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2022.revenue2022 }}</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2023.revenue2023 }}</td>
+                </tr>
+                <tr>
+                    <td class="py-2 px-4 border-b">순이익</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2020.netIncome2020 }}</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2021.netIncome2021 }}</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2022.netIncome2022 }}</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2023.netIncome2023 }}</td>
+                </tr>
+                <tr>
+                    <td class="py-2 px-4 border-b">총 자산</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2020.totalAsset2020 }}</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2021.totalAsset2021 }}</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2022.totalAsset2022 }}</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2023.totalAsset2023 }}</td>
+                </tr>
+                <tr>
+                    <td class="py-2 px-4 border-b">부채총계</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2020.totalDebt2020 }}</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2021.totalDebt2021 }}</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2022.totalDebt2022 }}</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2023.totalDebt2023 }}</td>
+                </tr>
+                <tr>
+                    <td class="py-2 px-4 border-b">자본총계</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2020.totalEquity2020 }}</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2021.totalEquity2021 }}</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2022.totalEquity2022 }}</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2023.totalEquity2023 }}</td>
+                </tr>
+                <tr>
+                    <td class="py-2 px-4 border-b">자본금</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2020.capital2020 }}</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2021.capital2021 }}</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2022.capital2022 }}</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2023.capital2023 }}</td>
+                </tr>
+                <tr>
+                    <td class="py-2 px-4 border-b">영업이익</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2020.operatingIncome2020 }}</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2021.operatingIncome2021 }}</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2022.operatingIncome2022 }}</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2023.operatingIncome2023 }}</td>
+                </tr>
+                <tr>
+                    <td class="py-2 px-4 border-b">부채비율</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2020.debtRatio2020 }}%</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2021.debtRatio2021 }}%</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2022.debtRatio2022 }}%</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2023.debtRatio2023 }}%</td>
+                </tr>
+                <tr>
+                    <td class="py-2 px-4 border-b">순이익률</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2020.margin2020 }}%</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2021.margin2021 }}%</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2022.margin2022 }}%</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2023.margin2023 }}%</td>
+                </tr>
+                <tr>
+                    <td class="py-2 px-4 border-b">매출회전률</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2020.turnover2020 }}%</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2021.turnover2021 }}%</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2022.turnover2022 }}%</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2023.turnover2023 }}%</td>
+                </tr>
+                <tr>
+                    <td class="py-2 px-4 border-b">Leverage</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2020.leverage2020 }}</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2021.leverage2021 }}</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2022.leverage2022 }}</td>
+                    <td class="py-2 px-4 border-b table-cell">{{ fs2023.leverage2023 }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
 
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@latest"></script>
 
-
+<div>
+    <h2>Stock Candlestick Chart</h2>
+    <canvas id="stockChart" width="800" height="400"></canvas>
+</div>
+<script>
+    // Extracting stock data from the template
+    const stockData = {{ stockgraph.stock_data|tojson|safe }};
+    // Preparing data for Chart.js
+    const chartData = stockData.map(data => ({
+        x: new Date(data.t),  // Convert string to Date object
+        o: data.o,            // Open price
+        h: data.h,            // High price
+        l: data.l,            // Low price
+        c: data.c             // Close price
+    }));
+    // Chart configuration
+    const config = {
+        type: 'candlestick',  // Specify chart type as 'candlestick'
+        data: {
+            datasets: [{
+                label: 'Stock Prices',
+                data: chartData,
+                borderColor: 'rgba(0, 123, 255, 1)',   // Border color for the candles
+                backgroundColor: 'rgba(0, 123, 255, 0.3)',  // Background color for the candles
+                borderWidth: 1,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const price = context.raw;
+                            return `Open: ${price.o}, High: ${price.h}, Low: ${price.l}, Close: ${price.c}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    type: 'time',  // X-axis will be a time scale
+                    time: {
+                        unit: 'day',  // Unit of time for x-axis
+                        tooltipFormat: 'PPP',  // Correct tooltip format for date
+                        displayFormats: {
+                            day: 'MMM d'  // Display format for the x-axis
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    },
+                    ticks: {
+                        autoSkip: true,
+                        maxTicksLimit: 90 // Limit number of ticks on the x-axis to avoid overlap
+                    },
+                    grid: {
+                        display: false // Hide X-axis grid lines
+                    },
+                    // Adjusting the bar width and category width
+                    barPercentage: 0.2,  // Adjusted bar width percentage
+                    categoryPercentage: 0.8  // Adjusted category width percentage
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Price'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return `$${value.toFixed(2)}`;  // Format y-axis ticks
+                        }
+                    }
+                }
+            }
+        }
+    };
+    // Create the chart
+    const ctx = document.getElementById('stockChart').getContext('2d');
+    new Chart(ctx, config);
+</script>
 
 {% endblock %}
-{% include 'footer.html' %}
+{% include 'footer.html'%}
