@@ -5,6 +5,7 @@ from database import Base, engine
 from controllers.common_controllers import router
 from controllers.baro_controllers import baro
 from controllers.credit_controller import credit
+from controllers.ML_controller import machineLearning
 from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
@@ -15,6 +16,7 @@ Base.metadata.create_all(bind=engine)
 app.include_router(router)
 app.include_router(baro)
 app.include_router(credit)
+app.include_router(machineLearning)
 
 templates = Jinja2Templates(directory="templates")
 
