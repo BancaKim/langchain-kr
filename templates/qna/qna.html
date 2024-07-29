@@ -42,7 +42,8 @@
                     <tr>
                         <th scope="col" class="th-num">번호</th>
                         <th scope="col" class="th-title">제목</th>
-                        <th scope="col" class="th-date">등록일</th>
+                        <th scope="col" class="th-username">작성자</th>
+                        <th scope="col" class="th-date">등록일</th>                                                                                            
                     </tr>
                 </thead>
                 <tbody>
@@ -53,7 +54,9 @@
                             <a href="/qnas/{{ qna.id }}">{{ qna.title }}</a>
                             <p>{{ qna.content }}</p>
                         </th>
-                        <td>{{ qna.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td>{{ qna.username }}</td>
+                        <td>{{ qna.created_at.strftime('%Y-%m-%d') }}</td>
+                        
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -61,15 +64,10 @@
         </div>
     </div>
 
-    <div class="container">
-        <button onclick="location.href='/qnas/create'" class="btn btn-dark">Q&A 추가</button>
+    <div class="container btn-right">
+        <button onclick="location.href='/qnas/create'" class="btn btn-dark">Q&A 작성</button>
     </div>
-    <br/>
-    <div class="container">
-        <form action="/logout" method="post" style="display: inline;">
-            <button type="submit" class="btn btn-dark">로그아웃</button>                
-        </form>
-    </div>
+
 </section>
 
 <script src="/static/js/logout.js"></script>

@@ -1,5 +1,6 @@
+import os
 from fastapi import APIRouter, Form, HTTPException, Request, Depends, Query
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from sqlalchemy.orm import Session
 from datetime import date
 from database import SessionLocal
@@ -132,6 +133,32 @@ async def read_company_info(
     except Exception as e:
         print("An error occurred:", str(e))
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+# 법인명으로 섭외등록 연결 김철민 수정
+@baro.get("/baro_contact", response_class=HTMLResponse)
+async def read_company_info(request: Request, jurir_no: str = Query(...), register: bool = False, db: Session = Depends(get_db)):
+    company_info = get_company_info(db, jurir_no)
+    
+    if not company_info:
+        raise HTTPException(status_code=404, detail="Company not found")
+    if register:
+        # 법인명을 세션에 저장
+        request.session['corporation_name'] = company_info.corp_name
+        # 섭외등록 페이지로 리다이렉트
+        return RedirectResponse(url="/contact/create")
+    # logger.info(f"company_info.corp_code: {company_info.corp_code}")
+    # return templates.TemplateResponse("baro_service/baro_companyInfo.html", {"request": request, "company_info": company_info})
+
+# 지도에 주소 기반 검색 결과 표시 김철민 수정
+@baro.get("/baro_map2", response_class=HTMLResponse)
+async def get_map2(request: Request, jurir_no: str = Query(...), db: Session = Depends(get_db)):
+    company_info = db.query(CompanyInfo).filter(CompanyInfo.jurir_no == jurir_no).first()
+    if not company_info:
+        raise HTTPException(status_code=404, detail="Company not found")
+
+    adres = company_info.adres
+    kakao_map_api_key = os.getenv("KAKAO_MAP_API_KEY")
+    return templates.TemplateResponse("contact/map2.html", {"request": request, "kakao_map_api_key": kakao_map_api_key, "adres": adres})
 
     
 @baro.get("/test1234")
