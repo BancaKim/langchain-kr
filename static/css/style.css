@@ -5,7 +5,7 @@
   font-style: normal;
 }
 body{
- font-family: 'NPSfontBold'; 
+font-family: 'NPSfontBold'; 
 } 
 /* 기존 스타일 수정 및 추가 */
 table {
@@ -63,6 +63,7 @@ section.notice {
   width: 100%;
   border-top: 1px solid #ccc;
   border-bottom: 1px solid #ccc;
+  text-align: center; /* 중앙 정렬을 위해 추가 */
 }
 
 .board-table a {
@@ -90,6 +91,7 @@ section.notice {
 
 .board-table th, .board-table td {
   padding: 14px 0;
+  text-align: center;
 }
 
 .board-table tbody td {
@@ -101,11 +103,17 @@ section.notice {
   padding-left: 28px;
   padding-right: 14px;
   border-top: 1px solid #e7e7e7;
-  text-align: left;
+  text-align: center;
 }
 
 .board-table tbody th p {
   display: none;
+}
+
+.btn-wrap {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
 }
 
 .btn {
@@ -139,6 +147,7 @@ section.notice {
 .btn-dark {
   background: #555;
   color: #fff;
+  padding: 10px 30px; /* 세로 크기를 증가시킵니다 */
 }
 
 .btn-dark:hover, .btn-dark:focus {
@@ -308,8 +317,10 @@ section.notice {
   border-color: #333;
   outline: none;
 }
-.create button {
-  margin-top: 10px;
+.create .btn-wrap {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
 }
 
 
@@ -374,3 +385,48 @@ section.notice {
 .contact-form .btn:hover {
   background-color: #ced4da;
 }
+
+/* Update section styles */
+.update .container.create {
+  padding: 15px;
+  background-color: #f9f7f9;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  max-width: 800px;
+  margin: 30px auto;
+}
+
+.update .form-group {
+  margin-bottom: 15px;
+}
+
+.update .form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.update .form-control {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.update .form-control:focus {
+  border-color: #333;
+  outline: none;
+}
+
+.update .btn-wrap {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* 버튼들의 크기 위치 이동 */
+.btn-right {
+  text-align: right;
+  margin-top: 20px;
+}
+

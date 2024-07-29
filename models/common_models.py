@@ -115,5 +115,6 @@ class Post(Base):
     branch_office_name = Column(String(50), nullable=False)
     position_name = Column(String(50), nullable=False)
     user_rank = Column(String(50), nullable=False)
+    corporation_name = Column(String(255), nullable=True)  # New Column
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

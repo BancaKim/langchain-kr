@@ -6,7 +6,7 @@
 
 {% block content %}
 <section class="update">
-    <div class="container">
+    <div class="container create">
         <div class="page-title">
             <h3>섭외등록 글 수정</h3>
         </div>
@@ -23,13 +23,16 @@
                 <label for="file">파일 첨부 (선택 사항)</label>
                 <input type="file" id="file" name="file" class="form-control">
                 {% if post.file_path %}
-                <p>현재 파일: <a href="/download/{{ post.file_path|basename }}">{{ post.file_path|basename }}</a></p>
+                <p>현재 파일: <a href="{{ post.file_path }}" target="_blank">{{ post.file_path|basename }}</a></p>
                 {% endif %}
             </div>
-            <button type="submit" class="btn btn-dark">수정</button>
-            <button onclick="location.href='/contact'" class="btn btn-dark">목록으로</button>
+            <div class="btn-wrap">
+                <button type="submit" class="btn btn-dark">수정</button>
+                <button type="button" onclick="location.href='/contact'" class="btn btn-dark">목록으로</button>
+            </div>
         </form>
     </div>
 </section>
 {% endblock %}
+
 {% include 'footer.html' %}
