@@ -139,19 +139,34 @@ async def read_credit(
     )
 
 
-@credit.get("/reviewDetail/{rcept_no}")
-async def readcredit(request: Request, rcept_no: str, db: Session = Depends(get_db)):
-    reportContent = (
-        db.query(ReportContent).filter(ReportContent.rcept_no == rcept_no).first()
-    )
-    return templates.TemplateResponse(
-        "creditreview/review_detail.html",
-        {
-            "request": request,
-            "reportContent": reportContent,
-        },
-    )
+@credit.get("/reviewDetail/{rcept_no}/{corp_code}")
+async def readcredit(request: Request, rcept_no: str, corp_code: str = None, db: Session = Depends(get_db)):
+    try:
+        # Fetch the report content based on rcept_no
+        reportContent = db.query(ReportContent).filter(ReportContent.rcept_no == rcept_no).first()
+        if not reportContent:
+            raise HTTPException(status_code=404, detail="Report content not found")
 
+        company_info = None
+        if corp_code:
+            # Fetch company info based on corp_code if provided
+            company_info = db.query(CompanyInfo).filter(CompanyInfo.corp_code == corp_code).first()
+            if company_info:
+                print("company_info:", company_info)  # Debug print to check if company_info is fetched
+            else:
+                print("Company info not found for corp_code:", corp_code)
+                
+        return templates.TemplateResponse(
+            "creditreview/review_detail.html",
+            {
+                "request": request,
+                "reportContent": reportContent,
+                "company_info": company_info
+            },
+        )
+    except Exception as e:
+        print("An error occurred:", str(e))  # Debug print
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @credit.get("/stream-content/{rcept_no}")
 async def stream_content(rcept_no: str, db: Session = Depends(get_db)):
@@ -160,15 +175,53 @@ async def stream_content(rcept_no: str, db: Session = Depends(get_db)):
     )
     content = reportContent.report_content if reportContent else ""
 
-    async def content_generator():
-        for char in content:
-            if char == "\n":
-                yield "<br>"  # HTML 줄바꿈 태그
-            else:
-                yield char
-            await asyncio.sleep(0.005)  # 50ms 딜레이
+    
+    # 문단 구분 (예: 특정 키워드를 사용하여 문단 나누기)
+    sections = content.split("\n\n")
+    paragraphs = {
+        "company_overview": sections[0] if len(sections) > 0 else "",
+        "industry_analysis": sections[1] if len(sections) > 1 else "",
+        "operational_status": sections[2] if len(sections) > 2 else "",
+        "financial_structure": sections[3] if len(sections) > 3 else "",
+        "credit_rating_opinion": sections[4] if len(sections) > 4 else ""
+    }
+    
+    # 제목 매핑
+    titles = {
+        "company_overview": "기업체 개요",
+        "industry_analysis": "산업 분석",
+        "operational_status": "영업 현황 및 수익 구조",
+        "financial_structure": "재무 구조 및 현금 흐름",
+        "credit_rating_opinion": "신용 등급 부여 의견"
+    }
+    
+    def extract_content(text):
+        delimiter = '**: '
+        start_index = text.find(delimiter)
+        if start_index != -1:
+            return text[start_index + len(delimiter):].strip()
+        return text    
 
-    return StreamingResponse(content_generator(), media_type="text/html")
+
+    async def content_generator():
+        for key in ["company_overview", "industry_analysis", "operational_status", "financial_structure", "credit_rating_opinion"]:
+            paragraph_content = extract_content(paragraphs[key])
+            html_content = (
+                "<div class='flex-1 bg-white rounded-lg shadow-lg'>"
+                f"<div class='bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg'>"
+                f"<h2 class='text-xl font-semibold text-gray-800'>{titles[key]}</h2></div>"
+                f"<div class='p-6 text-lg'>{paragraph_content}</div></div><br>"
+            )
+
+            # print(f"Generated HTML for {key}: {html_content}")
+            # print(paragraphs[key])
+            yield html_content
+            await asyncio.sleep(0.1)  # 소량의 대기시간을 추가하여 스트리밍처럼 보이도록
+
+    return StreamingResponse(content_generator(), media_type="text/html")            
+            
+
+
 
 
 @credit.get("/autocomplete", response_model=List[str])

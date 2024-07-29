@@ -76,7 +76,7 @@ async def get_companies(
     }
 
 
-@marketing.get("/api/companies/search")
+@marketing.get("/api/global_companies/search")
 async def search_companies(
     db: Session = Depends(get_db),
     name: Optional[str] = Query(None),
@@ -92,6 +92,8 @@ async def search_companies(
     else:
         raise ValueError("Invalid search type")
 
+    print(search_type)
+    print(name)
     # Build the query
     query = db.query(GlobalMarketing)
 
@@ -106,7 +108,7 @@ async def search_companies(
     print(total_pages)
     # Apply pagination
     globalMarketings = query.offset((page - 1) * per_page).limit(per_page).all()
-
+    print(globalMarketings)
     return {
         "globalMarketings": [
             content.to_dict() for content in globalMarketings
@@ -175,3 +177,36 @@ async def read_global(request: Request, corp_code: str, db: Session = Depends(ge
     except Exception as e:
         print(f"Error in read_global: {str(e)}")
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+
+
+
+@marketing.get("/global_autocomplete", response_model=List[str])
+async def autocomplete(
+    query: str,
+    search_type: str = Query("company_name", enum=["company_name", "company_code"]),
+):
+    db = SessionLocal()
+    print(search_type)
+    try:
+        # Determine the column based on search_type
+        if search_type == "company_name":
+            column = "corp_name"
+            print(column)
+        elif search_type == "company_code":
+            column = "corp_code"
+            print(column)
+        else:
+            raise ValueError("Invalid search type")
+
+        sql_query = text(
+            f"""
+            SELECT {column}
+            FROM global_marketing
+            WHERE {column} LIKE :query
+            LIMIT 10
+        """
+        )
+        results = db.execute(sql_query, {"query": f"{query}%"}).fetchall()
+        return [row[0] for row in results]  # Return list of results
+    finally:
+        db.close()
