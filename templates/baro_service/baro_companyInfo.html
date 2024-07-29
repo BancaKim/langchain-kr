@@ -98,93 +98,92 @@
 <!-- 주가 정보 ---------------------------------------------------------------------------------------------------------------------->
 <div class="container max-w-screen-xl mx-auto p-6">
     <h2 class="text-3xl font-bold mb-6">주가 정보</h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="p-6 bg-white rounded-lg shadow-md">
+            <h3 class="text-2xl font-semibold mb-4">시가총액</h3>
+            <p class="text-3xl font-bold text-gray-800">
+                {{ "{:,}".format(stock_data.market_capitalization // 1000) }} 천원
+            </p>
+        </div>
+        <div class="p-6 bg-white rounded-lg shadow-md">
+            <h3 class="text-2xl font-semibold mb-4">PER</h3>
+            <p class="text-3xl font-bold text-gray-800">{{ stock_data.per_value }}</p>
+        </div>
+        <div class="p-6 bg-white rounded-lg shadow-md">
+            <h3 class="text-2xl font-semibold mb-4">PBR</h3>
+            <p class="text-3xl font-bold text-gray-800">{{ stock_data.pbr_value }}</p>
+        </div>
+    </div>
+    <br>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- 가로 1: 시가총액, PER, PBR을 세로로 배치 -->
         <div class="col-span-1 flex flex-col space-y-6">
             <!-- 시가총액 -->
             <div class="p-6 bg-white rounded-lg shadow-md">
-                <h3 class="text-2xl font-semibold mb-4">시가총액</h3>
-                <p class="text-3xl font-bold text-gray-800">
-                    {{ "{:,}".format(stock_data.market_capitalization // 1000) }} 천원
+                <h3 class="text-2xl font-semibold mb-4">1년 성장률
+                    <span class="text-lg font-semibold mb-4"> 
+                    (주가변동률)
+                    </span>
+                </h3>
+                <p class="text-3xl font-bold text-black-800">
+                    {{ '{:.1f}'.format(stock_data.cagr_1y * 100) }}% 
+                    <span class="text-xl font-normal text-black-600"> 
+                        ({{ '{:.1f}'.format(stock_data.vol_1y * 100) }}%)
+                    </span>
                 </p>
             </div>
             <!-- PER -->
             <div class="p-6 bg-white rounded-lg shadow-md">
-                <h3 class="text-2xl font-semibold mb-4">PER</h3>
-                <p class="text-3xl font-bold text-gray-800">{{ stock_data.per_value }}</p>
+                <h3 class="text-2xl font-semibold mb-4">3년 성장률
+                    <span class="text-lg font-semibold mb-4"> 
+                    (주가변동률)
+                    </span>
+                </h3>
+                <p class="text-3xl font-bold text-black-800">
+                    {{ '{:.1f}'.format(stock_data.cagr_3y * 100) }}% 
+                    <span class="text-xl font-normal text-black-600"> 
+                        ({{ '{:.1f}'.format(stock_data.vol_3y * 100) }}%)
+                    </span>
+                </p>
             </div>
             <!-- PBR -->
             <div class="p-6 bg-white rounded-lg shadow-md">
-                <h3 class="text-2xl font-semibold mb-4">PBR</h3>
-                <p class="text-3xl font-bold text-gray-800">{{ stock_data.pbr_value }}</p>
+                <h3 class="text-2xl font-semibold mb-4">5년 성장률
+                    <span class="text-lg font-semibold mb-4"> 
+                    (주가변동률)
+                    </span>
+                </h3>
+                <p class="text-3xl font-bold text-black-800">
+                    {{ '{:.1f}'.format(stock_data.cagr_5y * 100) }}% 
+                    <span class="text-xl font-normal text-black-600"> 
+                        ({{ '{:.1f}'.format(stock_data.vol_5y * 100) }}%)
+                    </span>
+                </p>
             </div>
         </div>
 
         <!-- 가로 2: 누적 성장·변동률 추세 그래프 -->
         <div class="col-span-2 bg-white rounded-lg shadow-md p-6">
+            <!--
             <h2 class="text-2xl font-semibold mb-4">주가 성장·변동률 추세</h2>
             <div class="relative h-80">
                 <canvas id="financialTrendChart" class="absolute inset-0"></canvas>
             </div>
+            -->
+            <h2 class="text-2xl font-semibold mb-4">최근 3개월 주가 추이</h2>
+            <div class="relative h-80">     
+                <style>
+                    canvas {
+                        width: 100% !important; /* 부모 요소에 맞게 자동 조정 */
+                        height: 110% !important; /* 부모 요소에 맞게 자동 조정 */
+                    }
+                </style>
+                <canvas id="stockChart"></canvas>
+            </div>
         </div>
     </div>
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const ctx = document.getElementById('financialTrendChart').getContext('2d');
-        const financialTrendChart = new Chart(ctx, {
-            type: 'line', // 꺾은선 그래프
-            data: {
-                labels: ['5년', '3년', '1년'],
-                datasets: [
-                    {
-                        label: '성장률',
-                        data: [
-                            {{ stock_data.cagr_5y }},
-                            {{ stock_data.cagr_3y }},
-                            {{ stock_data.cagr_1y }}
-                        ],
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderWidth: 2,
-                        fill: true // 꺾은선 그래프의 영역을 채우기
-                    },
-                    {
-                        label: '변동률',
-                        data: [
-                            {{ stock_data.vol_5y }},
-                            {{ stock_data.vol_3y }},
-                            {{ stock_data.vol_1y }}
-                        ],
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        borderWidth: 2,
-                        fill: true // 꺾은선 그래프의 영역을 채우기
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false, // 부모 요소에 맞게 조정
-                scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: '누적 기간'
-                        }
-                    },
-                    y: {
-                        title: {
-                            display: true,
-                            text: '백분율(%)'
-                        }
-                    }
-                }
-            }
-        });
-    });
-</script>
 
 <!-- 재무 정보 ---------------------------------------------------------------------------------------------------------------------->
 
@@ -381,10 +380,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@latest"></script>
 
-<div>
-    <h2>Stock Candlestick Chart</h2>
-    <canvas id="stockChart" width="800" height="400"></canvas>
-</div>
 <script>
     // Extracting stock data from the template
     const stockData = {{ stockgraph.stock_data|tojson|safe }};
@@ -401,24 +396,29 @@
         type: 'candlestick',  // Specify chart type as 'candlestick'
         data: {
             datasets: [{
-                label: 'Stock Prices',
+
                 data: chartData,
                 borderColor: 'rgba(0, 123, 255, 1)',   // Border color for the candles
                 backgroundColor: 'rgba(0, 123, 255, 0.3)',  // Background color for the candles
                 borderWidth: 1,
+                // Adjust the width of the candlesticks
+                barThickness: 8,  // Increase or decrease this value to adjust the width
+                categoryPercentage: 0.8, // Adjust spacing between categories
+                barPercentage: 1.0 // Adjust spacing within each category
             }]
         },
         options: {
-            responsive: true,
+            responsive: false,
+            maintainAspectRatio: true,
             plugins: {
-                legend: {
+                /*legend: {
                     position: 'top',
-                },
+                },*/
                 tooltip: {
                     callbacks: {
                         label: function(context) {
                             const price = context.raw;
-                            return `Open: ${price.o}, High: ${price.h}, Low: ${price.l}, Close: ${price.c}`;
+                            return `시가: ${price.o}, 고가: ${price.h}, 저가: ${price.l}, 종가: ${price.c}`;
                         }
                     }
                 }
@@ -433,29 +433,33 @@
                             day: 'MMM d'  // Display format for the x-axis
                         }
                     },
-                    title: {
+                    /*title: {
                         display: true,
                         text: 'Date'
-                    },
+                    },*/
                     ticks: {
                         autoSkip: true,
-                        maxTicksLimit: 90 // Limit number of ticks on the x-axis to avoid overlap
+                        maxTicksLimit: 100, // Limit number of ticks on the x-axis
+                        maxRotation: 0, // Prevent labels from rotating
+                        minRotation: 0
                     },
                     grid: {
                         display: false // Hide X-axis grid lines
-                    },
-                    // Adjusting the bar width and category width
-                    barPercentage: 0.2,  // Adjusted bar width percentage
-                    categoryPercentage: 0.8  // Adjusted category width percentage
+                    }
                 },
                 y: {
-                    title: {
+                    /*title: {
                         display: true,
-                        text: 'Price'
-                    },
+                        text: 'Price(₩)'
+                    },*/
                     ticks: {
                         callback: function(value) {
-                            return `$${value.toFixed(2)}`;  // Format y-axis ticks
+                            return '₩' + value.toLocaleString();  // Format y-axis ticks
+                        },
+                        font: {
+                            size: 13,  // Adjust the font size
+                            weight: 'bold',  // Adjust the font weight
+                            color: 'black' 
                         }
                     }
                 }
@@ -466,6 +470,7 @@
     const ctx = document.getElementById('stockChart').getContext('2d');
     new Chart(ctx, config);
 </script>
+
 
 {% endblock %}
 {% include 'footer.html'%}
