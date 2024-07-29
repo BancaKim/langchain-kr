@@ -26,7 +26,6 @@ def get_db():
         yield db
     finally:
         db.close()
-        
 
 
 
@@ -170,15 +169,3 @@ async def autocomplete(
         return [row[0] for row in results]  # Return list of results
     finally:
         db.close()
-
-
-@baro.get("/stockgraph2", response_class=HTMLResponse)
-async def read_stock_price(request: Request):
-    stock_code = request.query_params.get("stock_code", "AAPL")  # Default to AAPL if no stock_code is provided
-    data = get_stock_price_data(stock_code)
-    return HTMLResponse(content=data["html"])
-
-@baro.get("/stockgraph1")
-async def stock_data(stock_code: str):
-    data = get_stock_price_data(stock_code)
-    return data["json"]
