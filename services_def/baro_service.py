@@ -80,8 +80,27 @@ def get_company_info_list(db: Session, jurir_no_list: List[str]) -> List[Company
 def get_company_info(db: Session, jurir_no: str):
     return db.query(CompanyInfo).filter(CompanyInfo.jurir_no == jurir_no).first()
 
+
+def get_company_info2(db: Session, corp_code: str):
+    return db.query(CompanyInfo).filter(CompanyInfo.corp_code == corp_code).first()
+
 def get_Stock_data(db: Session, corp_code: str):
-    return db.query(StockData).filter(StockData.corp_code == corp_code).first()
+    stock_data = db.query(StockData).filter(StockData.corp_code == corp_code).first()
+    if stock_data is None:
+        # Return a default object with all attributes set to 0
+        return StockData(
+            market_capitalization=0,
+            per_value=0,
+            pbr_value=0,
+            cagr_1y=0,
+            cagr_3y=0,
+            cagr_5y=0,
+            vol_1y=0,
+            vol_3y=0,
+            vol_5y=0
+            # Add other fields if needed and set them to 0
+        )
+    return stock_data
 
 def get_FS2023_list(db: Session, jurir_no_list: List[str]) -> List[FS2023]:
     return db.query(FS2023).filter(FS2023.jurir_no.in_(jurir_no_list)).all()

@@ -119,7 +119,7 @@
                     {{reportContent.rcept_dt}}
                 </td>
                 <td class="px-6 py-4">
-                    <a href="/credit/reviewDetail/{{reportContent.rcept_no}}"
+                    <a href="/credit/reviewDetail/{{reportContent.rcept_no}}/{{reportContent.corp_code}}"
                         class="font-medium text-purple-600 dark:text-purple-400 hover:underline">보고서 생성</a>
                 </td>
             </tr>
@@ -215,7 +215,7 @@
                     ${company.rcept_dt}
                 </td>
                 <td class="px-6 py-4">
-                    <a href="/credit/reviewDetail/${company.rcept_no}"
+                    <a href="/credit/reviewDetail/${company.rcept_no}/${company.corp_code}"
                         class="font-medium text-purple-600 dark:text-purple-400 hover:underline">보고서 생성</a>
                 </td>
             </tr>

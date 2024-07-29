@@ -106,7 +106,7 @@ async def read_company_info(
                 FS2021 = get_FS2021(db, jurir_no)
                 FS2020 = get_FS2020(db, jurir_no)
                 stock_data = get_Stock_data(db, company_info.corp_code)
-               ## stockgraph = get_stockgraph(db, company_info.stock_code)
+                stockgraph = await get_stockgraph( company_info.stock_code)  # await 사용
             else:
                 print("Company info is None")
         else:
@@ -125,7 +125,7 @@ async def read_company_info(
                 "fs2021": FS2021,
                 "fs2020": FS2020,
                 "stock_data": stock_data,
-                ##"stockgraph": stockgraph  # stockgraph 변수를 템플릿에 전달
+                "stockgraph": stockgraph  # stockgraph 변수를 템플릿에 전달
             }
         )
     except Exception as e:
