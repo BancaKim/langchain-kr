@@ -657,51 +657,54 @@ async def create_post_page(request: Request):
         "login_required": login_required
     })
 
-# 섭외등록 검색
+# 검색 및 페이지네이션 처리 함수
 @router.get("/contact/search")
-async def search_posts(
+async def search_contacts(
     request: Request,
-    search_type: str = Query(...),
-    search_query: str = Query(...),
-    db: Session = Depends(get_db),
+    search_type: str,
+    search_query: str,
+    page: int = 1,
+    db: Session = Depends(get_db)
 ):
-    username = request.session.get("username")
+    page_size = 10
+    offset = (page - 1) * page_size
 
-    if search_type == "title":
-        posts = db.query(Post).filter(Post.title.contains(search_query)).all()
-    elif search_type == "content":
-        posts = db.query(Post).filter(
-            Post.content.contains(search_query)).all()
-    elif search_type == "title_content":
-        posts = db.query(Post).filter(
-            or_(
-                Post.title.contains(search_query),
-                Post.content.contains(search_query),
-            )
-        ).all()
-    elif search_type == "region_group":
-        posts = db.query(Post).filter(
-            Post.region_group_name.contains(search_query)).all()
-    elif search_type == "region_headquarter":
-        posts = db.query(Post).filter(
-            Post.region_headquarter_name.contains(search_query)).all()
-    elif search_type == "branch_office":
-        posts = db.query(Post).filter(
-            Post.branch_office_name.contains(search_query)).all()
-    elif search_type == "corporation_name":
-        posts = db.query(Post).filter(
-            Post.corporation_name.contains(search_query)).all()
+    if search_type == 'title':
+        posts = db.query(Post).filter(Post.title.contains(search_query)).offset(offset).limit(page_size).all()
+    elif search_type == 'content':
+        posts = db.query(Post).filter(Post.content.contains(search_query)).offset(offset).limit(page_size).all()
+    elif search_type == 'title_content':
+        posts = db.query(Post).filter(Post.title.contains(search_query) | Post.content.contains(search_query)).offset(offset).limit(page_size).all()
+    elif search_type == 'region_group':
+        posts = db.query(Post).filter(Post.region_group_name.contains(search_query)).offset(offset).limit(page_size).all()
+    elif search_type == 'region_headquarter':
+        posts = db.query(Post).filter(Post.region_headquarter_name.contains(search_query)).offset(offset).limit(page_size).all()
+    elif search_type == 'branch_office':
+        posts = db.query(Post).filter(Post.branch_office_name.contains(search_query)).offset(offset).limit(page_size).all()
+    elif search_type == 'corporation_name':
+        posts = db.query(Post).filter(Post.corporation_name.contains(search_query)).offset(offset).limit(page_size).all()
     else:
-        posts = db.query(Post).all()
+        posts = db.query(Post).offset(offset).limit(page_size).all()
 
-    return templates.TemplateResponse(
-        "contact/contact.html",
-        {
-            "request": request,
-            "posts": posts,
-            "username": username
-        }
-    )
+    total_posts = db.query(Post).filter(
+        (Post.title.contains(search_query)) |
+        (Post.content.contains(search_query)) |
+        (Post.region_group_name.contains(search_query)) |
+        (Post.region_headquarter_name.contains(search_query)) |
+        (Post.branch_office_name.contains(search_query)) |
+        (Post.corporation_name.contains(search_query))
+    ).count()
+    total_pages = (total_posts // page_size) + (1 if total_posts % page_size > 0 else 0)
+
+    return templates.TemplateResponse("contact/contact.html", {
+        "request": request,
+        "posts": posts,
+        "search_type": search_type,
+        "search_query": search_query,
+        "page": page,
+        "total_pages": total_pages
+    })
+
 
 # 섭외등록 상세 조회
 @router.get("/contact/{post_id}", response_class=HTMLResponse)
