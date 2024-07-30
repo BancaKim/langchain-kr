@@ -2,6 +2,9 @@
 
 {% block head %}
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/font.css">
 <link rel="stylesheet" href="/static/css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
@@ -16,11 +19,13 @@
         z-index: 10;
         position: relative;
     }
+
     .pagination {
         display: flex;
         justify-content: center;
         margin: 20px 0;
     }
+
     .pagination a {
         color: #333;
         padding: 8px 16px;
@@ -29,10 +34,12 @@
         margin: 0 4px;
         border-radius: 4px;
     }
+
     .pagination a.active {
         background-color: #444;
         color: white;
     }
+
     .pagination a:hover:not(.active) {
         background-color: #ddd;
     }
@@ -40,35 +47,115 @@
 {% endblock %}
 
 {% block content %}
-<section class="notice">
-    <div class="container">
-        <div class="page-title">
-            <h3>섭외등록</h3>
-        </div>
 
-        <!-- board search area -->
-        <div id="board-search">
-            <div class="container">
-                <div class="search-window">
-                    <form action="/contact/search" method="get">
-                        <div class="search-wrap">
-                            <label for="search" class="blind">섭외등록 내용 검색</label>
-                            <select name="search_type" id="search_type">
-                                <option value="title">제목</option>
-                                <option value="content">내용</option>
-                                <option value="title_content">제목+내용</option>
-                                <option value="region_group">지역 그룹</option>
-                                <option value="region_headquarter">지역 본부</option>
-                                <option value="branch_office">지점</option>
-                                <option value="corporation_name">법인명</option>
-                            </select>
-                            <input id="search" type="search" name="search_query" placeholder="검색어를 입력해주세요." value="">
-                            <button type="submit" class="btn btn-dark">검색</button>
-                        </div>
-                    </form>
+
+<div class="w-full"
+    style="background-image: url('static/images/home8.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 50vh;">
+
+    <div class="p-8 w-full max-w-screen-xl mx-auto">
+        <span class="block text-left text-xl mb-2">
+            <a href="/" class="mr-2 text-white">홈 &nbsp; |</a>
+            <a href="/contact" class="ml-2 text-white">섭외등록</a>
+        </span>
+        <br><br><br>
+
+        <div class="text-center mb-4">
+            <h1 class="text-5xl font-bold text-white">섭외 등록</h1>
+        </div>
+        <br><br><br>
+
+        <!-- 검색란 -->
+        <div class="w-full max-w-4xl mx-auto">
+            <div class="relative flex">
+                <!-- 검색 타입 선택 -->
+                <div class="relative w-48">
+                    <select id="search_type"
+                        class="block w-full py-2.5 px-4 text-base font-medium text-gray-900 bg-gray-50 border-gray-300 rounded-s-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600">
+                        <option value="company_name">회사명</option>
+                        <option value="company_code">회사코드</option>
+                    </select>
                 </div>
+                <!-- 검색 입력 필드 -->
+                <div class="relative w-full">
+                    <input type="search" id="company_name" name="company_name"
+                        class="block p-2.5 w-full text-base text-gray-900 bg-gray-50 rounded-e-lg border-s-gray-50 border-s-2 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-s-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
+                        placeholder="정보를 입력하세요..." required />
+                    <!-- 자동완성 결과 표시 -->
+                    <div id="autocomplete-results"
+                        class="absolute top-full left-0 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-10 hidden">
+                        <!-- JavaScript로 동적으로 결과 항목을 추가합니다. -->
+                    </div>
+                </div>
+                <!-- 검색 버튼 -->
+                <button type="submit" id="search_button"
+                    class="absolute top-0 end-0 p-2.5 text-sm font-medium h-full text-white bg-purple-700 rounded-e-lg border border-blue-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 20 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                    </svg>
+                </button>
             </div>
         </div>
+
+        <br><br><br>
+    </div>
+</div>
+
+
+
+
+<section class="notice">
+    <div class="container">
+
+<!-- board search area -->
+<div id="board-search" class="w-full max-w-4xl mx-auto my-6">
+    <div class="container">
+        <div class="search-window">
+            <form action="/contact/search" method="get">
+                <div class="relative flex">
+                    <!-- 검색 타입 선택 -->
+                    <div class="relative w-48">
+                        <label for="search_type" class="sr-only">검색 타입 선택</label>
+                        <select name="search_type" id="search_type"
+                            class="block w-full py-2.5 px-4 text-base font-medium text-gray-900 bg-gray-50 border-gray-300 rounded-l-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600">
+                            <option value="title">제목</option>
+                            <option value="content">내용</option>
+                            <option value="title_content">제목+내용</option>
+                            <option value="region_group">지역 그룹</option>
+                            <option value="region_headquarter">지역 본부</option>
+                            <option value="branch_office">지점</option>
+                            <option value="corporation_name">법인명</option>
+                        </select>
+                    </div>
+                    <!-- 검색 입력 필드 -->
+                    <div class="relative w-full">
+                        <label for="search" class="sr-only">검색어를 입력해주세요</label>
+                        <input id="search" type="search" name="search_query"
+                            class="block p-2.5 w-full text-base text-gray-900 bg-gray-50 rounded-r-lg border-l-gray-50 border-l-2 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-l-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
+                            placeholder="검색어를 입력해주세요." value="">
+                        <!-- 자동완성 결과 표시 -->
+                        <div id="autocomplete-results"
+                            class="absolute top-full left-0 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-10 hidden">
+                            <!-- JavaScript로 동적으로 결과 항목을 추가합니다. -->
+                        </div>
+                    </div>
+                    <!-- 검색 버튼 -->
+                    <button type="submit"
+                        class="p-2.5 text-sm font-medium text-white bg-purple-700 rounded-r-lg border border-purple-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-800">
+                        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 20 20">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                        </svg>
+                        <span class="sr-only">검색</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 
         <table class="board-table">
             <thead>
