@@ -6,100 +6,110 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
 <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
 <link rel="stylesheet" href="/static/css/font.css">
+<style>
+        .home-left-section {
+            display: flex;
+            background-image: url('static/images/home3.png'); /* 배경 이미지 경로  8 */
+            background-size: cover; /* 배경 이미지가 div를 완전히 덮도록 설정 */
+            background-position: center; /* 배경 이미지의 중앙 정렬 */
+            background-repeat: no-repeat; /* 배경 이미지 반복 방지 */
+            padding: 20px; /* 내부 여백 추가 */
+            color: #fff; /* 텍스트 색상 설정 (이미지에 대비되도록) */
+            text-align: center; /* 텍스트 중앙 정렬 */
+            flex-direction: column; 
+            justify-content: center;
+        }
+
+</style>
 {% endblock %}
 
 {% block content %}
 
-
-<div class="bg-yellow-50">
-    <div class="rounded-lg p-8 w-9/12 mx-auto">
-
-        <span class="block text-left text-xl mb-2">
-            <a href="/" class="mr-2">홈</a> &nbsp; | &nbsp;
-            <a href="/home" class="ml-2">로그인</a> &nbsp; | &nbsp;
-            <span>회원가입</span>
-        </span>
-        <br><br><br><br>
-
-        <div class="text-center mb-4">
-            <h1 class="text-5xl font-bold">기업금융 Total Solution, Spoon</h1>
-            
-        </div>
-        <br><br><br><br>
-    </div>
-</div>
-<br>
-
 <div class="home-container">
-    <div class="home-content">
+    <div class="home-content mt-20 mb-40">
+        <!--        
         <div class="home-left-section">
-            <h1 class="home-title">기업금융 <br /><br />Total-Solution Spoon</h1><br />
+            <h1 class="home-title">기업금융 <br /><br />Total Solution Spoon</h1><br />
             <p class="home-description">기업금융을 보다 더 쉽게!</p>
         </div>
+        -->
+
         <div class="home-right-section">
-            <h2 class="home-welcome">Spoon 회원가입</h2>
-            <p class="home-subtitle">Spoon 서비스의 회원이 되어 다양한 기능을 이용해보세요.</p>
-            <form id="signupForm" onsubmit="submitSignupForm(event)" class="home-form">
-                <div class="home-form-group">
-                    <label for="signup_username">사용자 이름:</label>
-                    <input type="text" id="signup_username" name="username" required>
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">Spoon 회원가입</h2>
+            <p class="text-lg text-gray-600 mb-8">Spoon 서비스 회원이 되어, 다양한 기능을 이용해보세요.</p>
+            <form id="signupForm" onsubmit="submitSignupForm(event)" class="space-y-6">
+                <div class="flex space-x-4">
+                    <div class="flex-1 space-y-2">
+                        <label for="signup_username" class="block text-gray-700 font-medium">ID:</label>
+                        <input type="text" id="signup_username" name="username" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="flex-1 space-y-2">
+                        <label for="signup_password" class="block text-gray-700 font-medium">비밀번호:</label>
+                        <input type="password" id="signup_password" name="password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
                 </div>
-                <div class="home-form-group">
-                    <label for="signup_email">이메일:</label>
-                    <input type="email" id="signup_email" name="email" required>
+                <div class="space-y-2">
+                    <label for="signup_email" class="block text-gray-700 font-medium">이메일:</label>
+                    <input type="email" id="signup_email" name="email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
-                <div class="home-form-group">
-                    <label for="signup_password">비밀번호:</label>
-                    <input type="password" id="signup_password" name="password" required>
+
+                <div class="flex space-x-4">
+                    <div class="w-1/2 space-y-2">
+                        <label for="region_group" class="block text-gray-700 font-medium">지역 그룹:</label>
+                        <select id="region_group" name="region_group" required onchange="updateRegionHeadquarters()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">선택하세요</option>
+                            <option value="1">강남지역그룹</option>
+                            <option value="2">경인지역그룹</option>
+                        </select>
+                    </div>
+                    <div class="w-1/2 space-y-2">
+                        <label for="region_headquarter" class="block text-gray-700 font-medium">지역 본부:</label>
+                        <select id="region_headquarter" name="region_headquarter" required onchange="updateBranches()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">선택하세요</option>
+                        </select>
+                    </div>
+                </div>        
+                <div class="flex space-x-4">
+                    <div class="flex-1 space-y-2">
+                        <label for="branch" class="block text-gray-700 font-medium">지점:</label>
+                        <select id="branch" name="branch" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">선택하세요</option>
+                        </select>
+                    </div>
+                    <div class="flex-1 space-y-2">
+                        <label for="rank" class="block text-gray-700 font-medium">직급:</label>
+                        <select id="rank" name="rank" required onchange="updatePositions()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">선택하세요</option>
+                            <option value="L0">L0</option>
+                            <option value="L1">L1</option>
+                            <option value="L2">L2</option>
+                            <option value="L3">L3</option>
+                            <option value="L4">L4</option>
+                        </select>
+                    </div>
+                    <div class="flex-1 space-y-2">
+                        <label for="position" class="block text-gray-700 font-medium">직위:</label>
+                        <select id="position" name="position" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">선택하세요</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="home-form-group">
-                    <label for="region_group">지역 그룹:</label>
-                    <select id="region_group" name="region_group" required onchange="updateRegionHeadquarters()">
-                        <option value="">선택하세요</option>
-                        <option value="1">강남지역그룹</option>
-                        <option value="2">경인지역그룹</option>
-                    </select>
-                </div>
-                <div class="home-form-group">
-                    <label for="region_headquarter">지역 본부:</label>
-                    <select id="region_headquarter" name="region_headquarter" required onchange="updateBranches()">
-                        <option value="">선택하세요</option>
-                    </select>
-                </div>
-                <div class="home-form-group">
-                    <label for="branch">지점:</label>
-                    <select id="branch" name="branch" required>
-                        <option value="">선택하세요</option>
-                    </select>
-                </div>
-                <div class="home-form-group">
-                    <label for="rank">직급:</label>
-                    <select id="rank" name="rank" required onchange="updatePositions()">
-                        <option value="">선택하세요</option>
-                        <option value="L0">L0</option>
-                        <option value="L1">L1</option>
-                        <option value="L2">L2</option>
-                        <option value="L3">L3</option>
-                        <option value="L4">L4</option>
-                    </select>
-                </div>
-                <div class="home-form-group">
-                    <label for="position">직위:</label>
-                    <select id="position" name="position" required>
-                        <option value="">선택하세요</option>
-                    </select>
-                </div>
+                <br>
                 <div class="home-buttons">
                     <button type="submit" class="home-button">회원가입</button>
                 </div>
             </form>
-            <a href="/home" class="home-signup-link">이미 회원이신가요? <span>로그인</span>하세요</a>
+            <a href="/home" class="block text-center mt-4 text-gray-500 hover:underline">이미 회원이신가요? <span class="font-semibold">로그인</span>하세요</a>
         </div>
+
     </div>
 </div>
+
+
+
+
 <script>
     function updateRegionHeadquarters() {
         const regionGroupId = document.getElementById('region_group').value;

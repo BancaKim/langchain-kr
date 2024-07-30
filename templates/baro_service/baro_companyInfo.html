@@ -12,27 +12,29 @@
 {% endblock %}
 
 {% block content %}
-<div class="bg-red-50">
-    <div class="rounded-lg p-8 w-9/12 mx-auto">
+<div class="w-full" style="background-image: url('static/images/home4.png'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 40vh;">
+    <div class="p-8 w-full max-w-screen-xl mx-auto" >
         <span class="block text-left text-xl mb-2">
-            <a href="/" class="mr-2">홈</a> &nbsp; | &nbsp;
-            <a href="/baro_companyList" class="ml-2">기업검색</a> &nbsp; | &nbsp;
-            <span>상세조회</span>
+            <a href="/" class="mr-2 text-white">홈  &nbsp; |</a> 
+            <a href="/baro_companyList" class="ml-2 text-white">바로등급 &nbsp; |</a>
+            <span class="text-white"> &nbsp;  상세조회</span>
         </span>
         <br><br><br>
+
+
         <div class="text-center mb-4">
-            <h1 class="text-5xl font-bold">업체 상세 현황</h1>
+            <h1 class="text-6xl font-bold text-white">기업 정보</h1>
         </div>
-        <br><br><br><br>
+        <br><br><br>
     </div>
 </div>
 
 <br>
 <div class="container mx-auto p-6 max-w-screen-xl">
     <h2 class="text-4xl font-bold mb-10">{{ company_info.corp_name }}</h2>
-    <h2 class="text-3xl font-bold">기업 정보</h2>
     <div class="grid grid-cols-3 gap-6">
         <div class="box bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-3xl font-bold">기본 정보</h2>
             {% if company_info %}
             <br>
             <ul class="list-disc pl-5 space-y-2">
