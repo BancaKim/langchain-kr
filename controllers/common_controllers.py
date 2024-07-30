@@ -36,7 +36,7 @@ from schemas.common_schemas import (
     QnaUpdate,
     ContactForm,
 )
-from services_def.email_utils import send_email
+from services_def.email_utils import find_supervisor_email, send_email
 from services_def.connection_manager import manager
 import urllib.parse
 
@@ -126,11 +126,11 @@ async def signup(signup_data: UserCreate, db: Session = Depends(get_db)):
         logging.info(f"Error2: {e}")
         db.rollback()
         return JSONResponse(
-            status_code=500, content={"message": "회원가입이 실패했습니다. 기입한 내용을 확인해보세요.", "message_icon": "error"}
+            status_code=500, content={"message": "회원가입을 실패했습니다. 기입한 내용을 확인해보세요.", "message_icon": "error"}
         )
     db.refresh(new_user)
     return JSONResponse(
-        status_code=200, content={"message": "회원가입이 성공했습니다.", "message_icon": "success", "url": "/login"}
+        status_code=200, content={"message": "회원가입을 성공했습니다.", "message_icon": "success", "url": "/login"}
     )
 
 
@@ -184,7 +184,7 @@ async def login(
         request.session["username"] = user.username
         response = templates.TemplateResponse(
             "loginjoin/home.html",
-            {"request": request, "message": "로그인이 성공했습니다.",
+            {"request": request, "message": "로그인을 성공했습니다.",
                 "message_icon": "success", "url": "/"},
         )
         encoded_username = urllib.parse.quote(
@@ -194,7 +194,7 @@ async def login(
     else:
         response = templates.TemplateResponse(
             "loginjoin/home.html",
-            {"request": request, "message": "로그인이 실패했습니다.", "url": "home"},
+            {"request": request, "message": "로그인을 실패했습니다.", "url": "home"},
         )
         return response
 
@@ -279,9 +279,6 @@ async def create_notice(
     if username != "admin":
         raise HTTPException(status_code=403, detail="권한이 없습니다.")
     user = db.query(User).filter(User.username == username).first()
-
-    # 인위적으로 지연 추가 (예: 5초)
-    time.sleep(5)
 
     new_notice = Notice(
         title=title, content=content, user_id=user.id, username=username
@@ -557,13 +554,23 @@ async def create_reply(
 
 # 섭외등록 시작
 # 섭외등록 목록 조회
-@router.get("/contact")
-async def get_posts(request: Request, db: Session = Depends(get_db)):
-    posts = db.query(Post).all()
+@router.get("/contact", response_class=HTMLResponse)
+async def get_posts(request: Request, db: Session = Depends(get_db), page: int = Query(1, alias="page")):
+    posts_per_page = 10
+    offset = (page - 1) * posts_per_page
+    total_posts = db.query(Post).count()
+    posts = db.query(Post).offset(offset).limit(posts_per_page).all()
+    total_pages = (total_posts + posts_per_page - 1) // posts_per_page
     username = request.session.get("username")
     return templates.TemplateResponse(
-        "contact/contact.html", {"request": request,
-                                "posts": posts, "username": username}
+        "contact/contact.html", 
+        {
+            "request": request,
+            "posts": posts,
+            "username": username,
+            "page": page,
+            "total_pages": total_pages
+        }
     )
 
 # 섭외등록 생성
@@ -617,22 +624,24 @@ async def create_post(
 
     # 이메일 전송 로직
     if send_email_flag:
-        email_content = f"""
-        섭외등록 내용이 도착했습니다.
-
-        작성자: {username}
-        제목: {title}
-        내용: {content}
-        법인명: {corporation_name}
-        """
-        send_email(
-            background_tasks,
-            "섭외등록 내용이 도착했습니다",
-            "sjung8009@naver.com",
-            email_content,
-        )
+        supervisor_email = find_supervisor_email(db, user.region_headquarter.name)
+        if supervisor_email:
+            email_content = {
+                "title": title,
+                "username": username,
+                "content": content,
+                "corporation_name": corporation_name
+            }
+            send_email(
+                background_tasks,
+                "섭외등록 내용이 도착했습니다",
+                supervisor_email,
+                "contact/email_template.html",
+                email_content,
+            )
 
     return RedirectResponse(url="/contact", status_code=303)
+
 
 
 # 섭외등록 생성 페이지
@@ -640,10 +649,12 @@ async def create_post(
 async def create_post_page(request: Request):
     username = request.session.get("username")
     corporation_name = request.session.get("corporation_name", None)
+    login_required = not bool(username)  # 로그인 상태 확인
     return templates.TemplateResponse("contact/contact_create.html", {
         "request": request,
         "username": username,
-        "corporation_name": corporation_name
+        "corporation_name": corporation_name,
+        "login_required": login_required
     })
 
 # 섭외등록 검색
@@ -785,17 +796,27 @@ async def download_file(file_name: str):
     return FileResponse(file_path)
 
 
-# 지도기능
+# 지도기능 - 주소
 # 카카오 지도 API
 @router.get("/search", response_class=HTMLResponse)
 async def get_search_page(request: Request):
     kakao_map_api_key = os.getenv("KAKAO_MAP_API_KEY")
     return templates.TemplateResponse("contact/map.html", {"request": request, "kakao_map_api_key": kakao_map_api_key})
 
-
 @router.post("/search", response_class=HTMLResponse)
 async def search_location(request: Request):
     return templates.TemplateResponse("contact/map.html", {"request": request})
+
+# 지도기능 - 키워드
+# 카카오 지도 API
+@router.get("/search2", response_class=HTMLResponse)
+async def get_search_page(request: Request):
+    kakao_map_api_key = os.getenv("KAKAO_MAP_API_KEY")
+    return templates.TemplateResponse("contact/map2.html", {"request": request, "kakao_map_api_key": kakao_map_api_key})
+
+@router.post("/search2", response_class=HTMLResponse)
+async def search_location(request: Request):
+    return templates.TemplateResponse("contact/map2.html", {"request": request})
 
 
 # 채팅 기능 관련

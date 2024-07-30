@@ -2,6 +2,61 @@
 
 {% block head %}
 <link rel="stylesheet" href="/static/css/style.css">
+<style>
+    .detail-content {
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    
+    .title {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .separator {
+        margin: 20px 0;
+    }
+    
+    .info-section {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+    }
+    
+    .info-column {
+        flex: 1;
+        padding: 0 10px;
+        border-right: 1px solid #ddd;
+    }
+    
+    .info-column:last-child {
+        border-right: none;
+    }
+    
+    .content-section,
+    .attachment-section {
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .content-section p {
+        font-size: 18px; /* 글자 크기 키움 */
+    }
+
+    .attachment-image {
+        max-width: 100%;
+        height: auto;
+    }
+    
+    .button-section {
+        text-align: center;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -12,33 +67,53 @@
         </div>
 
         <div class="detail-content">
-            <h1>{{ post.title }}</h1>
-            <p>{{ post.content }}</p>            
-            <p><strong>작성자:</strong> {{ post.username }}</p>
-            <p><strong>법인명:</strong> {{ post.corporation_name }}</p> <!-- 법인명 추가 -->
-            <p><strong>지역 그룹:</strong> {{ region_group_name }}</p>
-            <p><strong>지역 본부:</strong> {{ region_headquarter_name }}</p>
-            <p><strong>지점:</strong> {{ branch_office_name }}</p>
-            <p><strong>직위:</strong> {{ position_name }}</p>
-            <p><strong>직급:</strong> {{ user_rank }}</p>
-            <p><strong>등록일:</strong> {{ post.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
-            {% if post.file_path and post.file_path != '/None' %}
-            <img src="{{ post.file_path }}" alt="첨부파일" style="max-width: 100%; height: auto;">
-            {% else %}
-            <span>파일 없음</span>
-            {% endif %}
+            <h1 class="title">{{ post.title }}</h1>
+            <hr class="separator">
 
-            {% if post.file_path %}
-            <p><strong>첨부 파일:</strong> <a href="{{ post.file_path }}">{{ post.file_path|basename }}</a></p>
-            {% endif %}
-            <hr>
-            {% if username == post.username %}
-            <a href="/contact/update/{{ post.id }}" class="btn btn-dark">수정</a>
-            <form action="/contact/delete/{{ post.id }}" method="post" style="display: inline;">
-                <button type="submit" class="btn btn-danger">삭제</button>
-            </form>
-            {% endif %}
-            <button onclick="location.href='/contact'" class="btn btn-dark">목록으로</button>
+            <div class="info-section">
+                <div class="info-column">
+                    <p><strong>법인명:</strong> {{ post.corporation_name }}</p>
+                    <p><strong>등록일:</strong> {{ post.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                </div>
+                <div class="info-column">
+                    <p><strong>지역 그룹:</strong> {{ region_group_name }}</p>
+                    <p><strong>지역 본부:</strong> {{ region_headquarter_name }}</p>
+                    <p><strong>지점:</strong> {{ branch_office_name }}</p>
+                </div>
+                <div class="info-column">
+                    <p><strong>작성자:</strong> {{ post.username }}</p>
+                    <p><strong>직위:</strong> {{ position_name }}</p>
+                    <p><strong>직급:</strong> {{ user_rank }}</p>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h4>내용:</h4>
+                <p>{{ post.content }}</p>
+            </div>
+
+            <div class="attachment-section">
+                <h4>첨부파일:</h4>
+                {% if post.file_path and post.file_path != '/None' %}
+                <img src="{{ post.file_path }}" alt="첨부파일" class="attachment-image">
+                {% else %}
+                <span>파일 없음</span>
+                {% endif %}
+                {% if post.file_path %}
+                <p><strong>첨부 파일:</strong> <a href="{{ post.file_path }}">{{ post.file_path|basename }}</a></p>
+                {% endif %}
+            </div>
+
+            <hr class="separator">
+            <div class="button-section">
+                {% if username == post.username %}
+                <a href="/contact/update/{{ post.id }}" class="btn btn-dark">수정</a>
+                <form action="/contact/delete/{{ post.id }}" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">삭제</button>
+                </form>
+                {% endif %}
+                <button onclick="location.href='/contact'" class="btn btn-dark">목록으로</button>
+            </div>
         </div>
     </div>
 </section>

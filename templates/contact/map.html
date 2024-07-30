@@ -61,14 +61,14 @@
 <section class="notice">
     <div class="page-title">
         <div class="container">
-            <h3>기업 검색과 점주권 조회</h3>
+            <h3>키워드 및 주소 지도 검색</h3>
         </div>
     </div>
 
     <div class="custom-search-window">
         <form id="searchForm">
             <div class="custom-search-wrap">
-                <input type="text" id="addressInput" placeholder="주소를 입력하세요" required>
+                <input type="text" id="searchInput" placeholder="키워드/주소를 입력하세요" required>
                 <button type="submit" class="btn btn-dark">검색</button>
             </div>
         </form>
@@ -88,10 +88,26 @@
     };
     var map = new kakao.maps.Map(mapContainer, mapOption); 
 
+    // 장소 검색 객체를 생성
+    var ps = new kakao.maps.services.Places(); 
     // 주소-좌표 변환 객체를 생성
     var geocoder = new kakao.maps.services.Geocoder(); 
 
-    // 검색 완료 시 호출되는 콜백 함수
+    // 검색 완료 시 호출되는 콜백 함수 (키워드)
+    function placesSearchCB(data, status, pagination) {
+        if (status === kakao.maps.services.Status.OK) {
+            var bounds = new kakao.maps.LatLngBounds();
+            for (var i = 0; i < data.length; i++) {
+                displayMarker(data[i]);    
+                bounds.extend(new kakao.maps.LatLng(data[i].y, data[i].x));
+            }       
+            map.setBounds(bounds);
+        } else {
+            alert('검색 결과가 없습니다.');
+        }
+    }
+
+    // 검색 완료 시 호출되는 콜백 함수 (주소)
     function addressSearchCB(data, status) {
         if (status === kakao.maps.services.Status.OK) {
             var bounds = new kakao.maps.LatLngBounds();
@@ -115,7 +131,7 @@
         // 마커에 클릭 이벤트를 등록
         kakao.maps.event.addListener(marker, 'click', function() {
             var infowindow = new kakao.maps.InfoWindow({zIndex:1});
-            infowindow.setContent('<div style="padding:5px;font-size:12px;">' + place.address_name + '</div>');
+            infowindow.setContent('<div style="padding:5px;font-size:12px;">' + (place.place_name || place.address_name) + '</div>');
             infowindow.open(map, marker);
         });
     }
@@ -123,9 +139,19 @@
     // 폼 제출 시 검색 수행
     document.getElementById('searchForm').addEventListener('submit', function(event) {
         event.preventDefault();
-        var address = document.getElementById('addressInput').value;
-        geocoder.addressSearch(address, addressSearchCB); 
+        var query = document.getElementById('searchInput').value;
+        if (isAddress(query)) {
+            geocoder.addressSearch(query, addressSearchCB);
+        } else {
+            ps.keywordSearch(query, placesSearchCB);
+        }
     });
+
+    // 주소인지 키워드인지 판단하는 함수 (간단한 예제)
+    function isAddress(query) {
+        // 주소의 기본 형식이 있는지 간단히 체크 (예: 숫자와 한글, 공백 포함 여부)
+        return /\d+/.test(query) && /[가-힣]/.test(query);
+    }
 </script>
 {% endblock %}
 
