@@ -62,12 +62,18 @@ async def read_company_info(request: Request, jurir_no: str = Query(...), db: Se
     FS2020 = get_FS2020(db, jurir_no)
     stock_data=get_Stock_data(db, company_info.corp_code)
     stockgraph = await get_stockgraph( company_info.stock_code)  # await 사용
+    
+    adres = company_info.adres
+    kakao_map_api_key = os.getenv("KAKAO_MAP_API_KEY")
+    
     print(stockgraph)
     print(stockgraph['stock_data'])
+    print(adres)
+    print(kakao_map_api_key)
     if not company_info:
         raise HTTPException(status_code=404, detail="Company not found")
     # logger.info(f"company_info.corp_code: {company_info.corp_code}")
-    return templates.TemplateResponse("baro_service/baro_companyInfo.html", {"request": request, "company_info": company_info, "fs2023": FS2023, "fs2022": FS2022, "fs2021": FS2021, "fs2020": FS2020, "stock_data" : stock_data, "stockgraph": stockgraph})
+    return templates.TemplateResponse("baro_service/baro_companyInfo.html", {"request": request, "company_info": company_info, "fs2023": FS2023, "fs2022": FS2022, "fs2021": FS2021, "fs2020": FS2020, "stock_data" : stock_data, "stockgraph": stockgraph, "kakao_map_api_key": kakao_map_api_key, "adres": adres})
 
 
 @baro.post("/baro_companyInfo2")
@@ -108,6 +114,10 @@ async def read_company_info(
                 FS2020 = get_FS2020(db, jurir_no)
                 stock_data = get_Stock_data(db, company_info.corp_code)
                 stockgraph = await get_stockgraph( company_info.stock_code)  # await 사용
+                
+                adres = company_info.adres
+                kakao_map_api_key = os.getenv("KAKAO_MAP_API_KEY")
+                
             else:
                 print("Company info is None")
         else:
@@ -126,7 +136,9 @@ async def read_company_info(
                 "fs2021": FS2021,
                 "fs2020": FS2020,
                 "stock_data": stock_data,
-                "stockgraph": stockgraph  # stockgraph 변수를 템플릿에 전달
+                "stockgraph": stockgraph,  # stockgraph 변수를 템플릿에 전달
+                "kakao_map_api_key": kakao_map_api_key, 
+                "adres": adres
             }
         )
     except Exception as e:
