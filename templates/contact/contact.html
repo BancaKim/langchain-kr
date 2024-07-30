@@ -16,6 +16,26 @@
         z-index: 10;
         position: relative;
     }
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+    }
+    .pagination a {
+        color: #333;
+        padding: 8px 16px;
+        text-decoration: none;
+        border: 1px solid #ccc;
+        margin: 0 4px;
+        border-radius: 4px;
+    }
+    .pagination a.active {
+        background-color: #444;
+        color: white;
+    }
+    .pagination a:hover:not(.active) {
+        background-color: #ddd;
+    }
 </style>
 {% endblock %}
 
@@ -26,30 +46,29 @@
             <h3>섭외등록</h3>
         </div>
 
-    <!-- board search area -->
-<div id="board-search">
-    <div class="container">
-        <div class="search-window">
-            <form action="/contact/search" method="get">
-                <div class="search-wrap">
-                    <label for="search" class="blind">섭외등록 내용 검색</label>
-                    <select name="search_type" id="search_type">
-                        <option value="title">제목</option>
-                        <option value="content">내용</option>
-                        <option value="title_content">제목+내용</option>
-                        <option value="region_group">지역 그룹</option>
-                        <option value="region_headquarter">지역 본부</option>
-                        <option value="branch_office">지점</option>
-                        <option value="corporation_name">법인명</option>
-                    </select>
-                    <input id="search" type="search" name="search_query" placeholder="검색어를 입력해주세요." value="">
-                    <button type="submit" class="btn btn-dark">검색</button>
+        <!-- board search area -->
+        <div id="board-search">
+            <div class="container">
+                <div class="search-window">
+                    <form action="/contact/search" method="get">
+                        <div class="search-wrap">
+                            <label for="search" class="blind">섭외등록 내용 검색</label>
+                            <select name="search_type" id="search_type">
+                                <option value="title">제목</option>
+                                <option value="content">내용</option>
+                                <option value="title_content">제목+내용</option>
+                                <option value="region_group">지역 그룹</option>
+                                <option value="region_headquarter">지역 본부</option>
+                                <option value="branch_office">지점</option>
+                                <option value="corporation_name">법인명</option>
+                            </select>
+                            <input id="search" type="search" name="search_query" placeholder="검색어를 입력해주세요." value="">
+                            <button type="submit" class="btn btn-dark">검색</button>
+                        </div>
+                    </form>
                 </div>
-            </form>
+            </div>
         </div>
-    </div>
-</div>
-
 
         <table class="board-table">
             <thead>
@@ -65,7 +84,7 @@
             <tbody>
                 {% for post in posts %}
                 <tr>
-                    <td>{{ loop.index }}</td>
+                    <td>{{ loop.index + (page - 1) * 10 }}</td>
                     <td>
                         {% if post.file_path and post.file_path != '/None' %}
                         <img src="{{ post.file_path }}" alt="썸네일" class="thumbnail">
@@ -81,8 +100,24 @@
                 {% endfor %}
             </tbody>
         </table>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            {% for p in range(1, total_pages + 1) %}
+            <a href="?page={{ p }}" class="{% if p == page %}active{% endif %}">{{ p }}</a>
+            {% endfor %}
+        </div>
+
         <div class="container btn-right">
             <a href="/contact/create" class="btn btn-dark">섭외등록 작성</a>
+        </div>
+
+        <div class="container btn-right">
+            <a href="/contact3" class="btn btn-dark">채팅기능 입장</a>
+        </div>
+
+        <div class="container btn-right">
+            <a href="/search" class="btn btn-dark">기업지도 검색</a>
         </div>
     </div>
 </section>

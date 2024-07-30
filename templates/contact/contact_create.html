@@ -70,5 +70,22 @@
         });
     }
 </script>
+
+{% if login_required %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        Swal.fire({
+            title: '로그인이 필요합니다.',
+            icon: 'warning',
+            confirmButtonText: '확인'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "/login"; // 로그인 페이지로 리디렉션
+            }
+        });
+    });
+</script>
+{% endif %}
+
 {% endblock %}
 {% include 'footer.html' %}
