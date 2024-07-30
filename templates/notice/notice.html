@@ -40,7 +40,8 @@
                     <tr>
                         <th scope="col" class="th-num">번호</th>
                         <th scope="col" class="th-title">제목</th>
-                        <th scope="col" class="th-date">등록일</th>
+                        <th scope="col" class="th-username">작성자</th>
+                        <th scope="col" class="th-date">등록일</th>                        
                     </tr>
                 </thead>
                 <tbody>
@@ -51,7 +52,9 @@
                             <a href="/notices/{{ notice.id }}">{{ notice.title }}</a>
                             <p>{{ notice.content }}</p>
                         </th>
-                        <td>{{ notice.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td>{{ notice.username }}</td>
+                        <td>{{ notice.created_at.strftime('%Y-%m-%d') }}</td>             
+                        
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -60,16 +63,11 @@
     </div>
 
     {% if username == 'admin' %}
-    <div class="container">
-        <button onclick="location.href='/notices/create'" class="btn btn-dark">공지사항 추가</button>
+    <div class="container btn-right">
+        <button onclick="location.href='/notices/create'" class="btn btn-dark">공지사항 작성</button>
     </div>
     <br/>
     {% endif %}
-    <div class="container">
-        <form action="/logout" method="post" style="display: inline;">
-            <button type="submit" class="btn btn-dark">로그아웃</button>                
-        </form>
-    </div>
 </section>
 
 <script src="/static/js/logout.js"></script>

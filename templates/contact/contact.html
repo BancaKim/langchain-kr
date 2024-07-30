@@ -4,6 +4,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/static/css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+    .thumbnail {
+        width: 60px;
+        height: 60px;
+        transition: transform 0.3s ease;
+    }
+
+    .thumbnail:hover {
+        transform: scale(2);
+        z-index: 10;
+        position: relative;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -27,6 +40,7 @@
                         <option value="region_group">지역 그룹</option>
                         <option value="region_headquarter">지역 본부</option>
                         <option value="branch_office">지점</option>
+                        <option value="corporation_name">법인명</option>
                     </select>
                     <input id="search" type="search" name="search_query" placeholder="검색어를 입력해주세요." value="">
                     <button type="submit" class="btn btn-dark">검색</button>
@@ -44,6 +58,7 @@
                     <th>썸네일</th>
                     <th>제목</th>
                     <th>작성자</th>
+                    <th>법인명</th>
                     <th class="th-date">등록일</th>
                 </tr>
             </thead>
@@ -53,20 +68,21 @@
                     <td>{{ loop.index }}</td>
                     <td>
                         {% if post.file_path and post.file_path != '/None' %}
-                        <img src="{{ post.file_path }}" alt="썸네일" style="width: 100px; height: 100px;">
+                        <img src="{{ post.file_path }}" alt="썸네일" class="thumbnail">
                         {% else %}
-                        <img src="/static/images/no-image.png" alt="기본 이미지" style="width: 100px; height: 100px;">
+                        <img src="/static/images/no-image.png" alt="기본 이미지" class="thumbnail">
                         {% endif %}
                     </td>
                     <td><a href="/contact/{{ post.id }}">{{ post.title }}</a></td>
                     <td>{{ post.username }}</td>
+                    <td>{{ post.corporation_name }}</td>
                     <td>{{ post.created_at.strftime('%Y-%m-%d') }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-        <div class="btn-wrap">
-            <a href="/contact/create" class="btn btn-dark">글쓰기</a>
+        <div class="container btn-right">
+            <a href="/contact/create" class="btn btn-dark">섭외등록 작성</a>
         </div>
     </div>
 </section>

@@ -61,19 +61,16 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 def basename(value):
     return os.path.basename(value)
 
-
 templates.env.filters["basename"] = basename
+# 기능 구현 관련
+
 
 # 로그인화면이동
-
-
 @router.get('/home')
 async def read_root(request: Request):
     return templates.TemplateResponse('loginjoin/home.html', {"request": request})
 
 # 회원 가입 페이지
-
-
 @router.get("/join")
 async def read_join(request: Request):
     return templates.TemplateResponse("loginjoin/join.html", {"request": request})
@@ -90,14 +87,14 @@ async def signup(signup_data: UserCreate, db: Session = Depends(get_db)):
         )
     hashed_password = get_password_hash(signup_data.password)
 
-    # Convert rank to its corresponding ID if necessary
+    #직급 관련
     rank = db.query(Rank).filter(Rank.level == signup_data.rank).first()
     if not rank:
         return JSONResponse(
             status_code=400, content={"message": "유효하지 않은 직급입니다.", "message_icon": "error"}
         )
 
-    # Fetch related data names
+    #지역그룹, 지역본부, 지점, 직위
     region_group = db.query(RegionGroup).filter(
         RegionGroup.id == signup_data.region_group).first()
     region_headquarter = db.query(RegionHeadquarter).filter(
@@ -137,7 +134,7 @@ async def signup(signup_data: UserCreate, db: Session = Depends(get_db)):
     )
 
 
-# API for loading dynamic data
+#드롭다운 메뉴 클릭하면, 해당되는 부분만 맞춰서 하기
 @router.get("/api/region_headquarters/{region_group_id}")
 async def get_region_headquarters(region_group_id: int, db: Session = Depends(get_db)):
     region_headquarters = db.query(RegionHeadquarter).filter(
@@ -214,7 +211,7 @@ async def logout(request: Request):
     response.delete_cookie("session")
     return response
 
-
+# 공지사항 시작
 # 공지사항 목록 조회
 @router.get("/notices")
 async def list_notices(request: Request, db: Session = Depends(get_db)):
@@ -222,7 +219,7 @@ async def list_notices(request: Request, db: Session = Depends(get_db)):
     notices = db.query(Notice).all()
     return templates.TemplateResponse(
         "notice/notice.html", {"request": request,
-                               "notices": notices, "username": username}
+                            "notices": notices, "username": username}
     )
 
 
@@ -256,7 +253,7 @@ async def search_notices(
         notices = db.query(Notice).all()
     return templates.TemplateResponse(
         "notice/notice.html", {"request": request,
-                               "notices": notices, "username": username}
+                            "notices": notices, "username": username}
     )
 
 
@@ -366,7 +363,7 @@ async def get_notice_detail(
         {"request": request, "notice": notice, "username": username},
     )
 
-
+# Q&A 시작
 # Q&A 목록 조회
 @router.get("/qnas")
 async def list_qnas(request: Request, db: Session = Depends(get_db)):
@@ -406,7 +403,7 @@ async def search_qnas(
         qnas = db.query(Qna).all()
     return templates.TemplateResponse(
         "qna/qna.html", {"request": request,
-                         "qnas": qnas, "username": username}
+                        "qnas": qnas, "username": username}
     )
 
 
@@ -439,7 +436,7 @@ async def create_qna(
         )
     user = db.query(User).filter(User.username == username).first()
     new_qna = Qna(title=title, content=content,
-                  user_id=user.id, username=user.username)
+                user_id=user.id, username=user.username)
     db.add(new_qna)
     db.commit()
     db.refresh(new_qna)
@@ -526,40 +523,40 @@ async def create_reply(
     return RedirectResponse(url=f"/qnas/{qna_id}", status_code=303)
 
 
-# 섭외등록 페이지
-@router.get("/contact2")
-async def read_contact(request: Request):
-    username = request.session.get("username")
-    return templates.TemplateResponse(
-        "contact/contact2.html", {"request": request, "username": username}
-    )
+# # 섭외등록 이메일 보내기 페이지
+# @router.get("/contact2")
+# async def read_contact(request: Request):
+#     username = request.session.get("username")
+#     return templates.TemplateResponse(
+#         "contact/contact2.html", {"request": request, "username": username}
+#     )
 
 
-# 섭외등록 이메일 보내기
-@router.post("/contact2")
-async def submit_contact_form(
-    request: Request,
-    background_tasks: BackgroundTasks,
-    name: str = Form(...),
-    email: str = Form(...),
-    message: str = Form(...),
+# # 섭외등록 이메일 보내기
+# @router.post("/contact2")
+# async def submit_contact_form(
+#     request: Request,
+#     background_tasks: BackgroundTasks,
+#     name: str = Form(...),
+#     email: str = Form(...),
+#     message: str = Form(...),
 
-    db: Session = Depends(get_db),
-):
-    send_email(
-        background_tasks,
-        "섭외등록 내용이 도착했습니다",
-        "sjung8009@naver.com",
-        f"업체(키맨) 이름: {name}\n업체(키맨) 이메일: {email}\n섭외 메모: {message}",
-    )
-    return templates.TemplateResponse(
-        "contact/contact2.html",
-        {"request": request, "message": "Contact form submitted successfully"},
-    )
+#     db: Session = Depends(get_db),
+# ):
+#     send_email(
+#         background_tasks,
+#         "섭외등록 내용이 도착했습니다",
+#         "sjung8009@naver.com",
+#         f"업체(키맨) 이름: {name}\n업체(키맨) 이메일: {email}\n섭외 메모: {message}",
+#     )
+#     return templates.TemplateResponse(
+#         "contact/contact2.html",
+#         {"request": request, "message": "Contact form submitted successfully"},
+#     )
 
 
-# 파일첨부 게시판형식 (섭외등록)
-# 게시글 목록 조회
+# 섭외등록 시작
+# 섭외등록 목록 조회
 @router.get("/contact")
 async def get_posts(request: Request, db: Session = Depends(get_db)):
     posts = db.query(Post).all()
@@ -570,15 +567,16 @@ async def get_posts(request: Request, db: Session = Depends(get_db)):
     )
 
 # 섭외등록 생성
-
-
-@router.post("/contact")
+@router.post("/contact/create")
 async def create_post(
     request: Request,
+    background_tasks: BackgroundTasks,
     title: str = Form(...),
     content: str = Form(...),
+    corporation_name: str = Form(...),
     file: UploadFile = File(None),
-    db: Session = Depends(get_db),
+    send_email_flag: str = Form(None),
+    db: Session = Depends(get_db)
 ):
     file_path = None
     if file and file.filename:
@@ -606,11 +604,34 @@ async def create_post(
         region_headquarter_name=user.region_headquarter.name,
         branch_office_name=user.branch.name,
         position_name=user.position.name,
-        user_rank=user.rank.level
+        user_rank=user.rank.level,
+        corporation_name=corporation_name  # 세션 또는 사용자가 입력한 법인명
     )
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
+
+    # 세션에서 법인명 제거
+    if 'corporation_name' in request.session:
+        del request.session['corporation_name']
+
+    # 이메일 전송 로직
+    if send_email_flag:
+        email_content = f"""
+        섭외등록 내용이 도착했습니다.
+
+        작성자: {username}
+        제목: {title}
+        내용: {content}
+        법인명: {corporation_name}
+        """
+        send_email(
+            background_tasks,
+            "섭외등록 내용이 도착했습니다",
+            "sjung8009@naver.com",
+            email_content,
+        )
+
     return RedirectResponse(url="/contact", status_code=303)
 
 
@@ -618,7 +639,12 @@ async def create_post(
 @router.get("/contact/create")
 async def create_post_page(request: Request):
     username = request.session.get("username")
-    return templates.TemplateResponse("contact/contact_create.html", {"request": request, "username": username})
+    corporation_name = request.session.get("corporation_name", None)
+    return templates.TemplateResponse("contact/contact_create.html", {
+        "request": request,
+        "username": username,
+        "corporation_name": corporation_name
+    })
 
 # 섭외등록 검색
 @router.get("/contact/search")
@@ -629,11 +655,12 @@ async def search_posts(
     db: Session = Depends(get_db),
 ):
     username = request.session.get("username")
-    
+
     if search_type == "title":
         posts = db.query(Post).filter(Post.title.contains(search_query)).all()
     elif search_type == "content":
-        posts = db.query(Post).filter(Post.content.contains(search_query)).all()
+        posts = db.query(Post).filter(
+            Post.content.contains(search_query)).all()
     elif search_type == "title_content":
         posts = db.query(Post).filter(
             or_(
@@ -642,16 +669,22 @@ async def search_posts(
             )
         ).all()
     elif search_type == "region_group":
-        posts = db.query(Post).filter(Post.region_group_name.contains(search_query)).all()
+        posts = db.query(Post).filter(
+            Post.region_group_name.contains(search_query)).all()
     elif search_type == "region_headquarter":
-        posts = db.query(Post).filter(Post.region_headquarter_name.contains(search_query)).all()
+        posts = db.query(Post).filter(
+            Post.region_headquarter_name.contains(search_query)).all()
     elif search_type == "branch_office":
-        posts = db.query(Post).filter(Post.branch_office_name.contains(search_query)).all()
+        posts = db.query(Post).filter(
+            Post.branch_office_name.contains(search_query)).all()
+    elif search_type == "corporation_name":
+        posts = db.query(Post).filter(
+            Post.corporation_name.contains(search_query)).all()
     else:
         posts = db.query(Post).all()
 
     return templates.TemplateResponse(
-        "contact/contact.html", 
+        "contact/contact.html",
         {
             "request": request,
             "posts": posts,
@@ -665,17 +698,17 @@ async def read_post(request: Request, post_id: int, db: Session = Depends(get_db
     post = db.query(Post).filter(Post.id == post_id).first()
     if not post:
         return RedirectResponse(url="/contact", status_code=303)
-    
+
     username = request.session.get("username")
-    
+
     region_group_name = post.region_group_name
     region_headquarter_name = post.region_headquarter_name
     branch_office_name = post.branch_office_name
     position_name = post.position_name
     user_rank = post.user_rank
-    
+
     return templates.TemplateResponse(
-        "contact/contact_detail.html", 
+        "contact/contact_detail.html",
         {
             "request": request,
             "post": post,
@@ -694,7 +727,7 @@ async def update_post_page(request: Request, post_id: int, db: Session = Depends
     post = db.query(Post).filter(Post.id == post_id).first()
     if not post:
         return RedirectResponse(url="/contact", status_code=303)
-    
+
     username = request.session.get("username")
     return templates.TemplateResponse("contact/contact_update.html", {"request": request, "post": post, "username": username})
 
@@ -743,10 +776,16 @@ async def delete_post(request: Request, post_id: int, db: Session = Depends(get_
     db.commit()
     return RedirectResponse(url="/contact", status_code=303)
 
+# 파일 다운로드 엔드포인트
+@router.get("/download/{file_name}")
+async def download_file(file_name: str):
+    file_path = os.path.join(UPLOAD_DIR, file_name)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="파일을 찾을 수 없습니다.")
+    return FileResponse(file_path)
 
 
-
-
+# 지도기능
 # 카카오 지도 API
 @router.get("/search", response_class=HTMLResponse)
 async def get_search_page(request: Request):
@@ -757,15 +796,6 @@ async def get_search_page(request: Request):
 @router.post("/search", response_class=HTMLResponse)
 async def search_location(request: Request):
     return templates.TemplateResponse("contact/map.html", {"request": request})
-
-
-# 파일 다운로드 엔드포인트
-@router.get("/download/{file_name}")
-async def download_file(file_name: str):
-    file_path = os.path.join(UPLOAD_DIR, file_name)
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="파일을 찾을 수 없습니다.")
-    return FileResponse(file_path)
 
 
 # 채팅 기능 관련
@@ -804,14 +834,10 @@ async def read_contact(request: Request):
         "contact/contact4.html", {"request": request, "username": username}
     )
 
-# 비밀번호 가져오기
+# 비밀번호 가져오기, 채팅방 비밀번호
 CHAT_PASSWORD = os.getenv("CHAT_PASSWORD")
-
-
 class PasswordVerification(BaseModel):
     password: str
-
-
 @router.post("/verify_password2")
 async def verify_password2(data: PasswordVerification):
     correct_password = CHAT_PASSWORD

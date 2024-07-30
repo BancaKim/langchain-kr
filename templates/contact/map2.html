@@ -1,0 +1,91 @@
+{% include 'header.html' %}
+
+{% block head %}
+<script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_map_api_key }}&libraries=services"></script>
+<link rel="stylesheet" href="/static/css/style.css">
+<style>
+    .map-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 20px;
+    }
+    #map {
+        width: 75%;
+        height: 500px;
+    }
+    .page-title {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .page-title h3 {
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="notice">
+    <div class="page-title">
+        <div class="container">
+            <h3>법인 주소 기반 지도 조회</h3>
+        </div>
+    </div>
+
+    <div class="map-container">
+        <div id="map"></div>
+    </div>
+</section>
+
+<script>
+    // 카카오 맵 초기화
+    var mapContainer = document.getElementById('map'); 
+    var mapOption = { 
+        center: new kakao.maps.LatLng(37.520877, 126.927907), // 초기 중심 좌표
+        level: 3 // 초기 확대 수준
+    };
+    var map = new kakao.maps.Map(mapContainer, mapOption); 
+
+    // 주소-좌표 변환 객체를 생성
+    var geocoder = new kakao.maps.services.Geocoder(); 
+
+    // 주소 검색 함수
+    function searchAddress(address) {
+        geocoder.addressSearch(address, function(result, status) {
+            if (status === kakao.maps.services.Status.OK) {
+                var bounds = new kakao.maps.LatLngBounds();
+                for (var i = 0; i < result.length; i++) {
+                    displayMarker(result[i]);    
+                    bounds.extend(new kakao.maps.LatLng(result[i].y, result[i].x));
+                }       
+                map.setBounds(bounds);
+            } else {
+                alert('주소 검색 결과가 없습니다.');
+            }
+        }); 
+    }
+
+    // 지도에 마커를 표시하는 함수
+    function displayMarker(place) {
+        var marker = new kakao.maps.Marker({
+            map: map,
+            position: new kakao.maps.LatLng(place.y, place.x) 
+        });
+
+        // 마커에 클릭 이벤트를 등록
+        kakao.maps.event.addListener(marker, 'click', function() {
+            var infowindow = new kakao.maps.InfoWindow({zIndex:1});
+            infowindow.setContent('<div style="padding:5px;font-size:12px;">' + place.address_name + '</div>');
+            infowindow.open(map, marker);
+        });
+    }
+
+    // 페이지 로드 시 주소 검색 수행
+    document.addEventListener('DOMContentLoaded', function() {
+        const address = "{{ adres }}"; // 주소를 템플릿 변수로 받아옴
+        searchAddress(address);
+    });
+</script>
+{% endblock %}
+
+{% include 'footer.html' %}
