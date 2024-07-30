@@ -1,21 +1,10 @@
-from fastapi import APIRouter, Form, HTTPException, Request, Depends, Query
-from fastapi.responses import HTMLResponse, JSONResponse
-from sqlalchemy.orm import Session
-from datetime import date
-from database import SessionLocal
+from fastapi import APIRouter, HTTPException, Request, Depends
 from fastapi.templating import Jinja2Templates
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy import distinct, text, func
-from schemas.baro_schemas import CompanyInfoSchema
-from services_def.baro_service import get_autocomplete_suggestions, get_corp_info_code, get_corp_info_jurir_no, get_corp_info_name, get_company_info
-from services_def.baro_service import get_FS2023, get_FS2022, get_FS2021, get_FS2020, get_Stock_data, get_company_info_list, search_company, get_company_infoFS_list
+from fastapi.responses import HTMLResponse
+from sqlalchemy.orm import Session
+from database import SessionLocal
+from services_def.ML_service import preprocess_and_predict_proba, train_model, get_new_data_from_db
 import logging
-from typing import List, Optional
-from models.baro_models import CompanyInfo
-from models.ML_model import DataModel
-from services_def.ML_service import preprocess_and_predict_proba, train_model
-import pandas as pd
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -29,151 +18,46 @@ def get_db():
         yield db
     finally:
         db.close()
-        
-        
-@machineLearning.on_event("startup")
-async def startup_event():
-    train_model()
 
-@machineLearning.post("/predict/")
-async def predict(data: DataModel):
-    new_data = pd.DataFrame([data.dict().values()], columns=data.dict().keys())
-    probabilities = preprocess_and_predict_proba(new_data)
-    return {"probabilities": probabilities.tolist()}
-
-
-
-
-
-# 바로 등급 검색 페이지 / 나의업체현황/ 최근조회업체 return
-# @machineLearning.get("/baro_companyList", response_class=HTMLResponse)
-# async def read_companyList(request: Request, search_value: str = "", db: Session = Depends(get_db)):
-#     jurir_no = search_company(db, search_value) if search_value else []
-#     my_jurir_no = ["1101110017990", "1101110019219", "1345110004412"]
-#     recent_jurir_no = ["1101110032154", "1201110018368", "1101110162191"]
+@machineLearning.get("/predict/", response_class=HTMLResponse)
+async def predict(request: Request, db: Session = Depends(get_db)):
+    jurir_no_list = ['1101110000086', '1101110002694', '1101110002959']
+    new_data = get_new_data_from_db(db, jurir_no_list)
+    if new_data.empty:
+        raise HTTPException(status_code=404, detail="Data not found for the given jurir_no list")
     
-#     search_company_list = get_company_infoFS_list(db, jurir_no) if jurir_no else []
-#     my_company_list = get_company_infoFS_list(db, my_jurir_no) if my_jurir_no else []
-#     recent_view_list = get_company_infoFS_list(db, recent_jurir_no) if recent_jurir_no else []
+    model, scaler, accuracy, class_report, conf_matrix, model_info = train_model()
     
-#     return templates.TemplateResponse(
-#         "baro_service/baro_companyList2.html", 
-#         {
-#             "request": request,
-#             "search_company_list": search_company_list,
-#             "my_company_list": my_company_list,
-#             "recent_view_list": recent_view_list
-#         }
-#     )
-
-# @machineLearning.get("/baro_companyInfo", response_class=HTMLResponse)
-# async def read_company_info(request: Request, jurir_no: str = Query(...), db: Session = Depends(get_db)):
-#     company_info = get_company_info(db, jurir_no)
-#     FS2023 = get_FS2023(db, jurir_no)
-#     FS2022 = get_FS2022(db, jurir_no)
-#     FS2021 = get_FS2021(db, jurir_no)
-#     FS2020 = get_FS2020(db, jurir_no)
-#     stock_data=get_Stock_data(db, company_info.corp_code)
-#     if not company_info:
-#         raise HTTPException(status_code=404, detail="Company not found")
-#     # logger.info(f"company_info.corp_code: {company_info.corp_code}")
-#     return templates.TemplateResponse("baro_service/baro_companyInfo.html", {"request": request, "company_info": company_info, "fs2023": FS2023, "fs2022": FS2022, "fs2021": FS2021, "fs2020": FS2020, "stock_data" : stock_data})
-
-# @machineLearning.get("/baro_companyInfo2")
-# async def read_company_info(
-#     request: Request,
-#     db: Session = Depends(get_db),
-#     name: Optional[str] = Query(None),
-#     search_type: Optional[str] = Query(None)
-# ):
-#     try:
-#         query = db.query(CompanyInfo)
+    results = []
+    for _, row in new_data.iterrows():
+        data = row.to_frame().T
+        probabilities = preprocess_and_predict_proba(data, model, scaler)
+        class_probabilities = list(zip(model.classes_, probabilities[0]))
+        class_probabilities.sort(key=lambda x: x[1], reverse=True)
         
-#         jurir_no = None
-#         company_info = None
+        cumulative_prob = 0.0
+        sorted_probabilities = []
+        for cls, prob in class_probabilities:
+            cumulative_prob += prob
+            sorted_probabilities.append({
+                'class': cls, 
+                'probability': round(prob, 2), 
+                'cumulative': round(cumulative_prob, 2)
+            })
         
-#         if name:
-#             if search_type == "company_name":
-#                 result = db.query(CompanyInfo.jurir_no).filter(func.trim(CompanyInfo.corp_name) == name).first()
-#                 if result:
-#                     jurir_no = result[0]
-#             elif search_type == "company_code":
-#                 result = db.query(CompanyInfo.jurir_no).filter(func.trim(CompanyInfo.corp_code) == name).first()
-#                 if result:
-#                     jurir_no = result[0]
+        results.append({
+            "jurir_no": row["jurir_no"],
+            "sorted_probabilities": sorted_probabilities
+        })
+    
+    # 피처 중요도 리스트를 feature name과 함께 zip하여 딕셔너리로 변환
+    feature_importances = dict(zip(model.feature_names_in_, model_info['feature_importances']))
 
-#         print("jurir_no:", jurir_no)  # Debug print to check if jurir_no is fetched
-
-#         if jurir_no:
-#             company_info = get_company_info(db, jurir_no)
-#             print("company_info:", company_info)  # Debug print to check if company_info is fetched
-
-#             if company_info:
-#                 print("company_info.corp_code:", company_info.corp_code)  # Debug print to check corp_code
-
-#                 FS2023 = get_FS2023(db, jurir_no)
-#                 FS2022 = get_FS2022(db, jurir_no)
-#                 FS2021 = get_FS2021(db, jurir_no)
-#                 FS2020 = get_FS2020(db, jurir_no)
-#                 stock_data = get_Stock_data(db, company_info.corp_code)
-#             else:
-#                 print("Company info is None")
-#         else:
-#             print("Jurir_no is None")
-
-#         if not company_info:
-#             raise HTTPException(status_code=404, detail="Company not found")
-
-#         return templates.TemplateResponse(
-#             "baro_service/baro_companyInfo.html",
-#             {
-#                 "request": request,
-#                 "company_info": company_info,
-#                 "fs2023": FS2023,
-#                 "fs2022": FS2022,
-#                 "fs2021": FS2021,
-#                 "fs2020": FS2020,
-#                 "stock_data": stock_data
-#             }
-#         )
-#     except Exception as e:
-#         print("An error occurred:", str(e))
-#         raise HTTPException(status_code=500, detail="Internal Server Error")
-
-
-# @machineLearning.get("/test1234")
-# async def read_join(request: Request):
-#     return templates.TemplateResponse("baro_service/test.html", {"request": request})
-
-
-
-# @machineLearning.get("/autocomplete", response_model=List[str])
-# async def autocomplete(
-#     query: str,
-#     search_type: str = Query("company_name", enum=["company_name", "company_code"]),
-# ):
-#     db = SessionLocal()
-#     print(search_type)
-#     try:
-#         # Determine the column based on search_type
-#         if search_type == "company_name":
-#             column = "corp_name"
-#             print(column)
-#         elif search_type == "company_code":
-#             column = "corp_code"
-#             print(column)
-#         else:
-#             raise ValueError("Invalid search type")
-
-#         sql_query = text(
-#             f"""
-#             SELECT {column}
-#             FROM companyInfo
-#             WHERE {column} LIKE :query
-#             LIMIT 10
-#         """
-#         )
-#         results = db.execute(sql_query, {"query": f"{query}%"}).fetchall()
-#         return [row[0] for row in results]  # Return list of results
-#     finally:
-#         db.close()
+    return templates.TemplateResponse("ML_template/ML_view.html", {
+        "request": request,
+        "results": results,
+        "accuracy": round(accuracy, 2),
+        "class_report": class_report,
+        "conf_matrix": conf_matrix,
+        "model_info": {**model_info, "feature_importances": feature_importances}
+    })
