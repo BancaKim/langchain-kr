@@ -17,6 +17,8 @@ logger.setLevel(logging.DEBUG)
 
 def train_model():
     file_path = r'C:\01DevelopKits\FinalProject\exel\fssDown\aa_fs2022_fs2023_1526.csv'
+    # file_path = r'C:\01DevelopKits\FinalProject\exel\fssDown\aa_fs2022_fs2023_07310945.csv'
+    # 모델로딩이 너무 느려서 파일 가벼운 aa_fs2022_fs2023_07311059.csv 로 임시로 돌림
     df = pd.read_csv(file_path)
     df = df.dropna()
 
@@ -28,23 +30,37 @@ def train_model():
     X = df[feature_columns]
     y = df['rate']
 
+    # 데이터 스케일링 (선택사항)
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
     X_scaled = pd.DataFrame(X_scaled, columns=feature_columns)
+    
+    # 데이터 불균형 확인
+    logger.debug(file_path)
+    logger.debug("Original dataset shape %s" % Counter(y))
+
 
     smote = SMOTE(random_state=42)
     X_res, y_res = smote.fit_resample(X_scaled, y)
 
+    # 데이터 분할
     X_train, X_test, y_train, y_test = train_test_split(X_res, y_res, test_size=0.2, random_state=42)
 
+    # 랜덤포레스트 모델 초기화
     model = RandomForestClassifier(n_estimators=150, random_state=42)
+    # 모델 훈련
+    logger.debug(" RandomForestClassifier 모델 훈련 시작")
     model.fit(X_train, y_train)
+    logger.debug(" RandomForestClassifier 모델 훈련 완료")
 
     y_pred = model.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
     class_report = classification_report(y_test, y_pred, zero_division=1, output_dict=True)
-    conf_matrix = confusion_matrix(y_test, y_pred)
     
+    
+        # Confusion Matrix 생성
+    conf_matrix = confusion_matrix(y_test, y_pred, labels=['AAA', 'AA+', 'AA', 'AA-', 'A+', 'A', 'A-', 'BBB+', 'BBB', 'BBB-', 'BB+', 'BB', 'BB-', 'B+', 'B', 'B-'])
+
     model_info = {
         "model_name": "RandomForestClassifier",
         "creation_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -74,7 +90,7 @@ def preprocess_and_predict_proba(new_data, model, scaler):
     probabilities = model.predict_proba(new_data_scaled)
     return probabilities
 
-
+## 등급 부여를 위한 법인 정보 추출
 def get_new_data_from_db(db: Session, jurir_no_list: list):
     query = text(
         "SELECT a.corp_name, a.jurir_no, COALESCE(g.IR등급, 7) AS IR, "
@@ -151,10 +167,67 @@ def insert_predictions_into_db(db: Session, prediction: dict, model_reference: s
     
     
 
-def generate_predictions(db: Session, model, scaler, jurir_no_list: list):
+# def generate_predictions(db: Session, model, scaler, jurir_no_list: list):
+#     new_data = get_new_data_from_db(db, jurir_no_list)
+#     if new_data.empty:
+#         return {"error": "Data not found for the given jurir_no list"}, []
+
+#     predictions = []
+#     for _, row in new_data.iterrows():
+#         data = row.to_frame().T
+#         probabilities = preprocess_and_predict_proba(data, model, scaler)
+#         class_probabilities = list(zip(model.classes_, probabilities[0]))
+#         class_probabilities.sort(key=lambda x: x[1], reverse=True)
+        
+#         sorted_probabilities = []
+#         for cls, prob in class_probabilities:
+#             sorted_probabilities.append({
+#                 'class': cls, 
+#                 'probability': round(prob, 2)
+#             })
+        
+#         result = {
+#             "jurir_no": row["jurir_no"],
+#             "corp_name": row["corp_name"],
+#             "sorted_probabilities": sorted_probabilities
+#         }
+        
+#         predictions.append(result)
+
+#     return None, predictions
+
+# 재무정보 존재하는 법인번호 리스트 반환 / 신용등급 산출용
+def get_jurir_no_list(db: Session):
+    query = text("""
+    SELECT jurir_no 
+    FROM (
+        SELECT DISTINCT a.jurir_no, b.totalAsset2023
+        FROM companyInfo a 
+        LEFT OUTER JOIN FS2023 b 
+        ON a.jurir_no = b.jurir_no 
+        WHERE b.totalAsset2023 > 0
+    ) AS subquery
+    ORDER BY subquery.totalAsset2023 DESC
+    LIMIT 100;
+    """)
+    result = db.execute(query)
+    jurir_no_list = [row[0] for row in result.fetchall()]
+    logger.debug(f"Size of jurir_no_list: {len(jurir_no_list)}")
+    return jurir_no_list
+
+# 재무정보 존재하는 법인번호 리스트 받아서 신용등급 산출
+def generate_predictions(db: Session, model, scaler):
+    jurir_no_list = get_jurir_no_list(db)
+    logger.debug(f"Size of jurir_no_list: {len(jurir_no_list)}")
+    if not jurir_no_list:
+        return {"error": "No data found in database for prediction"}, []
+
     new_data = get_new_data_from_db(db, jurir_no_list)
     if new_data.empty:
         return {"error": "Data not found for the given jurir_no list"}, []
+    
+        # 중복된 jurir_no 제거
+    new_data = new_data.drop_duplicates(subset=['jurir_no'])
 
     predictions = []
     for _, row in new_data.iterrows():
@@ -177,5 +250,41 @@ def generate_predictions(db: Session, model, scaler, jurir_no_list: list):
         }
         
         predictions.append(result)
+    # logger.debug(f"Size of predictions: {len(predictions)}")
+    
+    # logger.debug(predictions)
 
+    return None, predictions
+
+
+def generate_predictions_dictionary(db: Session, model, scaler):
+    jurir_no_list = get_jurir_no_list(db)
+    new_data = get_new_data_from_db(db, jurir_no_list)
+    if new_data.empty:
+        return {"error": "Data not found for the given jurir_no list"}, []
+            # 중복된 jurir_no 제거
+    new_data = new_data.drop_duplicates(subset=['jurir_no'])
+
+    predictions = []
+    for _, row in new_data.iterrows():
+        data = row.to_frame().T
+        probabilities = preprocess_and_predict_proba(data, model, scaler)
+        class_probabilities = list(zip(model.classes_, probabilities[0]))
+        class_probabilities.sort(key=lambda x: x[1], reverse=True)
+
+        sorted_probabilities = {}
+        for cls, prob in class_probabilities:
+            sorted_probabilities[cls] = round(prob, 2)
+
+        result = {
+            "jurir_no": row["jurir_no"],
+            "corp_name": row["corp_name"],
+            "sorted_probabilities": sorted_probabilities
+        }
+
+        predictions.append(result)
+    
+    
+    logger.debug(f"Size of jurir_no_list: {len(jurir_no_list)}")
+    logger.debug(f"Size of predictions: {len(predictions)}")
     return None, predictions

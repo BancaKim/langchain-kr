@@ -3,7 +3,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, JSONResponse
 from sqlalchemy.orm import Session
 from database import SessionLocal
-from services_def.ML_service import preprocess_and_predict_proba, train_model, get_new_data_from_db, insert_predictions_into_db, generate_predictions
+from services_def.ML_service import preprocess_and_predict_proba, train_model, get_new_data_from_db, insert_predictions_into_db, generate_predictions, generate_predictions_dictionary
 import logging
 import json
 import asyncio
@@ -39,6 +39,10 @@ def get_db():
 async def train(request: Request):
     model, scaler, accuracy, class_report, conf_matrix, model_info = train_model()
     
+    # Define the credit ratings corresponding to each class
+    credit_ratings = ['A', 'A+', 'A-', 'AA', 'AA+', 'AA-', 'AAA', 'B', 'B+', 'B-', 'BB', 'BB+', 'BB-', 'BBB', 'BBB+', 'BBB-']
+
+    
     # Store the model and related information
     model_store["model"] = model
     model_store["scaler"] = scaler
@@ -53,12 +57,13 @@ async def train(request: Request):
         "class_report": class_report,
         "conf_matrix": conf_matrix,
         "model_info": model_store["model_info"],
+        "credit_ratings": credit_ratings,
         "show_predict_button": True
     })
 
 @machineLearning.get("/predict/", response_class=HTMLResponse)
 async def predict(request: Request):
-    return templates.TemplateResponse("ML_template/ML_creditDBinsert.html", {"request": request})
+    return templates.TemplateResponse("ML_template/ML_creditViewWS.html", {"request": request})
 
 @machineLearning.websocket("/ws/predict/")
 async def websocket_predict(websocket: WebSocket, db: Session = Depends(get_db)):
@@ -69,9 +74,8 @@ async def websocket_predict(websocket: WebSocket, db: Session = Depends(get_db))
             await websocket.send_text(json.dumps({"error": "Model not trained yet. Please train the model first."}))
             await websocket.close()
             return
-        
-        jurir_no_list = ['1301110006246', '1101110002694', '1101110002694', '1101110002959', '1101110002959', '1101110019219']
-        error, predictions = generate_predictions(db, model_store["model"], model_store["scaler"], jurir_no_list)
+
+        error, predictions = generate_predictions(db, model_store["model"], model_store["scaler"])
         
         if error:
             await websocket.send_text(json.dumps(error))
@@ -80,7 +84,7 @@ async def websocket_predict(websocket: WebSocket, db: Session = Depends(get_db))
 
         for result in predictions:
             await websocket.send_text(json.dumps(result))
-            await asyncio.sleep(0.05)
+            await asyncio.sleep(0.1)
 
         elapsed_time = time.time() - start_time
         summary = {
@@ -103,14 +107,44 @@ async def websocket_predict(websocket: WebSocket, db: Session = Depends(get_db))
 
     except WebSocketDisconnect:
         logger.info("WebSocket connection closed")
+        
+
+@machineLearning.get("/predict_all/", response_class=HTMLResponse)
+async def predict_all(request: Request, db: Session = Depends(get_db)):
+    start_time = time.time()
+    if model_store["model"] is None or model_store["scaler"] is None:
+        raise HTTPException(status_code=400, detail="Model not trained yet. Please train the model first.")
+    
+    error, predictions = generate_predictions_dictionary(db, model_store["model"], model_store["scaler"])
+    
+    if error:
+        raise HTTPException(status_code=400, detail=error)
+
+    elapsed_time = round(time.time() - start_time, 2)
+    model_info = {
+        "model_name": model_store["model_info"]["model_name"],
+        "creation_date": model_store["model_info"]["creation_date"],
+        "n_estimators": model_store["model_info"]["n_estimators"],
+        "max_features": model_store["model_info"]["max_features"],
+        "n_samples": model_store["model_info"]["n_samples"]
+    }
+
+    return templates.TemplateResponse("ML_template/ML_creditViewHTML.html", {
+        "request": request,
+        "predictions": predictions,
+        "model_info": model_info,
+        "elapsed_time": elapsed_time,
+        "count": len(predictions),
+        "show_db_button": True
+    })
+
 
 @machineLearning.post("/insert_predictions/", response_class=JSONResponse)
 async def insert_predictions(request: Request, db: Session = Depends(get_db)):
     if model_store["model"] is None or model_store["scaler"] is None:
         return JSONResponse(content={"error": "Model not trained yet. Please train the model first."}, status_code=400)
     
-    jurir_no_list = ['1301110006246', '1101110002694', '1101110002694', '1101110002959', '1101110002959', '1101110019219']
-    error, predictions = generate_predictions(db, model_store["model"], model_store["scaler"], jurir_no_list)
+    error, predictions = generate_predictions(db, model_store["model"], model_store["scaler"])
     
     if error:
         return JSONResponse(content=error, status_code=400)
@@ -153,3 +187,6 @@ async def insert_predictions(request: Request, db: Session = Depends(get_db)):
         insert_predictions_into_db(db, result, model_reference)
 
     return JSONResponse(content={"message": "ML로 생성한 신용등급 추정치가 DB에 입력되었습니다."}, status_code=200)
+
+
+
