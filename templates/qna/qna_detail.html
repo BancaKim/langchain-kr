@@ -1,50 +1,129 @@
 {% include 'header.html' %}
 
-
-
 {% block head %}
 <link rel="stylesheet" href="/static/css/style.css">
+
+<style>
+    .qna-detail {
+        margin: 20px 0;
+        background-color: #fff;
+    }
+
+    .qna-page-title {
+        margin-bottom: 20px;
+    }
+
+    .qna-container {
+        overflow: hidden;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        padding: 20px;
+    }
+
+    .qna-question {
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 5px;
+        width: 70%;
+        max-width: 70%;
+        float: left;
+        text-align: left;
+        margin-right: 5%;
+    }
+
+    .qna-replies {
+        margin-bottom: 20px;
+        clear: both;
+        border-top: 1px solid #ddd;
+        padding-top: 20px;
+    }
+
+    .qna-reply-item {
+        margin-bottom: 20px;
+        padding: 15px;
+        border-radius: 5px;
+        width: 70%;
+        max-width: 70%;
+        background-color: #e9f7fe;
+        float: right;
+        text-align: left;
+        clear: both;
+    }
+
+    .qna-form-group {
+        margin-top: 20px;
+        clear: both;
+        float: right;
+        width: 70%;
+    }
+
+    .qna-form-group label {
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .qna-form-group textarea {
+        width: 100%;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        resize: vertical;
+    }
+
+    .qna-form-actions {
+        text-align: right;
+        width: 70%;
+        float: right;
+        margin-top: 10px;
+    }
+
+    .qna-form-actions button, .qna-form-actions a {
+        margin-left: 10px;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<section class="detail">
-    <div class="page-title">
+<section class="qna-detail">
+    <div class="qna-page-title">
         <div class="container">
             <h3>Q&A 상세</h3>
         </div>
     </div>
 
-    <div class="container detail-content">
-        <h1>{{ qna.title }}</h1>
-        <p>{{ qna.content }}</p>
-        <p><strong>작성자:</strong> {{ qna.username }}</p>
-        <p><strong>등록일:</strong> {{ qna.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
-        <hr>
-        <h5>답글</h5>
-        <ul>
+    <div class="container qna-container">
+        <div class="qna-question">
+            <h1>{{ qna.title }}</h1>
+            <p>{{ qna.content }}</p>
+            <p><strong>작성자:</strong> {{ qna.username }}</p>
+            <p><strong>등록일:</strong> {{ qna.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+        </div>
+        <div class="qna-replies">
+            <h5>답글</h5>
             {% for reply in replies %}
-            <li>
+            <div class="qna-reply-item">
                 <p>{{ reply.content }}</p>
                 <p><strong>작성자:</strong> {{ reply.username }}</p>
                 <p><strong>등록일:</strong> {{ reply.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
-            </li>
+            </div>
             {% endfor %}
-        </ul>
+        </div>
         <form action="/qnas/{{ qna.id }}/reply" method="post">
-            <div class="form-group">
+            <div class="qna-form-group">
                 <label for="content">답글 내용</label>
                 <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
             </div>
-            <button type="submit" class="btn btn-dark">답글 달기</button>
-            <br/><br/><br/><br/>
+            <div class="qna-form-actions">
+                <button type="submit" class="btn btn-dark">답글 달기</button>
+                {% if username == qna.username %}
+                <a href="/qnas/update/{{ qna.id }}" class="btn btn-dark">수정</a>
+                <form action="/qnas/delete/{{ qna.id }}" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">삭제</button>
+                </form>
+                {% endif %}
+                <button onclick="location.href='/qnas'" class="btn btn-dark">목록으로</button>
+            </div>
         </form>
-        {% if username == qna.username %}
-        <a href="/qnas/update/{{ qna.id }}" class="btn btn-dark">수정</a>
-        <form action="/qnas/delete/{{ qna.id }}" method="post" style="display: inline;">
-            <button type="submit" class="btn btn-danger">삭제</button>
-        </form>
-        {% endif %}
-        <button onclick="location.href='/qnas'" class="btn btn-dark">목록으로</button>
     </div>
 </section>
 {% endblock %}
