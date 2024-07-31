@@ -1,7 +1,7 @@
 import asyncio
 from math import ceil
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, Form
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -9,10 +9,7 @@ from fastapi.templating import Jinja2Templates
 from database import SessionLocal
 from models.baro_models import CompanyInfo
 from models.credit_models import ReportContent
-from services_def.credit_companyinfo import get_autocomplete_suggestions
-from services_def.credit_review_create import summarize_report
 from dotenv import load_dotenv
-from services_def.credit_review_create2 import run_credit_evaluation
 from services_def.dependencies import get_db
 
 credit = APIRouter(prefix="/credit")
@@ -141,33 +138,45 @@ async def read_credit(
 
 
 @credit.get("/reviewDetail/{rcept_no}/{corp_code}")
-async def readcredit(request: Request, rcept_no: str, corp_code: str = None, db: Session = Depends(get_db)):
+async def readcredit(
+    request: Request,
+    rcept_no: str,
+    corp_code: str = None,
+    db: Session = Depends(get_db),
+):
     try:
         # Fetch the report content based on rcept_no
-        reportContent = db.query(ReportContent).filter(ReportContent.rcept_no == rcept_no).first()
+        reportContent = (
+            db.query(ReportContent).filter(ReportContent.rcept_no == rcept_no).first()
+        )
         if not reportContent:
             raise HTTPException(status_code=404, detail="Report content not found")
 
         company_info = None
         if corp_code:
             # Fetch company info based on corp_code if provided
-            company_info = db.query(CompanyInfo).filter(CompanyInfo.corp_code == corp_code).first()
+            company_info = (
+                db.query(CompanyInfo).filter(CompanyInfo.corp_code == corp_code).first()
+            )
             if company_info:
-                print("company_info:", company_info)  # Debug print to check if company_info is fetched
+                print(
+                    "company_info:", company_info
+                )  # Debug print to check if company_info is fetched
             else:
                 print("Company info not found for corp_code:", corp_code)
-                
+
         return templates.TemplateResponse(
             "creditreview/review_detail.html",
             {
                 "request": request,
                 "reportContent": reportContent,
-                "company_info": company_info
+                "company_info": company_info,
             },
         )
     except Exception as e:
         print("An error occurred:", str(e))  # Debug print
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
 
 @credit.get("/stream-content/{rcept_no}")
 async def stream_content(rcept_no: str, db: Session = Depends(get_db)):
@@ -176,7 +185,6 @@ async def stream_content(rcept_no: str, db: Session = Depends(get_db)):
     )
     content = reportContent.report_content if reportContent else ""
 
-    
     # 문단 구분 (예: 특정 키워드를 사용하여 문단 나누기)
     sections = content.split("\n\n")
     paragraphs = {
@@ -184,28 +192,33 @@ async def stream_content(rcept_no: str, db: Session = Depends(get_db)):
         "industry_analysis": sections[1] if len(sections) > 1 else "",
         "operational_status": sections[2] if len(sections) > 2 else "",
         "financial_structure": sections[3] if len(sections) > 3 else "",
-        "credit_rating_opinion": sections[4] if len(sections) > 4 else ""
+        "credit_rating_opinion": sections[4] if len(sections) > 4 else "",
     }
-    
+
     # 제목 매핑
     titles = {
         "company_overview": "기업체 개요",
         "industry_analysis": "산업 분석",
         "operational_status": "영업 현황 및 수익 구조",
         "financial_structure": "재무 구조 및 현금 흐름",
-        "credit_rating_opinion": "신용 등급 부여 의견"
+        "credit_rating_opinion": "신용 등급 부여 의견",
     }
-    
+
     def extract_content(text):
-        delimiter = '\n'
+        delimiter = "\n"
         start_index = text.find(delimiter)
         if start_index != -1:
-            return text[start_index + len(delimiter):].strip()
-        return text    
-
+            return text[start_index + len(delimiter) :].strip()
+        return text
 
     async def content_generator():
-        for key in ["company_overview", "industry_analysis", "operational_status", "financial_structure", "credit_rating_opinion"]:
+        for key in [
+            "company_overview",
+            "industry_analysis",
+            "operational_status",
+            "financial_structure",
+            "credit_rating_opinion",
+        ]:
             paragraph_content = extract_content(paragraphs[key])
             html_content = (
                 "<div class='flex-1 bg-white rounded-lg shadow-lg'>"
@@ -219,10 +232,7 @@ async def stream_content(rcept_no: str, db: Session = Depends(get_db)):
             yield html_content
             await asyncio.sleep(0.1)  # 소량의 대기시간을 추가하여 스트리밍처럼 보이도록
 
-    return StreamingResponse(content_generator(), media_type="text/html")            
-            
-
-
+    return StreamingResponse(content_generator(), media_type="text/html")
 
 
 @credit.get("/autocomplete", response_model=List[str])
