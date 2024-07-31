@@ -32,7 +32,7 @@
             <div class="form-group">
                 <label for="corporation_name">법인명</label>
                 {% if corporation_name %}
-                <input type="text" id="corporation_name" name="corporation_name" class="form-control" value="{{ corporation_name }}" readonly>
+                <input type="text" id="corporation_name" name="corporation_name" class="form-control" value="{{ corporation_name }}">
                 {% else %}
                 <input type="text" id="corporation_name" name="corporation_name" class="form-control" required>
                 {% endif %}

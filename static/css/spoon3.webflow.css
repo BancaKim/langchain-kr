@@ -1592,12 +1592,3 @@
     order: -9999;
   }
 }
-
-/* 
-@font-face {
-  font-family: 'Npsfont';
-  src: url('../fonts/NPSfont_bold.otf') format('opentype');
-  font-weight: 700;
-  font-style: normal;
-  font-display: auto;
-} */
