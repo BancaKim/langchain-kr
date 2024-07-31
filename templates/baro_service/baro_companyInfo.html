@@ -34,67 +34,8 @@
 
     <div class="flex items-center mb-10">
         <h2 class="text-4xl font-bold flex-1">{{ company_info.corp_name }}</h2>
-        <button id="favoriteBtn" class="flex-shrink-0 p-2 bg-gray-200 rounded-full hover:bg-gray-300 transition-colors"
-            onclick="toggleFavorite()">
-            <span id="favoriteIcon" class="material-icons">
-                즐겨찾기 작업중
-            </span>
-        </button>
+ 
     </div>
-
-    <style>
-        .material-icons {
-            font-family: 'Material Icons';
-            font-size: 24px;
-            vertical-align: middle;
-        }
-
-        .flex {
-            display: flex;
-        }
-
-        .items-center {
-            align-items: center;
-        }
-
-        .flex-1 {
-            flex: 1;
-        }
-
-        .flex-shrink-0 {
-            flex-shrink: 0;
-        }
-
-        .hover\:bg-gray-300:hover {
-            background-color: #e0e0e0;
-        }
-
-        .transition-colors {
-            transition: background-color 0.3s ease;
-        }
-    </style>
-
-
-    <script>
-        // 초기 상태를 저장 (로컬 저장소를 사용하는 경우)
-        let isFavorite = localStorage.getItem('isFavorite') === 'true';
-
-        // 즐겨찾기 버튼 상태 설정
-        function updateFavoriteButton() {
-            const favoriteIcon = document.getElementById('favoriteIcon');
-            favoriteIcon.textContent = isFavorite ? 'star' : 'star_border';
-        }
-
-        // 즐겨찾기 토글 함수
-        function toggleFavorite() {
-            isFavorite = !isFavorite;
-            localStorage.setItem('isFavorite', isFavorite); // 상태 저장
-            updateFavoriteButton(); // 버튼 아이콘 업데이트
-        }
-
-        // 페이지 로드 시 상태 설정
-        document.addEventListener('DOMContentLoaded', updateFavoriteButton);
-    </script>
 
 
 
@@ -181,19 +122,19 @@
             <div class="flex flex-col">
                 <!-- 상단 영역: 세로 2 비율 -->
                 <div class="flex-1 p-4 flex items-center justify-center">
-                    <h2 class="text-8xl font-bold">AA+</h2>
+                    <h2 class="text-8xl font-bold">{{ top3_rate[0]["key"]}}</h2>
                 </div>
                 <!-- 하단 영역: 세로 1 비율 -->
                 <div class="flex-2 p-4 flex">
                     <div class="flex flex-row w-full space-x-4">
                         <div class="flex-1 bg-purple-300 p-4 rounded-lg flex items-center justify-center">
-                            <p class="text-2xl font-semibold">AA+ 70%</p>
+                            <p class="text-2xl font-semibold">{{ top3_rate[0]["key"]}}<br> {{ '{:.1f}'.format(top3_rate[0]["value"] * 100)}}%</p>
                         </div>
                         <div class="flex-1 bg-purple-200 p-4 rounded-lg flex items-center justify-center">
-                            <p class="text-2xl font-semibold">AA0 15%</p>
+                            <p class="text-2xl font-semibold">{{ top3_rate[1]["key"]}}<br> {{ '{:.1f}'.format(top3_rate[1]["value"] * 100)}}%</p>
                         </div>
                         <div class="flex-1 bg-purple-100 p-4 rounded-lg flex items-center justify-center">
-                            <p class="text-2xl font-semibold">AA- 15%</p>
+                            <p class="text-2xl font-semibold">{{ top3_rate[2]["key"]}}<br> {{ '{:.1f}'.format(top3_rate[2]["value"] * 100)}}%</p>
                         </div>
                     </div>
                 </div>
