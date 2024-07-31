@@ -1,6 +1,19 @@
 from datetime import datetime
 from pydantic import BaseModel
 from typing import Optional
+from sqlalchemy import (
+    create_engine,
+    Table,
+    Column,
+    Integer,
+    String,
+    Date,
+    DECIMAL,
+    TIMESTAMP,
+    BigInteger,
+    ForeignKey,
+)
+
 
 class ReportContentSchema(BaseModel):
     report_num: Optional[int] = None
@@ -13,6 +26,7 @@ class ReportContentSchema(BaseModel):
 
     class Config:
         from_attributes = True
+
 
 class AutocompleteResult(BaseModel):
     result: str

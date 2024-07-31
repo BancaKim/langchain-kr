@@ -12,6 +12,7 @@ from models.credit_models import ReportContent
 from services_def.credit_companyinfo import get_autocomplete_suggestions
 from services_def.credit_review_create import summarize_report
 from dotenv import load_dotenv
+from services_def.credit_review_create2 import run_credit_evaluation
 from services_def.dependencies import get_db
 
 credit = APIRouter(prefix="/credit")
@@ -21,29 +22,29 @@ templates = Jinja2Templates(directory="templates")
 load_dotenv()
 
 
-@credit.get("/createReview/")
-async def create_review(db: Session = Depends(get_db)):
-    # finanical_summary_v1의 회사코드 리스트 가져오기
-    # corp_code = "00164779"  # 에스케이하이닉스(주)
-    # corp_code = "00126380"  # 삼성전자
-    # corp_code = "00102618"  # 계양전기
+# @credit.get("/createReview/")
+# async def create_review(db: Session = Depends(get_db)):
+#     # finanical_summary_v1의 회사코드 리스트 가져오기
+#     # corp_code = "00164779"  # 에스케이하이닉스(주)
+#     # corp_code = "00126380"  # 삼성전자
+#     # corp_code = "00102618"  # 계양전기
 
-    corp_codes = []
+#     corp_codes = []
 
-    corp_codes.append("00155355")  # 풀무원
-    corp_codes.append("00105961")  # LG이노텍
-    corp_codes.append("00231707")  # 비트컴퓨터
-    corp_codes.append("00545929")  # 제넥신
-    corp_codes.append("01133217")  # 카카오뱅크
-    corp_codes.append("00117212")  # 두산
-    corp_codes.append("01105153")  # 두산로보틱스
-    corp_codes.append("00164742")  # 현대자동차
-    corp_codes.append("00164788")  # 현대모비스
+#     corp_codes.append("00155355")  # 풀무원
+#     # corp_codes.append("00105961")  # LG이노텍
+#     # corp_codes.append("00231707")  # 비트컴퓨터
+#     # corp_codes.append("00545929")  # 제넥신
+#     # corp_codes.append("01133217")  # 카카오뱅크
+#     # corp_codes.append("00117212")  # 두산
+#     # corp_codes.append("01105153")  # 두산로보틱스
+#     # corp_codes.append("00164742")  # 현대자동차
+#     # corp_codes.append("00164788")  # 현대모비스
 
-    # 받아온 회사 코드로 최신 정기 공시보고서 번호 dart api로부터 받아오기
-    for corp_code in corp_codes:
-        summary = summarize_report(corp_code)
-    return {"result": "DB success"}
+#     # 받아온 회사 코드로 최신 정기 공시보고서 번호 dart api로부터 받아오기
+#     for corp_code in corp_codes:
+#         summary = run_credit_evaluation(corp_code)
+#     return {"result": "DB success"}
 
 
 @credit.get("/api/companies")
