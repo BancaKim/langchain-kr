@@ -37,6 +37,10 @@
             width: 80%;
             margin: 20px auto;
         }
+        .center {
+            text-align: center;
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body>
@@ -127,9 +131,13 @@
             </table>
         </div>
 
-        <div class="box">
-            <!-- This box is intentionally left blank -->
+        {% if show_predict_button %}
+        <div class="center">
+            <form action="/predict/" method="get">
+                <button type="submit">Predict</button>
+            </form>
         </div>
+        {% endif %}
     </div>
 
     <div class="section">

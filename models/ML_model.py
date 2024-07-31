@@ -1,6 +1,7 @@
 # app/models/data_model.py
 from pydantic import BaseModel
 
+
 class DataModel(BaseModel):
     loan: float
     IR: float

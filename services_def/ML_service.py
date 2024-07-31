@@ -9,6 +9,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 import logging
 from datetime import datetime
+import json
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger('uvicorn.error')
 logger.setLevel(logging.DEBUG)
@@ -60,16 +62,22 @@ def preprocess_and_predict_proba(new_data, model, scaler):
     if scaler is None:
         raise ValueError("The scaler is not initialized. Please initialize the scaler before prediction.")
     
-    # 'jurir_no' 열을 제거
+    # 모델이 학습할 때 사용된 피처 이름을 가져옵니다
+    feature_names = model.feature_names_in_
+    
+    # 'jurir_no' 열을 제거하고 피처 이름에 맞게 정렬
     new_data = new_data.drop(columns=['jurir_no'])
+    new_data = new_data.drop(columns=['corp_name'])
+    new_data = new_data[feature_names]
     
     new_data_scaled = scaler.transform(new_data)
     probabilities = model.predict_proba(new_data_scaled)
     return probabilities
 
+
 def get_new_data_from_db(db: Session, jurir_no_list: list):
     query = text(
-        "SELECT a.jurir_no, COALESCE(g.IR등급, 7) AS IR, "
+        "SELECT a.corp_name, a.jurir_no, COALESCE(g.IR등급, 7) AS IR, "
         "b.totalAsset2023 AS asset2023, b.totalDebt2023 AS debt2023, b.totalEquity2023 AS equity2023, "
         "b.revenue2023 AS revenue2023, b.operatingIncome2023 AS operatingincome2023, b.earningBeforeTax2023 AS EBT2023, "
         "b.margin2023 AS margin2023, b.turnover2023 AS turnover2023, b.leverage2023 AS leverage2023, "
@@ -96,3 +104,78 @@ def get_new_data_from_db(db: Session, jurir_no_list: list):
     logger.debug(new_data)
     
     return new_data
+
+
+def insert_predictions_into_db(db: Session, prediction: dict, model_reference: str):
+    query = text("""
+    INSERT INTO predict_ratings (
+        corporate_number, company_name, base_year, AAA_plus, AAA, AAA_minus,
+        AA_plus, AA, AA_minus, A_plus, A, A_minus, BBB_plus, BBB, BBB_minus,
+        BB_plus, BB, BB_minus, B_plus, B, B_minus, CCC_plus, CCC, CCC_minus, C, D, model_reference
+    ) VALUES (
+        :jurir_no, :corp_name, :base_year, :AAA_plus, :AAA, :AAA_minus, :AA_plus, :AA, :AA_minus,
+        :A_plus, :A, :A_minus, :BBB_plus, :BBB, :BBB_minus, :BB_plus, :BB, :BB_minus, :B_plus, :B,
+        :B_minus, :CCC_plus, :CCC, :CCC_minus, :C, :D, :model_reference
+    )
+    """)
+    db.execute(query, {
+        "jurir_no": prediction["jurir_no"],
+        "corp_name": prediction["corp_name"],
+        "base_year": prediction["base_year"],
+        "AAA_plus": prediction["AAA_plus"],
+        "AAA": prediction["AAA"],
+        "AAA_minus": prediction["AAA_minus"],
+        "AA_plus": prediction["AA_plus"],
+        "AA": prediction["AA"],
+        "AA_minus": prediction["AA_minus"],
+        "A_plus": prediction["A_plus"],
+        "A": prediction["A"],
+        "A_minus": prediction["A_minus"],
+        "BBB_plus": prediction["BBB_plus"],
+        "BBB": prediction["BBB"],
+        "BBB_minus": prediction["BBB_minus"],
+        "BB_plus": prediction["BB_plus"],
+        "BB": prediction["BB"],
+        "BB_minus": prediction["BB_minus"],
+        "B_plus": prediction["B_plus"],
+        "B": prediction["B"],
+        "B_minus": prediction["B_minus"],
+        "CCC_plus": prediction["CCC_plus"],
+        "CCC": prediction["CCC"],
+        "CCC_minus": prediction["CCC_minus"],
+        "C": prediction["C"],
+        "D": prediction["D"],
+        "model_reference": model_reference
+    })
+    db.commit()
+    
+    
+
+def generate_predictions(db: Session, model, scaler, jurir_no_list: list):
+    new_data = get_new_data_from_db(db, jurir_no_list)
+    if new_data.empty:
+        return {"error": "Data not found for the given jurir_no list"}, []
+
+    predictions = []
+    for _, row in new_data.iterrows():
+        data = row.to_frame().T
+        probabilities = preprocess_and_predict_proba(data, model, scaler)
+        class_probabilities = list(zip(model.classes_, probabilities[0]))
+        class_probabilities.sort(key=lambda x: x[1], reverse=True)
+        
+        sorted_probabilities = []
+        for cls, prob in class_probabilities:
+            sorted_probabilities.append({
+                'class': cls, 
+                'probability': round(prob, 2)
+            })
+        
+        result = {
+            "jurir_no": row["jurir_no"],
+            "corp_name": row["corp_name"],
+            "sorted_probabilities": sorted_probabilities
+        }
+        
+        predictions.append(result)
+
+    return None, predictions
