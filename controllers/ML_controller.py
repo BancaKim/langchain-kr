@@ -1,26 +1,31 @@
-from fastapi import APIRouter, Form, HTTPException, Request, Depends, Query
+from fastapi import APIRouter, HTTPException, Request, Depends, WebSocket, WebSocketDisconnect
+from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, JSONResponse
 from sqlalchemy.orm import Session
-from datetime import date
 from database import SessionLocal
-from fastapi.templating import Jinja2Templates
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy import distinct, text, func
-from schemas.baro_schemas import CompanyInfoSchema
-from services_def.baro_service import get_autocomplete_suggestions, get_corp_info_code, get_corp_info_jurir_no, get_corp_info_name, get_company_info
-from services_def.baro_service import get_FS2023, get_FS2022, get_FS2021, get_FS2020, get_Stock_data, get_company_info_list, search_company, get_company_infoFS_list
+from services_def.ML_service import preprocess_and_predict_proba, train_model, get_new_data_from_db, insert_predictions_into_db, generate_predictions
 import logging
-from typing import List, Optional
-from models.baro_models import CompanyInfo
-from models.ML_model import DataModel
-from services_def.ML_service import preprocess_and_predict_proba, train_model
-import pandas as pd
-
+import json
+import asyncio
+import time
+from datetime import datetime
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 machineLearning = APIRouter()
 templates = Jinja2Templates(directory="templates")
+
+model_store = {
+    "model": None,
+    "scaler": None,
+    "accuracy": None,
+    "class_report": None,
+    "conf_matrix": None,
+    "model_info": None,
+}
+
+# Global variable to store predictions
+predictions_store = []
 
 # Dependency to get the database session
 def get_db():
@@ -29,151 +34,122 @@ def get_db():
         yield db
     finally:
         db.close()
-        
-        
-@machineLearning.on_event("startup")
-async def startup_event():
-    train_model()
 
-@machineLearning.post("/predict/")
-async def predict(data: DataModel):
-    new_data = pd.DataFrame([data.dict().values()], columns=data.dict().keys())
-    probabilities = preprocess_and_predict_proba(new_data)
-    return {"probabilities": probabilities.tolist()}
-
-
-
-
-
-# 바로 등급 검색 페이지 / 나의업체현황/ 최근조회업체 return
-# @machineLearning.get("/baro_companyList", response_class=HTMLResponse)
-# async def read_companyList(request: Request, search_value: str = "", db: Session = Depends(get_db)):
-#     jurir_no = search_company(db, search_value) if search_value else []
-#     my_jurir_no = ["1101110017990", "1101110019219", "1345110004412"]
-#     recent_jurir_no = ["1101110032154", "1201110018368", "1101110162191"]
+@machineLearning.get("/train/", response_class=HTMLResponse)
+async def train(request: Request):
+    model, scaler, accuracy, class_report, conf_matrix, model_info = train_model()
     
-#     search_company_list = get_company_infoFS_list(db, jurir_no) if jurir_no else []
-#     my_company_list = get_company_infoFS_list(db, my_jurir_no) if my_jurir_no else []
-#     recent_view_list = get_company_infoFS_list(db, recent_jurir_no) if recent_jurir_no else []
+    # Store the model and related information
+    model_store["model"] = model
+    model_store["scaler"] = scaler
+    model_store["accuracy"] = accuracy
+    model_store["class_report"] = class_report
+    model_store["conf_matrix"] = conf_matrix
+    model_store["model_info"] = {**model_info, "feature_importances": dict(zip(model.feature_names_in_, model_info['feature_importances']))}
+
+    return templates.TemplateResponse("ML_template/ML_view.html", {
+        "request": request,
+        "accuracy": round(accuracy, 2),
+        "class_report": class_report,
+        "conf_matrix": conf_matrix,
+        "model_info": model_store["model_info"],
+        "show_predict_button": True
+    })
+
+@machineLearning.get("/predict/", response_class=HTMLResponse)
+async def predict(request: Request):
+    return templates.TemplateResponse("ML_template/ML_creditDBinsert.html", {"request": request})
+
+@machineLearning.websocket("/ws/predict/")
+async def websocket_predict(websocket: WebSocket, db: Session = Depends(get_db)):
+    await websocket.accept()
+    start_time = time.time()
+    try:
+        if model_store["model"] is None or model_store["scaler"] is None:
+            await websocket.send_text(json.dumps({"error": "Model not trained yet. Please train the model first."}))
+            await websocket.close()
+            return
+        
+        jurir_no_list = ['1301110006246', '1101110002694', '1101110002694', '1101110002959', '1101110002959', '1101110019219']
+        error, predictions = generate_predictions(db, model_store["model"], model_store["scaler"], jurir_no_list)
+        
+        if error:
+            await websocket.send_text(json.dumps(error))
+            await websocket.close()
+            return
+
+        for result in predictions:
+            await websocket.send_text(json.dumps(result))
+            await asyncio.sleep(0.05)
+
+        elapsed_time = time.time() - start_time
+        summary = {
+            "message": "completed",
+            "count": len(predictions),
+            "model_info": {
+                "model_name": model_store["model_info"]["model_name"],
+                "creation_date": model_store["model_info"]["creation_date"],
+                "n_estimators": model_store["model_info"]["n_estimators"],
+                "max_features": model_store["model_info"]["max_features"],
+                "n_samples": model_store["model_info"]["n_samples"]
+            },
+            "elapsed_time": round(elapsed_time, 2)
+        }
+        await websocket.send_text(json.dumps(summary))
+        
+        # Store the predictions in the global store
+        global predictions_store
+        predictions_store = predictions
+
+    except WebSocketDisconnect:
+        logger.info("WebSocket connection closed")
+
+@machineLearning.post("/insert_predictions/", response_class=JSONResponse)
+async def insert_predictions(request: Request, db: Session = Depends(get_db)):
+    if model_store["model"] is None or model_store["scaler"] is None:
+        return JSONResponse(content={"error": "Model not trained yet. Please train the model first."}, status_code=400)
     
-#     return templates.TemplateResponse(
-#         "baro_service/baro_companyList2.html", 
-#         {
-#             "request": request,
-#             "search_company_list": search_company_list,
-#             "my_company_list": my_company_list,
-#             "recent_view_list": recent_view_list
-#         }
-#     )
+    jurir_no_list = ['1301110006246', '1101110002694', '1101110002694', '1101110002959', '1101110002959', '1101110019219']
+    error, predictions = generate_predictions(db, model_store["model"], model_store["scaler"], jurir_no_list)
+    
+    if error:
+        return JSONResponse(content=error, status_code=400)
 
-# @machineLearning.get("/baro_companyInfo", response_class=HTMLResponse)
-# async def read_company_info(request: Request, jurir_no: str = Query(...), db: Session = Depends(get_db)):
-#     company_info = get_company_info(db, jurir_no)
-#     FS2023 = get_FS2023(db, jurir_no)
-#     FS2022 = get_FS2022(db, jurir_no)
-#     FS2021 = get_FS2021(db, jurir_no)
-#     FS2020 = get_FS2020(db, jurir_no)
-#     stock_data=get_Stock_data(db, company_info.corp_code)
-#     if not company_info:
-#         raise HTTPException(status_code=404, detail="Company not found")
-#     # logger.info(f"company_info.corp_code: {company_info.corp_code}")
-#     return templates.TemplateResponse("baro_service/baro_companyInfo.html", {"request": request, "company_info": company_info, "fs2023": FS2023, "fs2022": FS2022, "fs2021": FS2021, "fs2020": FS2020, "stock_data" : stock_data})
+    model_info = model_store["model_info"]
+    creation_date = datetime.strptime(model_info['creation_date'], "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d")
+    model_reference = f"{round(model_store['accuracy'], 2)}_{model_info['model_name']}_{creation_date}"
 
-# @machineLearning.get("/baro_companyInfo2")
-# async def read_company_info(
-#     request: Request,
-#     db: Session = Depends(get_db),
-#     name: Optional[str] = Query(None),
-#     search_type: Optional[str] = Query(None)
-# ):
-#     try:
-#         query = db.query(CompanyInfo)
-        
-#         jurir_no = None
-#         company_info = None
-        
-#         if name:
-#             if search_type == "company_name":
-#                 result = db.query(CompanyInfo.jurir_no).filter(func.trim(CompanyInfo.corp_name) == name).first()
-#                 if result:
-#                     jurir_no = result[0]
-#             elif search_type == "company_code":
-#                 result = db.query(CompanyInfo.jurir_no).filter(func.trim(CompanyInfo.corp_code) == name).first()
-#                 if result:
-#                     jurir_no = result[0]
+    for prediction in predictions:
+        sorted_probabilities = {cls: prob['probability'] for cls, prob in zip(model_store["model"].classes_, prediction['sorted_probabilities'])}
+        result = {
+            "jurir_no": prediction["jurir_no"],
+            "corp_name": prediction["corp_name"],
+            "base_year": 2024,
+            "AAA_plus": sorted_probabilities.get('AAA+', 0.0),
+            "AAA": sorted_probabilities.get('AAA', 0.0),
+            "AAA_minus": sorted_probabilities.get('AAA-', 0.0),
+            "AA_plus": sorted_probabilities.get('AA+', 0.0),
+            "AA": sorted_probabilities.get('AA', 0.0),
+            "AA_minus": sorted_probabilities.get('AA-', 0.0),
+            "A_plus": sorted_probabilities.get('A+', 0.0),
+            "A": sorted_probabilities.get('A', 0.0),
+            "A_minus": sorted_probabilities.get('A-', 0.0),
+            "BBB_plus": sorted_probabilities.get('BBB+', 0.0),
+            "BBB": sorted_probabilities.get('BBB', 0.0),
+            "BBB_minus": sorted_probabilities.get('BBB-', 0.0),
+            "BB_plus": sorted_probabilities.get('BB+', 0.0),
+            "BB": sorted_probabilities.get('BB', 0.0),
+            "BB_minus": sorted_probabilities.get('BB-', 0.0),
+            "B_plus": sorted_probabilities.get('B+', 0.0),
+            "B": sorted_probabilities.get('B', 0.0),
+            "B_minus": sorted_probabilities.get('B-', 0.0),
+            "CCC_plus": sorted_probabilities.get('CCC+', 0.0),
+            "CCC": sorted_probabilities.get('CCC', 0.0),
+            "CCC_minus": sorted_probabilities.get('CCC-', 0.0),
+            "C": sorted_probabilities.get('C', 0.0),
+            "D": sorted_probabilities.get('D', 0.0),
+            "model_reference": model_reference
+        }
+        insert_predictions_into_db(db, result, model_reference)
 
-#         print("jurir_no:", jurir_no)  # Debug print to check if jurir_no is fetched
-
-#         if jurir_no:
-#             company_info = get_company_info(db, jurir_no)
-#             print("company_info:", company_info)  # Debug print to check if company_info is fetched
-
-#             if company_info:
-#                 print("company_info.corp_code:", company_info.corp_code)  # Debug print to check corp_code
-
-#                 FS2023 = get_FS2023(db, jurir_no)
-#                 FS2022 = get_FS2022(db, jurir_no)
-#                 FS2021 = get_FS2021(db, jurir_no)
-#                 FS2020 = get_FS2020(db, jurir_no)
-#                 stock_data = get_Stock_data(db, company_info.corp_code)
-#             else:
-#                 print("Company info is None")
-#         else:
-#             print("Jurir_no is None")
-
-#         if not company_info:
-#             raise HTTPException(status_code=404, detail="Company not found")
-
-#         return templates.TemplateResponse(
-#             "baro_service/baro_companyInfo.html",
-#             {
-#                 "request": request,
-#                 "company_info": company_info,
-#                 "fs2023": FS2023,
-#                 "fs2022": FS2022,
-#                 "fs2021": FS2021,
-#                 "fs2020": FS2020,
-#                 "stock_data": stock_data
-#             }
-#         )
-#     except Exception as e:
-#         print("An error occurred:", str(e))
-#         raise HTTPException(status_code=500, detail="Internal Server Error")
-
-
-# @machineLearning.get("/test1234")
-# async def read_join(request: Request):
-#     return templates.TemplateResponse("baro_service/test.html", {"request": request})
-
-
-
-# @machineLearning.get("/autocomplete", response_model=List[str])
-# async def autocomplete(
-#     query: str,
-#     search_type: str = Query("company_name", enum=["company_name", "company_code"]),
-# ):
-#     db = SessionLocal()
-#     print(search_type)
-#     try:
-#         # Determine the column based on search_type
-#         if search_type == "company_name":
-#             column = "corp_name"
-#             print(column)
-#         elif search_type == "company_code":
-#             column = "corp_code"
-#             print(column)
-#         else:
-#             raise ValueError("Invalid search type")
-
-#         sql_query = text(
-#             f"""
-#             SELECT {column}
-#             FROM companyInfo
-#             WHERE {column} LIKE :query
-#             LIMIT 10
-#         """
-#         )
-#         results = db.execute(sql_query, {"query": f"{query}%"}).fetchall()
-#         return [row[0] for row in results]  # Return list of results
-#     finally:
-#         db.close()
+    return JSONResponse(content={"message": "ML로 생성한 신용등급 추정치가 DB에 입력되었습니다."}, status_code=200)

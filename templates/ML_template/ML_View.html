@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Prediction Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        .box {
+            flex: 1 1 calc(33.333% - 20px); /* Each box takes up 33.333% of the width, minus margins */
+            margin: 10px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background-color: #f9f9f9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        .section {
+            width: 80%;
+            margin: 20px auto;
+        }
+        .center {
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="box">
+            <h2>Model Information</h2>
+            <ul>
+                <li>Model Name: {{ model_info.model_name }}</li>
+                <li>Creation Date: {{ model_info.creation_date }}</li>
+                <li>Number of Estimators: {{ model_info.n_estimators }}</li>
+                <li>Max Features: {{ model_info.max_features }}</li>
+                <li>Number of Samples: {{ model_info.n_samples }}</li>
+            </ul>
+        </div>
+
+        <div class="box">
+            <h2>Model Accuracy</h2>
+            <p>{{ accuracy }}</p>
+        </div>
+
+        <div class="box">
+            <h2>Classification Report</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Label</th>
+                        <th>Precision</th>
+                        <th>Recall</th>
+                        <th>F1-Score</th>
+                        <th>Support</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for label, metrics in class_report.items() %}
+                    {% if metrics is mapping %}
+                    <tr>
+                        <td>{{ label }}</td>
+                        <td>{{ '%.2f'|format(metrics.precision) }}</td>
+                        <td>{{ '%.2f'|format(metrics.recall) }}</td>
+                        <td>{{ '%.2f'|format(metrics['f1-score']) }}</td>
+                        <td>{{ metrics.support }}</td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="box">
+            <h2>Confusion Matrix</h2>
+            <table>
+                <thead>
+                    <tr>
+                        {% for col in conf_matrix[0] %}
+                        <th>Class {{ loop.index0 }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in conf_matrix %}
+                    <tr>
+                        {% for val in row %}
+                        <td>{{ val }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="box">
+            <h2>Feature Importances</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Importance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for feature, importance in model_info.feature_importances.items() %}
+                    <tr>
+                        <td>{{ feature }}</td>
+                        <td>{{ '%.2f'|format(importance) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if show_predict_button %}
+        <div class="center">
+            <form action="/predict/" method="get">
+                <button type="submit">Predict</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h1>Prediction Results</h1>
+        {% for result in results %}
+            <h2>Jurir_no: {{ result.jurir_no }}</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Class</th>
+                        <th>Probability</th>
+                        <th>Cumulative Probability</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in result.sorted_probabilities %}
+                    <tr>
+                        <td>{{ item.class }}</td>
+                        <td>{{ item.probability }}</td>
+                        <td>{{ item.cumulative }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endfor %}
+    </div>
+</body>
+</html>
