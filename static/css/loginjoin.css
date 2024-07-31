@@ -1,12 +1,14 @@
 @font-face {
-    font-family: 'NPSfontBold';
-    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2310@1.0/NPSfontBold.woff2') format('woff2');
-    font-weight: 700;
+    font-family: 'Freesentation-9Black';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-9Black.woff2') format('woff2');
+    font-weight: 900;
     font-style: normal;
-}
+    }
     body{
-    font-family: 'NPSfontBold';
-}  
+    font-family: 'Freesentation-9Black';
+    font-size: 18px; /* 기본 폰트 크기 설정 */
+    line-height: 1.6; /* 줄 높이 설정 */
+    }
 
 .home-container {
     display: flex;

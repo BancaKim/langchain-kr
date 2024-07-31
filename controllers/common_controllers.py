@@ -1,4 +1,5 @@
 from email.mime.text import MIMEText
+import json
 import os
 import shutil
 import smtplib
@@ -822,7 +823,6 @@ async def search_location(request: Request):
     return templates.TemplateResponse("contact/map2.html", {"request": request})
 
 
-# 채팅 기능 관련
 @router.get("/contact3")
 async def get_chat_page(request: Request):
     username = request.session.get("username")
@@ -830,24 +830,35 @@ async def get_chat_page(request: Request):
         "contact/contact3.html", {"request": request, "username": username}
     )
 
-
 @router.websocket("/ws/chat/{username}")
 async def websocket_endpoint(websocket: WebSocket, username: str):
     await manager.connect(websocket, username)
     try:
         while True:
             data = await websocket.receive_text()
-            if data.startswith("/w"):
-                _, target_username, *message = data.split(" ")
-                message = " ".join(message)
+            message_data = json.loads(data)
+            if message_data.get("type") == "whisper":
+                target_username = message_data.get("target")
+                content = message_data.get("content")
                 await manager.send_personal_message(
-                    f"{username}님으로부터 귓속말: {message}", target_username
+                    json.dumps({
+                        "sender": username,
+                        "content": content,
+                        "type": "whisper"
+                    }),
+                    target_username
                 )
             else:
-                await manager.broadcast(f"{username}: {data}")
+                await manager.broadcast(json.dumps({
+                    "sender": username,
+                    "content": message_data.get("content")
+                }))
     except WebSocketDisconnect:
         manager.disconnect(username)
-        await manager.broadcast(f"{username} 사용자가 채팅에서 퇴장하였습니다.")
+        await manager.broadcast(json.dumps({
+            "sender": "System",
+            "content": f"{username} 사용자가 채팅에서 퇴장하였습니다."
+        }))
 
 
 # 기능홈페이지
