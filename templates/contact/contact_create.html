@@ -1,47 +1,70 @@
 {% include 'header.html' %}
 
 {% block head %}
-<link rel="stylesheet" href="/static/css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/font.css">
+<link rel="stylesheet" href="/static/css/style.css">
 {% endblock %}
 
 {% block content %}
+
+<div class="w-full"
+    style="background-image: url('/static/images/home8.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 40vh;">
+
+    <div class="p-8 w-full max-w-screen-xl mx-auto">
+        <span class="block text-left text-xl mb-2">
+            <a href="/" class="mr-2 text-white">홈 &nbsp; |</a>
+            <a href="/contact" class="ml-2 text-white">섭외등록 &nbsp; |</a>
+            <span class="ml-2 text-white"> 작성 </span>
+        </span>
+        <br><br><br>
+
+        <div class="text-center mb-4">
+            <h1 class="text-5xl font-bold text-white">섭외등록 글 작성 </h1>
+        </div>
+        <br><br><br>
+    </div>
+</div>
+</div>
+
+
+<br><br>
 <section class="create">
     <div class="container">
-        <div class="page-title">
-            <h3>섭외등록 글 작성</h3>
-        </div>
-
-        <form id="contactForm" method="post" enctype="multipart/form-data">
-            <div class="form-group">
-                <label for="username">작성자</label>
-                <input type="text" class="form-control" id="username" name="username" value="{{ username }}" readonly>
+ 
+        <form id="contactForm" method="post" enctype="multipart/form-data" class="bg-white border border-gray-300 rounded-lg shadow-md p-6 mb-4">
+            <div class="form-group mb-4">
+                <label for="username" class="block text-gray-800 text-lg font-semibold mb-2">작성자</label>
+                <input type="text" class="form-control bg-gray-100 text-gray-700 border border-gray-300 rounded-md p-2 w-full" id="username" name="username" value="{{ username }}" readonly>
             </div>
-            <div class="form-group">
-                <label for="title">제목</label>
-                <input type="text" id="title" name="title" class="form-control" required>
+            <div class="form-group mb-4">
+                <label for="title" class="block text-gray-800 text-lg font-semibold mb-2">제목</label>
+                <input type="text" id="title" name="title" class="form-control bg-white text-gray-700 border border-gray-300 rounded-md p-2 w-full" required>
             </div>
-            <div class="form-group">
-                <label for="content">내용</label>
-                <textarea id="content" name="content" rows="5" class="form-control" required></textarea>
+            <div class="form-group mb-4">
+                <label for="content" class="block text-gray-800 text-lg font-semibold mb-2">내용</label>
+                <textarea id="content" name="content" rows="5" class="form-control bg-white text-gray-700 border border-gray-300 rounded-md p-2 w-full" required></textarea>
             </div>
-            <div class="form-group">
-                <label for="file">파일 첨부 (선택 사항)</label>
-                <input type="file" id="file" name="file" class="form-control">
+            <div class="form-group mb-4">
+                <label for="file" class="block text-gray-800 text-lg font-semibold mb-2">파일 첨부 (선택 사항)</label>
+                <input type="file" id="file" name="file" class="bg-white text-gray-700 border border-gray-300 rounded-md p-2 w-full">
             </div>
-            <div class="form-group">
-                <label for="corporation_name">법인명</label>
+            <div class="form-group mb-4">
+                <label for="corporation_name" class="block text-gray-800 text-lg font-semibold mb-2">법인명</label>
                 {% if corporation_name %}
-                <input type="text" id="corporation_name" name="corporation_name" class="form-control" value="{{ corporation_name }}" readonly>
+                <input type="text" id="corporation_name" name="corporation_name" class="form-control bg-white text-gray-700 border border-gray-300 rounded-md p-2 w-full" value="{{ corporation_name }}">
                 {% else %}
-                <input type="text" id="corporation_name" name="corporation_name" class="form-control" required>
+                <input type="text" id="corporation_name" name="corporation_name" class="form-control bg-white text-gray-700 border border-gray-300 rounded-md p-2 w-full" required>
                 {% endif %}
             </div>        
-            <div class="btn-wrap">
-                <button type="button" class="btn btn-dark" onclick="handleSubmit()">등록</button>
-                <button type="button" onclick="location.href='/contact'" class="btn btn-dark">목록으로</button>
+            <div class="flex justify-center space-x-4 mt-4">
+                <button type="button" class=" bg-gray-800 text-white rounded hover:bg-gray-900 px-4 py-2" onclick="handleSubmit()">등록</button>
+                <button type="button" onclick="location.href='/contact'" class=" bg-gray-800 text-white rounded hover:bg-gray-900 px-4 py-2">목록으로</button>
             </div>
         </form>
+
     </div>
 </section>
 
@@ -85,7 +108,10 @@
         });
     });
 </script>
+
 {% endif %}
+<br><br><br>
 
 {% endblock %}
+
 {% include 'footer.html' %}

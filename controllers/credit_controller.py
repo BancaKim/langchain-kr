@@ -196,7 +196,7 @@ async def stream_content(rcept_no: str, db: Session = Depends(get_db)):
     }
     
     def extract_content(text):
-        delimiter = '**: '
+        delimiter = '\n'
         start_index = text.find(delimiter)
         if start_index != -1:
             return text[start_index + len(delimiter):].strip()
