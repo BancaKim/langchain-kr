@@ -65,6 +65,10 @@ def basename(value):
 templates.env.filters["basename"] = basename
 # 기능 구현 관련
 
+# 테스트
+@router.get('/alert')
+async def read_root(request: Request):
+    return templates.TemplateResponse('alert.html', {"request": request})
 
 # 로그인화면이동
 @router.get('/home')

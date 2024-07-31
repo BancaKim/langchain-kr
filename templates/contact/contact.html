@@ -135,9 +135,9 @@
                         <td class="px-6 py-4 border-b">{{ loop.index + (page - 1) * 10 }}</td>
                         <td class="px-6 py-4 border-b">
                             {% if post.file_path and post.file_path != '/None' %}
-                            <img src="{{ post.file_path }}" alt="썸네일" class="w-16 h-16 object-cover rounded">
+                            <img src="{{ post.file_path }}" alt="썸네일" class="thumbnail">
                             {% else %}
-                            <img src="/static/images/no-image.png" alt="기본 이미지" class="w-16 h-16 object-cover rounded">
+                            <img src="/static/images/no-image.png" alt="기본 이미지" class="thumbnail">
                             {% endif %}
                         </td>
                         <td class="px-6 py-4 border-b">
