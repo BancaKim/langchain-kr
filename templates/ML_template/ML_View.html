@@ -41,6 +41,10 @@
             text-align: center;
             margin: 20px 0;
         }
+        .heatmap td {
+            text-align: center;
+            color: rgb(0, 0, 0);
+        }
     </style>
 </head>
 <body>
@@ -91,22 +95,125 @@
 
         <div class="box">
             <h2>Confusion Matrix</h2>
-            <table>
+            <table class="heatmap">
                 <thead>
                     <tr>
-                        {% for col in conf_matrix[0] %}
-                        <th>Class {{ loop.index0 }}</th>
-                        {% endfor %}
+                        <th></th> <!-- Empty top-left corner -->
+                        <th>AAA</th>
+                        <th>AA+</th>
+                        <th>AA</th>
+                        <th>AA-</th>
+                        <th>A+</th>
+                        <th>A</th>
+                        <th>A-</th>
+                        <th>BBB+</th>
+                        <th>BBB</th>
+                        <th>BBB-</th>
+                        <th>BB+</th>
+                        <th>BB</th>
+                        <th>BB-</th>
+                        <th>B+</th>
+                        <th>B</th>
+                        <th>B-</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for row in conf_matrix %}
                     <tr>
-                        {% for val in row %}
+                        <th>AAA</th>
+                        {% for val in conf_matrix[0] %}
                         <td>{{ val }}</td>
                         {% endfor %}
                     </tr>
-                    {% endfor %}
+                    <tr>
+                        <th>AA+</th>
+                        {% for val in conf_matrix[1] %}
+                        <td>{{ val }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th>AA</th>
+                        {% for val in conf_matrix[2] %}
+                        <td>{{ val }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th>AA-</th>
+                        {% for val in conf_matrix[3] %}
+                        <td>{{ val }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th>A+</th>
+                        {% for val in conf_matrix[4] %}
+                        <td>{{ val }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th>A</th>
+                        {% for val in conf_matrix[5] %}
+                        <td>{{ val }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th>A-</th>
+                        {% for val in conf_matrix[6] %}
+                        <td>{{ val }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th>BBB+</th>
+                        {% for val in conf_matrix[7] %}
+                        <td>{{ val }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th>BBB</th>
+                        {% for val in conf_matrix[8] %}
+                        <td>{{ val }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th>BBB-</th>
+                        {% for val in conf_matrix[9] %}
+                        <td>{{ val }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th>BB+</th>
+                        {% for val in conf_matrix[10] %}
+                        <td>{{ val }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th>BB</th>
+                        {% for val in conf_matrix[11] %}
+                        <td>{{ val }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th>BB-</th>
+                        {% for val in conf_matrix[12] %}
+                        <td>{{ val }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th>B+</th>
+                        {% for val in conf_matrix[13] %}
+                        <td>{{ val }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th>B</th>
+                        {% for val in conf_matrix[14] %}
+                        <td>{{ val }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th>B-</th>
+                        {% for val in conf_matrix[15] %}
+                        <td>{{ val }}</td>
+                        {% endfor %}
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -132,37 +239,73 @@
         </div>
 
         {% if show_predict_button %}
-        <div class="center">
+        <!-- <div class="center">
             <form action="/predict/" method="get">
-                <button type="submit">Predict</button>
+                <button type="submit">PredictWS</button>
+            </form>
+        </div> -->
+
+        <div class="center">
+            <form action="/predict_all/" method="get">
+                <button type="submit">PredictNoWS</button>
             </form>
         </div>
         {% endif %}
     </div>
 
-    <div class="section">
-        <h1>Prediction Results</h1>
-        {% for result in results %}
-            <h2>Jurir_no: {{ result.jurir_no }}</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Class</th>
-                        <th>Probability</th>
-                        <th>Cumulative Probability</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in result.sorted_probabilities %}
-                    <tr>
-                        <td>{{ item.class }}</td>
-                        <td>{{ item.probability }}</td>
-                        <td>{{ item.cumulative }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% endfor %}
-    </div>
+
+
+    <script>
+document.addEventListener("DOMContentLoaded", function() {
+    const cells = document.querySelectorAll(".heatmap td");
+    let max = 0;
+
+    // Find the maximum value in the matrix
+    cells.forEach(cell => {
+        const val = parseInt(cell.textContent, 10);
+        if (val > max) max = val;
+    });
+
+    // Define the color palette
+    const colors = ["#F8F9FA", "#E9ECEF", "#DEE2E6", "#CED4DA", "#ADB5BD", "#6C757D", "#495057", "#343A40", "#212529"];
+    const darkColors = ["#6C757D", "#495057", "#343A40", "#212529"];
+
+    // Apply coloring based on value
+    cells.forEach(cell => {
+        const val = parseInt(cell.textContent, 10);
+        const ratio = val / max;
+
+        let color;
+        if (ratio > 0.875) {
+            color = colors[8];
+        } else if (ratio > 0.75) {
+            color = colors[7];
+        } else if (ratio > 0.625) {
+            color = colors[6];
+        } else if (ratio > 0.5) {
+            color = colors[5];
+        } else if (ratio > 0.375) {
+            color = colors[4];
+        } else if (ratio > 0.25) {
+            color = colors[3];
+        } else if (ratio > 0.125) {
+            color = colors[2];
+        } else if (ratio > 0.05) {  // Adjusted this threshold for better visibility
+            color = colors[1];
+        } else {
+            color = colors[0];
+        }
+
+        cell.style.backgroundColor = color;
+        // Set text color to white for dark background colors
+        if (darkColors.includes(color)) {
+            cell.style.color = "white";
+        } else {
+            cell.style.color = "black";
+        }
+    });
+});
+
+    </script>
 </body>
 </html>
