@@ -11,7 +11,7 @@ from schemas.baro_schemas import CompanyInfoSchema
 from services_def.baro_service import get_autocomplete_suggestions, get_corp_info_code, get_corp_info_jurir_no, get_corp_info_name, get_company_info, get_stockgraph
 from services_def.baro_service import get_FS2023, get_FS2022, get_FS2021, get_FS2020, get_Stock_data, get_company_info_list, search_company, get_company_infoFS_list
 import logging
-from typing import List, Optional
+from typing import Dict, List, Optional
 from models.baro_models import CompanyInfo
 
 
@@ -66,15 +66,95 @@ async def read_company_info(request: Request, jurir_no: str = Query(...), db: Se
     adres = company_info.adres
     kakao_map_api_key = os.getenv("KAKAO_MAP_API_KEY")
     
-    print(stockgraph)
-    print(stockgraph['stock_data'])
-    print(adres)
-    print(kakao_map_api_key)
-    if not company_info:
-        raise HTTPException(status_code=404, detail="Company not found")
-    # logger.info(f"company_info.corp_code: {company_info.corp_code}")
-    return templates.TemplateResponse("baro_service/baro_companyInfo.html", {"request": request, "company_info": company_info, "fs2023": FS2023, "fs2022": FS2022, "fs2021": FS2021, "fs2020": FS2020, "stock_data" : stock_data, "stockgraph": stockgraph, "kakao_map_api_key": kakao_map_api_key, "adres": adres})
+    custom_key_mapping = {
+    'AAA_plus': 'AAA+',
+    'AAA': 'AAA',
+    'AAA_minus': 'AAA-',
+    'AA_plus': 'AA+',
+    'AA': 'AA',
+    'AA_minus': 'AA-',
+    'A_plus': 'A+',
+    'A': 'A',
+    'A_minus': 'A-',
+    'BBB_plus': 'BBB+',
+    'BBB': 'BBB',
+    'BBB_minus': 'BBB-',
+    'BB_plus': 'BB+',
+    'BB': 'BB',
+    'BB_minus': 'BB-',
+    'B_plus': 'B+',
+    'B': 'B',
+    'B_minus': 'B-',
+    'CCC_plus': 'CCC+',
+    'CCC': 'CCC',
+    'CCC_minus': 'CCC-',
+    'C': 'C',
+    'D': 'D'
+    }
+    
+    query1 = text("""
+    SELECT AAA_plus, AAA, AAA_minus, AA_plus, AA, AA_minus, A_plus, A, A_minus, 
+        BBB_plus, BBB, BBB_minus, BB_plus, BB, BB_minus, B_plus, B, B_minus, 
+        CCC_plus, CCC, CCC_minus, C, D
+    FROM spoon.predict_ratings
+    WHERE base_year = '2023' AND corporate_number = :corporate_number
+    ORDER BY timestamp DESC
+    LIMIT 1;
+    """)
 
+    credit_rate = db.execute(query1, {"corporate_number": jurir_no}).fetchone()
+    
+    if not credit_rate:
+        default_ratings = {
+            'AAA+': 0,
+            'AAA': 0,
+            'AAA-': 0,
+            'AA+': 0,
+            'AA': 0,
+            'AA-': 0,
+            'A+': 0,
+            'A': 0,
+            'A-': 0,
+            'BBB+': 0,
+            'BBB': 0,
+            'BBB-': 0,
+            'BB+': 0,
+            'BB': 0,
+            'BB-': 0,
+            'B+': 0,
+            'B': 0,
+            'B-': 0,
+            'CCC+': 0,
+            'CCC': 0,
+            'CCC-': 0,
+            'C': 0,
+            'D': 0
+        }
+        ratings = default_ratings
+    else:
+        ratings = {custom_key_mapping.get(k, k): v for k, v in credit_rate._mapping.items() if v is not None}
+
+    # Sort and select top 3 ratings
+    top3_ratings = sorted(ratings.items(), key=lambda item: item[1], reverse=True)[:3]
+    
+    # Ensure at least 3 entries in top3_rate with default values if less than 3 available
+    top3_rate = [{"key": column, "value": value} for column, value in top3_ratings]
+    while len(top3_rate) < 3:
+        top3_rate.append({"key": "N/A", "value": 0})  # Use "N/A" or other default key
+
+    return templates.TemplateResponse("baro_service/baro_companyInfo.html", {
+        "request": request,
+        "company_info": company_info,
+        "fs2023": FS2023,
+        "fs2022": FS2022,
+        "fs2021": FS2021,
+        "fs2020": FS2020,
+        "stock_data": stock_data,
+        "stockgraph": stockgraph,
+        "kakao_map_api_key": kakao_map_api_key,
+        "adres": adres,
+        "top3_rate": top3_rate
+    })
 
 @baro.post("/baro_companyInfo2")
 async def read_company_info(
@@ -117,6 +197,81 @@ async def read_company_info(
                 
                 adres = company_info.adres
                 kakao_map_api_key = os.getenv("KAKAO_MAP_API_KEY")
+                           
+                custom_key_mapping = {
+                    'AAA_plus': 'AAA+',
+                    'AAA': 'AAA',
+                    'AAA_minus': 'AAA-',
+                    'AA_plus': 'AA+',
+                    'AA': 'AA',
+                    'AA_minus': 'AA-',
+                    'A_plus': 'A+',
+                    'A': 'A',
+                    'A_minus': 'A-',
+                    'BBB_plus': 'BBB+',
+                    'BBB': 'BBB',
+                    'BBB_minus': 'BBB-',
+                    'BB_plus': 'BB+',
+                    'BB': 'BB',
+                    'BB_minus': 'BB-',
+                    'B_plus': 'B+',
+                    'B': 'B',
+                    'B_minus': 'B-',
+                    'CCC_plus': 'CCC+',
+                    'CCC': 'CCC',
+                    'CCC_minus': 'CCC-',
+                    'C': 'C',
+                    'D': 'D'
+                }
+                
+                query1 = text("""
+                        SELECT AAA_plus, AAA, AAA_minus, AA_plus, AA, AA_minus, A_plus, A, A_minus, 
+                            BBB_plus, BBB, BBB_minus, BB_plus, BB, BB_minus, B_plus, B, B_minus, 
+                            CCC_plus, CCC, CCC_minus, C, D
+                        FROM spoon.predict_ratings
+                        WHERE base_year = '2023' AND corporate_number = :corporate_number
+                        ORDER BY timestamp DESC
+                        LIMIT 1;
+                """)
+
+                credit_rate = db.execute(query1, {"corporate_number": jurir_no}).fetchone()
+    
+                if not credit_rate:
+                    default_ratings = {
+                        'AAA+': 0,
+                        'AAA': 0,
+                        'AAA-': 0,
+                        'AA+': 0,
+                        'AA': 0,
+                        'AA-': 0,
+                        'A+': 0,
+                        'A': 0,
+                        'A-': 0,
+                        'BBB+': 0,
+                        'BBB': 0,
+                        'BBB-': 0,
+                        'BB+': 0,
+                        'BB': 0,
+                        'BB-': 0,
+                        'B+': 0,
+                        'B': 0,
+                        'B-': 0,
+                        'CCC+': 0,
+                        'CCC': 0,
+                        'CCC-': 0,
+                        'C': 0,
+                        'D': 0
+                    }
+                    ratings = default_ratings
+                else:
+                    ratings = {custom_key_mapping.get(k, k): v for k, v in credit_rate._mapping.items() if v is not None}
+
+                ratings = {custom_key_mapping.get(k, k): v for k, v in credit_rate._mapping.items() if v is not None}
+                top3_ratings = sorted(ratings.items(), key=lambda item: item[1], reverse=True)[:3]
+                
+                top3_rate = [{"key": column, "value": value} for column, value in top3_ratings]      
+                while len(top3_rate) < 3:
+                    top3_rate.append({"key": "N/A", "value": 0})  # Use "N/A" or other default key          
                 
             else:
                 print("Company info is None")
@@ -138,7 +293,8 @@ async def read_company_info(
                 "stock_data": stock_data,
                 "stockgraph": stockgraph,  # stockgraph 변수를 템플릿에 전달
                 "kakao_map_api_key": kakao_map_api_key, 
-                "adres": adres
+                "adres": adres,
+                "top3_rate": top3_rate
             }
         )
     except Exception as e:
@@ -208,3 +364,6 @@ async def autocomplete(
         return [row[0] for row in results]  # Return list of results
     finally:
         db.close()
+
+
+
