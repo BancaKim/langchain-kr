@@ -11,13 +11,14 @@ import logging
 from datetime import datetime
 import json
 from sqlalchemy.orm import Session
+import time
 
 logger = logging.getLogger('uvicorn.error')
 logger.setLevel(logging.DEBUG)
 
 def train_model():
-    file_path = r'C:\01DevelopKits\FinalProject\exel\fssDown\aa_fs2022_fs2023_1526.csv'
-    # file_path = r'C:\01DevelopKits\FinalProject\exel\fssDown\aa_fs2022_fs2023_07310945.csv'
+    # file_path = r'C:\01DevelopKits\FinalProject\exel\fssDown\aa_fs2022_fs2023_1526.csv'
+    file_path = r'C:\01DevelopKits\FinalProject\exel\fssDown\aa_fs2022_fs2023_07310945.csv'
     # 모델로딩이 너무 느려서 파일 가벼운 aa_fs2022_fs2023_07311059.csv 로 임시로 돌림
     df = pd.read_csv(file_path)
     df = df.dropna()
@@ -49,9 +50,14 @@ def train_model():
     # 랜덤포레스트 모델 초기화
     model = RandomForestClassifier(n_estimators=150, random_state=42)
     # 모델 훈련
-    logger.debug(" RandomForestClassifier 모델 훈련 시작")
+    
+    
+    logger.debug(" Credit Rating Model Learning start")
+    start_time = time.time()
     model.fit(X_train, y_train)
-    logger.debug(" RandomForestClassifier 모델 훈련 완료")
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    logger.debug(f"Credit Rating Model Learning success in {elapsed_time:.2f} seconds")
 
     y_pred = model.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
@@ -208,7 +214,8 @@ def get_jurir_no_list(db: Session):
         WHERE b.totalAsset2023 > 0
     ) AS subquery
     ORDER BY subquery.totalAsset2023 DESC
-    LIMIT 100;
+
+    ;
     """)
     result = db.execute(query)
     jurir_no_list = [row[0] for row in result.fetchall()]
@@ -285,6 +292,38 @@ def generate_predictions_dictionary(db: Session, model, scaler):
         predictions.append(result)
     
     
-    logger.debug(f"Size of jurir_no_list: {len(jurir_no_list)}")
+    # logger.debug(f"Size of jurir_no_list: {len(jurir_no_list)}")
     logger.debug(f"Size of predictions: {len(predictions)}")
     return None, predictions
+
+
+def get_db_predictions(db: Session):
+    query = text("""
+    SELECT *
+    FROM predict_ratings pr
+    WHERE pr.corporate_number IN (
+    SELECT jurir_no 
+    FROM (
+    SELECT DISTINCT a.jurir_no, b.totalAsset2023
+    FROM companyInfo a
+    LEFT JOIN FS2023 b ON a.jurir_no = b.jurir_no
+    WHERE b.totalAsset2023 > 0
+    ORDER BY b.totalAsset2023 DESC
+
+    ) AS subquery
+    )
+    AND model_reference = (
+        SELECT model_reference
+        FROM spoon.predict_ratings
+        WHERE base_year = '2023'
+        ORDER BY timestamp DESC
+        LIMIT 1
+    )
+
+    """)
+    result = db.execute(query)
+    predictions = result.fetchall()
+    columns = result.keys()
+    predictions_dict = [dict(zip(columns, row)) for row in predictions]
+    
+    return predictions_dict

@@ -3,7 +3,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, JSONResponse
 from sqlalchemy.orm import Session
 from database import SessionLocal
-from services_def.ML_service import preprocess_and_predict_proba, train_model, get_new_data_from_db, insert_predictions_into_db, generate_predictions, generate_predictions_dictionary
+from services_def.ML_service import preprocess_and_predict_proba, train_model, get_new_data_from_db, insert_predictions_into_db, generate_predictions, generate_predictions_dictionary, get_db_predictions
 import logging
 import json
 import asyncio
@@ -152,36 +152,40 @@ async def insert_predictions(request: Request, db: Session = Depends(get_db)):
     model_info = model_store["model_info"]
     creation_date = datetime.strptime(model_info['creation_date'], "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d")
     model_reference = f"{round(model_store['accuracy'], 2)}_{model_info['model_name']}_{creation_date}"
-
+    logger.info(predictions)
+    
     for prediction in predictions:
-        sorted_probabilities = {cls: prob['probability'] for cls, prob in zip(model_store["model"].classes_, prediction['sorted_probabilities'])}
+        # sorted_probabilities를 class 기준으로 정렬
+        sorted_probabilities = sorted(prediction['sorted_probabilities'], key=lambda x: x['class'])
+        probabilities_dict = {prob['class']: prob['probability'] for prob in sorted_probabilities}
+        
         result = {
             "jurir_no": prediction["jurir_no"],
             "corp_name": prediction["corp_name"],
-            "base_year": 2024,
-            "AAA_plus": sorted_probabilities.get('AAA+', 0.0),
-            "AAA": sorted_probabilities.get('AAA', 0.0),
-            "AAA_minus": sorted_probabilities.get('AAA-', 0.0),
-            "AA_plus": sorted_probabilities.get('AA+', 0.0),
-            "AA": sorted_probabilities.get('AA', 0.0),
-            "AA_minus": sorted_probabilities.get('AA-', 0.0),
-            "A_plus": sorted_probabilities.get('A+', 0.0),
-            "A": sorted_probabilities.get('A', 0.0),
-            "A_minus": sorted_probabilities.get('A-', 0.0),
-            "BBB_plus": sorted_probabilities.get('BBB+', 0.0),
-            "BBB": sorted_probabilities.get('BBB', 0.0),
-            "BBB_minus": sorted_probabilities.get('BBB-', 0.0),
-            "BB_plus": sorted_probabilities.get('BB+', 0.0),
-            "BB": sorted_probabilities.get('BB', 0.0),
-            "BB_minus": sorted_probabilities.get('BB-', 0.0),
-            "B_plus": sorted_probabilities.get('B+', 0.0),
-            "B": sorted_probabilities.get('B', 0.0),
-            "B_minus": sorted_probabilities.get('B-', 0.0),
-            "CCC_plus": sorted_probabilities.get('CCC+', 0.0),
-            "CCC": sorted_probabilities.get('CCC', 0.0),
-            "CCC_minus": sorted_probabilities.get('CCC-', 0.0),
-            "C": sorted_probabilities.get('C', 0.0),
-            "D": sorted_probabilities.get('D', 0.0),
+            "base_year": 2023,
+            "AAA_plus": probabilities_dict.get('AAA+', 0.0),
+            "AAA": probabilities_dict.get('AAA', 0.0),
+            "AAA_minus": probabilities_dict.get('AAA-', 0.0),
+            "AA_plus": probabilities_dict.get('AA+', 0.0),
+            "AA": probabilities_dict.get('AA', 0.0),
+            "AA_minus": probabilities_dict.get('AA-', 0.0),
+            "A_plus": probabilities_dict.get('A+', 0.0),
+            "A": probabilities_dict.get('A', 0.0),
+            "A_minus": probabilities_dict.get('A-', 0.0),
+            "BBB_plus": probabilities_dict.get('BBB+', 0.0),
+            "BBB": probabilities_dict.get('BBB', 0.0),
+            "BBB_minus": probabilities_dict.get('BBB-', 0.0),
+            "BB_plus": probabilities_dict.get('BB+', 0.0),
+            "BB": probabilities_dict.get('BB', 0.0),
+            "BB_minus": probabilities_dict.get('BB-', 0.0),
+            "B_plus": probabilities_dict.get('B+', 0.0),
+            "B": probabilities_dict.get('B', 0.0),
+            "B_minus": probabilities_dict.get('B-', 0.0),
+            "CCC_plus": probabilities_dict.get('CCC+', 0.0),
+            "CCC": probabilities_dict.get('CCC', 0.0),
+            "CCC_minus": probabilities_dict.get('CCC-', 0.0),
+            "C": probabilities_dict.get('C', 0.0),
+            "D": probabilities_dict.get('D', 0.0),
             "model_reference": model_reference
         }
         insert_predictions_into_db(db, result, model_reference)
@@ -190,3 +194,14 @@ async def insert_predictions(request: Request, db: Session = Depends(get_db)):
 
 
 
+
+@machineLearning.get("/view_DB_predict/", response_class=HTMLResponse)
+async def view_DB_predict(request: Request, db: Session = Depends(get_db)):
+    predictions_dict = get_db_predictions(db)
+    # logger.info(predictions_dict)
+    return templates.TemplateResponse("ML_template/ML_DBcreditView.html", {
+        "request": request,
+        "predictions": predictions_dict
+    })
+    
+    
