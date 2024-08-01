@@ -4,70 +4,107 @@
 
 {% block head %}
 <link rel="stylesheet" href="/static/css/style.css">
+<link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/font.css">
 {% endblock %}
 
 {% block content %}
-<section class="notice">
-    <div class="page-title">
-        <div class="container">
-            <h3>Q&A 게시판</h3>
-        </div>
-    </div>
 
-    <!-- board search area -->
-    <div id="board-search">
-        <div class="container">
-            <div class="search-window">
-                <form action="/qnas/search" method="get">
-                    <div class="search-wrap">
-                        <label for="search" class="blind">Q&A 내용 검색</label>
-                        <select name="search_type" id="search_type">
-                            <option value="title">제목</option>
-                            <option value="content">내용</option>
-                            <option value="title_content">제목+내용</option>
-                        </select>
-                        <input id="search" type="search" name="search_query" placeholder="검색어를 입력해주세요." value="">
-                        <button type="submit" class="btn btn-dark">검색</button>
+
+<div class="w-full" style="background-image: url('/static/images/home9.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 40vh;">
+    
+    <div class="p-8 w-full max-w-screen-xl mx-auto" >
+        <span class="block text-left text-xl mb-2">
+            <a href="/" class="mr-2 text-white">홈 &nbsp; |</a> 
+            <a href="/qnas" class="ml-2 text-white">Q&A</a>
+        </span>
+        <br><br>
+
+        <div class="text-center mb-4">
+            <h1 class="text-5xl font-bold text-white">Q&A</h1>
+        </div>
+        <br><br>
+        <!-- 검색란 -->
+        <div class="w-full max-w-4xl mx-auto">
+            <form action="/qnas/search" method="get">
+            <div class="relative flex">
+                <!-- 검색 타입 선택 -->
+                <div class="relative w-48">
+                    <select id="search_type" name="search_type"
+                        class="block w-full py-2.5 px-4 text-base font-medium text-gray-900 bg-gray-50 border-gray-300 rounded-s-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600">
+                        <option value="title">제목</option>
+                        <option value="content">내용</option>
+                        <option value="title_content">제목+내용</option>
+                    </select>
+
+                </div>
+
+                <!-- 검색 입력 필드 -->
+                <div class="relative w-full">
+                    <input type="search" id="search" name="search_query"
+                        class="block p-2.5 w-full text-base text-gray-900 bg-gray-50 rounded-e-lg border-s-gray-50 border-s-2 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-s-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
+                        placeholder="정보를 입력하세요..." required />
+                    <!-- 자동완성 결과 표시 -->
+                    <div id="autocomplete-results"
+                        class="absolute top-full left-0 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-10 hidden">
+                        <!-- JavaScript로 동적으로 결과 항목을 추가합니다. -->
                     </div>
-                </form>
+                </div>
+                <!-- 검색 버튼 -->
+                <button type="submit" id="search_button"
+                    class="absolute top-0 end-0 p-2.5 text-sm font-medium h-full text-white bg-purple-700 rounded-e-lg border border-blue-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 20 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                    </svg>
+                </button>
+            </div>
+            </form>
+        </div>
+
+        <br><br><br>
+    </div>
+</div>
+
+<br>
+<section class="mb-10 py-8 w-full">
+    <!-- board list area -->
+    <div id="board-list" class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
+        <div class="bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead class="bg-gray-100 text-gray-600 uppercase text-lg">
+                        <tr class="text-center">
+                            <th class="px-2 py-3 border-b">번호</th>
+                            <th class="px-2 py-3 border-b">제목</th>
+                            <th class="px-2 py-3 border-b">작성자</th>
+                            <th class="px-2 py-3 border-b">등록일</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-700 text-lg text-center">
+                        {% for qna in qnas %}
+                        <tr>
+                            <td class="px-2 py-2 border-b whitespace-nowrap">{{ loop.index }}</td>
+                            <th class="px-2 py-2 border-b whitespace-nowrap">
+                                <a href="/qnas/{{ qna.id }}" class="hover:underline">{{ qna.title }}</a>
+                            </th>
+                            <td class="px-2 py-2 border-b whitespace-nowrap">{{ qna.username }}</td>
+                            <td class="px-2 py-2 border-b whitespace-nowrap">{{ qna.created_at.strftime('%Y-%m-%d') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- board list area -->
-    <div id="board-list">
-        <div class="container">
-            <table class="board-table">
-                <thead>
-                    <tr>
-                        <th scope="col" class="th-num">번호</th>
-                        <th scope="col" class="th-title">제목</th>
-                        <th scope="col" class="th-username">작성자</th>
-                        <th scope="col" class="th-date">등록일</th>                                                                                            
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for qna in qnas %}
-                    <tr>
-                        <td>{{ loop.index }}</td>
-                        <th>
-                            <a href="/qnas/{{ qna.id }}">{{ qna.title }}</a>
-                            <p>{{ qna.content }}</p>
-                        </th>
-                        <td>{{ qna.username }}</td>
-                        <td>{{ qna.created_at.strftime('%Y-%m-%d') }}</td>
-                        
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+    <div class="container mx-auto mt-6 text-center px-4 sm:px-6 lg:px-8 max-w-3xl">
+        <button onclick="location.href='/qnas/create'" class="px-6 py-3 bg-gray-800 text-white rounded hover:bg-gray-900 inline-block">
+            Q&A 등록
+        </button>
     </div>
-
-    <div class="container btn-right">
-        <button onclick="location.href='/qnas/create'" class="btn btn-dark">Q&A 작성</button>
-    </div>
-
 </section>
 
 <script src="/static/js/logout.js"></script>

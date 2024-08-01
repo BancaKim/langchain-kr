@@ -1,147 +1,145 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Prediction Results</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        .container {
-            width: 80%;
-            margin: 20px auto;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        table, th, td {
-            border: 1px solid black;
-        }
-        th, td {
-            padding: 8px;
-            text-align: left;
-        }
-        h2 {
-            margin-top: 20px;
-        }
-        .summary {
-            margin-bottom: 20px;
-        }
+      body {
+        font-family: Arial, sans-serif;
+      }
+      .container {
+        width: 80%;
+        margin: 20px auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+      table,
+      th,
+      td {
+        border: 1px solid black;
+      }
+      th,
+      td {
+        padding: 8px;
+        text-align: left;
+      }
+      h2 {
+        margin-top: 20px;
+      }
+      .summary {
+        margin-bottom: 20px;
+      }
+      .clickable-row {
+        color: inherit;
+        text-decoration: none;
+        display: table-row;
+      }
+      .clickable-row:hover {
+        background-color: #f1f1f1;
+      }
+      .button-cell {
+        text-align: center;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div id="summary" class="summary">
-            <h1>Prediction Summary</h1>
-            <p id="modelInfo"></p>
-            <p id="elapsedTime"></p>
-            <p id="dataCount"></p>
-            <button id="dbButton" style="display:none;" onclick="uploadToDB()">예상등급 DB에 등재</button>
-        </div>
-        <h1>Prediction Details</h1>
-        <table id="resultsTable">
-            <thead>
-                <tr>
-                    <th>법인번호</th>
-                    <th>법인명</th>
-                    <th>AAA+</th>
-                    <th>AAA</th>
-                    <th>AAA-</th>
-                    <th>AA+</th>
-                    <th>AA</th>
-                    <th>AA-</th>
-                    <th>A+</th>
-                    <th>A</th>
-                    <th>A-</th>
-                    <th>BBB+</th>
-                    <th>BBB</th>
-                    <th>BBB-</th>
-                    <th>BB+</th>
-                    <th>BB</th>
-                    <th>BB-</th>
-                    <th>B+</th>
-                    <th>B</th>
-                    <th>B-</th>
-                    <th>CCC+</th>
-                    <th>CCC</th>
-                    <th>CCC-</th>
-                    <th>C</th>
-                    <th>D</th>
-                </tr>
-            </thead>
-            <tbody id="resultsBody">
-            </tbody>
-        </table>
-       
+      <div id="summary" class="summary">
+        <h1>Prediction Summary</h1>
+        <p id="modelInfo">
+          모델명: {{ model_info.model_name }}, 생성일: {{
+          model_info.creation_date }}, 추정기 수: {{ model_info.n_estimators }},
+          최대 피처: {{ model_info.max_features }}, 샘플 수: {{
+          model_info.n_samples }}
+        </p>
+        <p id="elapsedTime">소요 시간: {{ elapsed_time }} 초</p>
+        <p id="dataCount">조회 건수: {{ count }} 건</p>
+        {% if show_db_button %}
+        <button id="dbButton" onclick="uploadToDB()">예상등급 DB에 등재</button>
+        {% endif %}
+      </div>
+      <h1>Prediction Details</h1>
+      <table id="resultsTable">
+        <thead>
+          <tr>
+            <th>법인번호</th>
+            <th>법인명</th>
+            <th>AAA</th>
+            <th>AA+</th>
+            <th>AA</th>
+            <th>AA-</th>
+            <th>A+</th>
+            <th>A</th>
+            <th>A-</th>
+            <th>BBB+</th>
+            <th>BBB</th>
+            <th>BBB-</th>
+            <th>BB+</th>
+            <th>BB</th>
+            <th>BB-</th>
+            <th>B+</th>
+            <th>B</th>
+            <th>B-</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody">
+          {% for result in predictions %}
+          <tr>
+            <td>{{ result.corp_name }}</td>
+            {% for grade in ['AAA', 'AA+', 'AA', 'AA-', 'A+', 'A', 'A-', 'BBB+',
+            'BBB', 'BBB-', 'BB+', 'BB', 'BB-', 'B+', 'B', 'B-'] %} {% if
+            result.sorted_probabilities.get(grade, 0) > 0 %}
+            <td>{{ result.sorted_probabilities.get(grade) }}</td>
+            {% else %}
+            <td></td>
+            {% endif %} {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
 
     <script>
-        const resultsBody = document.getElementById('resultsBody');
-        const modelInfo = document.getElementById('modelInfo');
-        const elapsedTime = document.getElementById('elapsedTime');
-        const dataCount = document.getElementById('dataCount');
-        const dbButton = document.getElementById('dbButton');
-        const ws = new WebSocket(`ws://${window.location.host}/ws/predict/`);
+      document.addEventListener("DOMContentLoaded", function () {
+        const rows = document.querySelectorAll("#resultsBody tr");
 
-        ws.onmessage = function(event) {
-            const result = JSON.parse(event.data);
+        rows.forEach((row) => {
+          const cells = Array.from(row.querySelectorAll("td")).slice(2); // Skip first two cells (법인번호, 법인명)
+          const values = cells.map((cell) => parseFloat(cell.textContent) || 0);
 
-            if (result.message === "completed") {
-                modelInfo.textContent = `모델명: ${result.model_info.model_name}, 생성일: ${result.model_info.creation_date}, 추정기 수: ${result.model_info.n_estimators}, 최대 피처: ${result.model_info.max_features}, 샘플 수: ${result.model_info.n_samples}`;
-                elapsedTime.textContent = `소요 시간: ${result.elapsed_time} 초`;
-                dataCount.textContent = `조회 건수: ${result.count} 건`;
-                dbButton.style.display = "block";
-                return;
+          // Find the indices of the top 3 values
+          const top3Indices = values
+            .map((value, index) => [value, index])
+            .sort((a, b) => b[0] - a[0])
+            .slice(0, 3)
+            .map((item) => item[1]);
+
+          // Apply background colors to top 3 values
+          top3Indices.forEach((index, i) => {
+            if (i === 0) {
+              cells[index].style.backgroundColor = "#ADB5BD"; // Highest value
+            } else if (i === 1) {
+              cells[index].style.backgroundColor = "#CED4DA"; // Second highest value
+            } else if (i === 2) {
+              cells[index].style.backgroundColor = "#DEE2E6"; // Third highest value
             }
-
-            if (result.error) {
-                alert(result.error);
-                return;
-            }
-
-            const row = document.createElement('tr');
-            row.appendChild(createCell(result.jurir_no));
-            row.appendChild(createCell(result.corp_name));
-            
-            const grades = ['AAA+', 'AAA', 'AAA-', 'AA+', 'AA', 'AA-', 'A+', 'A', 'A-', 'BBB+', 'BBB', 'BBB-', 'BB+', 'BB', 'BB-', 'B+', 'B', 'B-', 'CCC+', 'CCC', 'CCC-', 'C', 'D'];
-            const probabilities = result.sorted_probabilities.reduce((acc, item) => {
-                acc[item.class] = item.probability;
-                return acc;
-            }, {});
-
-            grades.forEach(grade => {
-                row.appendChild(createCell(probabilities[grade] || ''));
-            });
-
-            resultsBody.appendChild(row);
-        };
-
-        ws.onclose = function(event) {
-            console.log('WebSocket connection closed');
-        };
-
-        window.addEventListener('beforeunload', function() {
-            ws.close();
+          });
         });
+      });
 
-        function createCell(text) {
-            const td = document.createElement('td');
-            td.textContent = text;
-            return td;
+      async function uploadToDB() {
+        const response = await fetch("/insert_predictions/", {
+          method: "POST",
+        });
+        const result = await response.json();
+        if (result.message) {
+          alert(result.message);
+        } else if (result.error) {
+          alert(result.error);
         }
-
-        async function uploadToDB() {
-            const response = await fetch('/insert_predictions/', {
-                method: 'POST'
-            });
-            const result = await response.json();
-            if (result.message) {
-                alert(result.message);
-            } else if (result.error) {
-                alert(result.error);
-            }
-        }
+      }
     </script>
-</body>
+  </body>
 </html>
