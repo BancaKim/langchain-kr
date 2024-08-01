@@ -114,6 +114,7 @@ async def read_credit(
     page: int = Query(1, ge=1),
     per_page: int = Query(10, ge=1, le=100),
 ):
+    username = request.session.get("username")
     query = db.query(ReportContent)
     if name:
         query = query.filter(ReportContent.corp_name.ilike(f"%{name}%"))
@@ -127,6 +128,7 @@ async def read_credit(
         "creditreview/review_search.html",
         {
             "request": request,
+            "username": username,
             "reportContents": reportContents,
             "page": page,
             "per_page": per_page,
@@ -144,6 +146,7 @@ async def readcredit(
     corp_code: str = None,
     db: Session = Depends(get_db),
 ):
+    username = request.session.get("username")
     try:
         # Fetch the report content based on rcept_no
         reportContent = (
@@ -169,6 +172,7 @@ async def readcredit(
             "creditreview/review_detail.html",
             {
                 "request": request,
+                "username": username,
                 "reportContent": reportContent,
                 "company_info": company_info,
             },
