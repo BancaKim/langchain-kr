@@ -155,7 +155,7 @@
             <div class="qna-form-actions">
 
                 <form action="/qnas/{{ qna.id }}/reply" method="post">
-                    <button type="submit" class="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 inline-block">등록</button>
+                    <button type="submit" class="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 inline-block">답글 등록</button>
                 </form>
 
                 {% if username == qna.username %}
@@ -166,6 +166,7 @@
                 {% endif %}
 
             </div>
+
         </form>
     </div>
 </section>
