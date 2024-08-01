@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Database Predictions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            display: flex;
+        }
+        .sidebar {
+            width: 20%;
+            background-color: #f8f9fa;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+        .main-content {
+            width: 80%;
+            padding: 20px;
+        }
+        .button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #495057;
+            color: white;
+            text-align: center;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            box-sizing: border-box;
+        }
+        .button:hover {
+            background-color: #6c757d;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        .spinner {
+            margin: 0 auto;
+            width: 50px;
+            height: 50px;
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #3498db;
+            border-radius: 50%;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        h1 {
+            margin-top: 20px;
+        }
+        .summary-cards {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .card {
+            flex: 1;
+            background-color: #e9ecef;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1);
+        }
+        .card h3 {
+            margin-top: 0;
+        }
+    </style>
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+    <!-- jQuery -->
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <!-- DataTables JS -->
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+    <script>
+        function startMachineLearning() {
+            document.getElementById('modal').style.display = 'block';
+            setTimeout(function() {
+                window.location.href = "/train/";
+            }, 1000);  // 연산이 시작된 후 1초 후에 페이지 이동 (테스트용, 실제 연산 시간에 맞게 조정 필요)
+        }
+        
+        $(document).ready(function() {
+            $('#resultsTable').DataTable();
+        });
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const rows = document.querySelectorAll("#resultsBody tr");
+
+            rows.forEach(row => {
+                const cells = Array.from(row.querySelectorAll("td")).slice(2); // Skip first two cells (법인번호, 법인명)
+                const values = cells.map(cell => parseFloat(cell.textContent) || 0);
+
+                // Find the indices of the top 3 values
+                const sortedIndices = values
+                    .map((value, index) => [value, index])
+                    .sort((a, b) => b[0] - a[0]);
+
+                const top3Indices = sortedIndices.slice(0, 3).map(item => item[1]);
+
+                // Apply background colors to top 3 values
+                top3Indices.forEach((index, i) => {
+                    if (i === 0) {
+                        cells[index].style.backgroundColor = "#ADB5BD"; // Highest value
+                    } else if (i === 1) {
+                        cells[index].style.backgroundColor = "#CED4DA"; // Second highest value
+                    } else if (i === 2) {
+                        cells[index].style.backgroundColor = "#DEE2E6"; // Third highest value
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Menu</h2>
+            <button class="button" onclick="startMachineLearning()">Credit Machine Learning</button>
+            <button class="button">기업정보 업데이트(예정)</button>
+            <button class="button">주가정보 업데이트(예정)</button>
+            <button class="button">재무정보 업데이트(예정)</button>
+        </div>
+        <div class="main-content">
+            <h1>바로등급 ML 개요</h1>
+            <div class="summary-cards">
+                <div class="card">
+                    <h3>ML 신용평가 모델 개요</h3>
+                    <p>적용 모델: RandomForestClassifier</p>
+                    <p>생성일 : 2024-08-01 10:31:52</p>
+                    <p>평가 업체 수 : 5,360</p>
+                    <p>모델 적합도 : 0.86</p>
+                </div>
+                <div class="card">
+                    <h3>기업정보 개요</h3>
+                    <p>자료 출처 : Open DART API</p>
+                    <p>주요 내용 : 법인번호, 주소, 상장여부 등</p>
+                    <p>등재 업체 수 : 104,574개</p>
+                </div>
+                <div class="card">
+                    <h3>기업 재무정보 개요</h3>
+                    <p>자료 출처 : 금융위원회_기업 재무정보 API</p>
+                    <p>주요 내용 : 주요 재무정보 8개 항목</p>
+                    <p>등재 업체 수 : 10,277개 </p>
+                    <p>가용 연도 : 2023, 2022, 2021, 2020</p>
+                </div>
+                <div class="card">
+                    <h3>주가 정보 개요</h3>
+                    <p>자료 출처 : FinanceDataReader 등</p>
+                    <p>주요 내용 : 기간별 수익률 등 12개 항목 </p>
+                    <p>등재 업체 수 : 2,680개 </p>
+                </div>
+            </div>
+            <h1>Database Prediction Results</h1>
+            <table id="resultsTable" class="display">
+                <thead>
+                    <tr>
+                        <th>법인번호</th>
+                        <th>법인명</th>
+                        <th>AAA</th>
+                        <th>AA+</th>
+                        <th>AA</th>
+                        <th>AA-</th>
+                        <th>A+</th>
+                        <th>A</th>
+                        <th>A-</th>
+                        <th>BBB+</th>
+                        <th>BBB</th>
+                        <th>BBB-</th>
+                        <th>BB+</th>
+                        <th>BB</th>
+                        <th>BB-</th>
+                        <th>B+</th>
+                        <th>B</th>
+                        <th>B-</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsBody">
+                    {% for result in predictions %}
+                        <tr>
+                            <td>{{ result['corporate_number'] }}</td>
+                            <td>{{ result['company_name'] }}</td>
+                            <td>{{ result['AAA'] }}</td>
+                            <td>{{ result['AA_plus'] }}</td>
+                            <td>{{ result['AA'] }}</td>
+                            <td>{{ result['AA_minus'] }}</td>
+                            <td>{{ result['A_plus'] }}</td>
+                            <td>{{ result['A'] }}</td>
+                            <td>{{ result['A_minus'] }}</td>
+                            <td>{{ result['BBB_plus'] }}</td>
+                            <td>{{ result['BBB'] }}</td>
+                            <td>{{ result['BBB_minus'] }}</td>
+                            <td>{{ result['BB_plus'] }}</td>
+                            <td>{{ result['BB'] }}</td>
+                            <td>{{ result['BB_minus'] }}</td>
+                            <td>{{ result['B_plus'] }}</td>
+                            <td>{{ result['B'] }}</td>
+                            <td>{{ result['B_minus'] }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 모달 -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="spinner"></div>
+            <p>Processing...</p>
+        </div>
+    </div>
+</body>
+</html>
