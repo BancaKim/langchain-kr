@@ -128,6 +128,7 @@ async def global_list(
     page: int = Query(1, ge=1),
     per_page: int = Query(10, ge=1, le=100),
 ):
+    username = request.session.get("username")
     query = db.query(GlobalMarketing)
     if name:
         query = query.filter(GlobalMarketing.corp_name.ilike(f"%{name}%"))
@@ -141,6 +142,7 @@ async def global_list(
         "marketing/global_search.html",
         {
             "request": request,
+            "username": username,
             "globalLists": globalLists,
             "page": page,
             "per_page": per_page,
@@ -153,6 +155,7 @@ async def global_list(
 
 @marketing.get("/globalDetail/{corp_code}")
 async def read_global(request: Request, corp_code: str, db: Session = Depends(get_db)):
+    username = request.session.get("username")
     try:
         report = get_report(corp_code)
         rcept_no = report.rcept_no
@@ -172,7 +175,9 @@ async def read_global(request: Request, corp_code: str, db: Session = Depends(ge
 
         return templates.TemplateResponse(
             "marketing/global_detail.html",
-            {"request": request, "table": table},
+            {"request": request,
+            "username": username,
+            "table": table},
         )
     except Exception as e:
         print(f"Error in read_global: {str(e)}")

@@ -33,6 +33,8 @@ def get_db():
 # 바로 등급 검색 페이지 / 나의업체현황/ 최근조회업체 return
 @baro.get("/baro_companyList", response_class=HTMLResponse)
 async def read_companyList(request: Request, search_value: str = "", db: Session = Depends(get_db)):
+    username = request.session.get("username")
+    
     jurir_no = search_company(db, search_value) if search_value else []
     my_jurir_no = ["1101110017990", "1101110019219", "1345110004412"]
     recent_jurir_no = ["1101110032154", "1201110018368", "1101110162191"]
@@ -47,6 +49,7 @@ async def read_companyList(request: Request, search_value: str = "", db: Session
         "baro_service/baro_companyList2.html", 
         {
             "request": request,
+            "username": username,
             "search_company_list": search_company_list,
             "my_company_list": my_company_list,
             "recent_view_list": recent_view_list
@@ -55,6 +58,8 @@ async def read_companyList(request: Request, search_value: str = "", db: Session
 
 @baro.get("/baro_companyInfo", response_class=HTMLResponse)
 async def read_company_info(request: Request, jurir_no: str = Query(...), db: Session = Depends(get_db)):
+    username = request.session.get("username")
+    
     company_info = get_company_info(db, jurir_no)
     FS2023 = get_FS2023(db, jurir_no)
     FS2022 = get_FS2022(db, jurir_no)
@@ -144,6 +149,7 @@ async def read_company_info(request: Request, jurir_no: str = Query(...), db: Se
 
     return templates.TemplateResponse("baro_service/baro_companyInfo.html", {
         "request": request,
+        "username": username,
         "company_info": company_info,
         "fs2023": FS2023,
         "fs2022": FS2022,
