@@ -1,311 +1,365 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>Prediction Results</title>
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-around;
-            margin: 20px 0;
-        }
-        .box {
-            flex: 1 1 calc(33.333% - 20px); /* Each box takes up 33.333% of the width, minus margins */
-            margin: 10px;
-            padding: 15px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            background-color: #f9f9f9;
-        }
-        table {
+        .donut-chart {
+            position: relative;
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(#9061F9 87%, #E0E0E0 0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        table, th, td {
-            border: 1px solid black;
-        }
-        th, td {
-            padding: 8px;
-            text-align: left;
-        }
-        .section {
+
+        .donut-chart::before {
+            content: "";
+            position: absolute;
             width: 80%;
-            margin: 20px auto;
+            height: 80%;
+            background-color: white;
+            border-radius: 50%;
         }
-        .center {
-            text-align: center;
-            margin: 20px 0;
+
+
+        .collapse-content {
+            display: none;
         }
-        .heatmap td {
-            text-align: center;
-            color: rgb(0, 0, 0);
+
+        .collapse-content.show {
+            display: block;
+        }
+
+        .collapse-button {
+            cursor: pointer;
         }
     </style>
+    <title>Prediction Results</title>
 </head>
-<body>
-    <div class="container">
-        <div class="box">
-            <h2>Model Information</h2>
-            <ul>
-                <li>Model Name: {{ model_info.model_name }}</li>
-                <li>Creation Date: {{ model_info.creation_date }}</li>
-                <li>Number of Estimators: {{ model_info.n_estimators }}</li>
-                <li>Max Features: {{ model_info.max_features }}</li>
-                <li>Number of Samples: {{ model_info.n_samples }}</li>
-            </ul>
-        </div>
 
-        <div class="box">
-            <h2>Model Accuracy</h2>
-            <p>{{ accuracy }}</p>
-        </div>
+<body class="bg-gray-100">
 
-        <div class="box">
-            <h2>Classification Report</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Label</th>
-                        <th>Precision</th>
-                        <th>Recall</th>
-                        <th>F1-Score</th>
-                        <th>Support</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for label, metrics in class_report.items() %}
-                    {% if metrics is mapping %}
-                    <tr>
-                        <td>{{ label }}</td>
-                        <td>{{ '%.2f'|format(metrics.precision) }}</td>
-                        <td>{{ '%.2f'|format(metrics.recall) }}</td>
-                        <td>{{ '%.2f'|format(metrics['f1-score']) }}</td>
-                        <td>{{ metrics.support }}</td>
-                    </tr>
+    {% include 'header.html' %}
+
+
+    <br>
+    <div class="container mx-auto p-8">
+
+        <div class="bg-cover bg-center h-72 flex items-center justify-center text-center p-8 text-white"
+            style="background-image: url('/static/images/admin2.jpg');">
+            <div class="max-w-4xl w-full">
+                <h1 class="text-5xl font-bold">바로등급 모델 정보</h1>
+            </div>
+        </div>
+        <br> <br>
+
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- 첫 번째 열 -->
+            <div class="col-span-1 md:col-span-1 flex flex-col space-y-6">
+                <div class="box bg-white p-6 rounded-lg shadow-md flex-1">
+                    <h2 class="text-2xl font-bold mb-4">기본 정보</h2>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li>
+                            <p class="text-lg font-semibold">분석 모델: {{ model_info.model_name }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold">모델 생성일: {{ model_info.creation_date }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold">Tree 개수: {{ model_info.n_estimators }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold">하이퍼 파라미터: {{ model_info.max_features }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold">학습 데이터: {{ model_info.n_samples }} 건</p>
+                        </li>
+                    </ul>
+                </div>
+                <div class="box bg-white p-6 rounded-lg shadow-md h-full flex flex-col items-start">
+                    <h2 class="text-2xl font-bold mb-4">모델 정확도</h2>
+                    <div class="relative flex items-center justify-center h-64 w-64 mx-auto">
+                        <div class="donut-chart" style="--percentage: {{ accuracy * 100 }}%;"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-5xl font-bold">{{ '{:.1f}'.format(accuracy * 100) }}%</div>
+                        </div>
+
+                    </div>
+                    <br><Br>
+                    {% if show_predict_button %}
+                    <div class="flex items-center justify-center mt-8" style="margin: 0 auto;">
+                        <form action="/predict_all/" method="get">
+                            <button type="submit" class="px-6 py-3 bg-gray-800 text-white rounded hover:bg-gray-900">
+                                바로등급 산출
+                            </button>
+                        </form>
+                    </div>
                     {% endif %}
-                    {% endfor %}
-                </tbody>
-            </table>
+                </div>
+            </div>
+            <!-- 두 번째 열 -->
+            <div class="col-span-1 md:col-span-2 bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-2xl font-bold mb-4">Confusion Matrix</h2>
+                <div>
+                    <table class="js-heatmap w-full border-collapse border border-gray-200 mt-4">
+                        <caption class="text-center mb-4">
+                            X-axis: Predicted Values | Y-axis: Actual Values
+                        </caption>
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="border border-gray-200 p-2"></th> <!-- Empty top-left corner -->
+                                <th class="border border-gray-200 p-2">AAA</th>
+                                <th class="border border-gray-200 p-2">AA+</th>
+                                <th class="border border-gray-200 p-2">AA</th>
+                                <th class="border border-gray-200 p-2">AA-</th>
+                                <th class="border border-gray-200 p-2">A+</th>
+                                <th class="border border-gray-200 p-2">A</th>
+                                <th class="border border-gray-200 p-2">A-</th>
+                                <th class="border border-gray-200 p-2">BBB+</th>
+                                <th class="border border-gray-200 p-2">BBB</th>
+                                <th class="border border-gray-200 p-2">BBB-</th>
+                                <th class="border border-gray-200 p-2">BB+</th>
+                                <th class="border border-gray-200 p-2">BB</th>
+                                <th class="border border-gray-200 p-2">BB-</th>
+                                <th class="border border-gray-200 p-2">B+</th>
+                                <th class="border border-gray-200 p-2">B</th>
+                                <th class="border border-gray-200 p-2">B-</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th class="border border-gray-200 p-2">AAA</th>
+                                {% for val in conf_matrix[0] %}
+                                <td class="border border-gray-200 p-2">{{ val }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <th class="border border-gray-200 p-2">AA+</th>
+                                {% for val in conf_matrix[1] %}
+                                <td class="border border-gray-200 p-2">{{ val }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <th class="border border-gray-200 p-2">AA</th>
+                                {% for val in conf_matrix[2] %}
+                                <td class="border border-gray-200 p-2">{{ val }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <th class="border border-gray-200 p-2">AA-</th>
+                                {% for val in conf_matrix[3] %}
+                                <td class="border border-gray-200 p-2">{{ val }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <th class="border border-gray-200 p-2">A+</th>
+                                {% for val in conf_matrix[4] %}
+                                <td class="border border-gray-200 p-2">{{ val }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <th class="border border-gray-200 p-2">A</th>
+                                {% for val in conf_matrix[5] %}
+                                <td class="border border-gray-200 p-2">{{ val }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <th class="border border-gray-200 p-2">A-</th>
+                                {% for val in conf_matrix[6] %}
+                                <td class="border border-gray-200 p-2">{{ val }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <th class="border border-gray-200 p-2">BBB+</th>
+                                {% for val in conf_matrix[7] %}
+                                <td class="border border-gray-200 p-2">{{ val }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <th class="border border-gray-200 p-2">BBB</th>
+                                {% for val in conf_matrix[8] %}
+                                <td class="border border-gray-200 p-2">{{ val }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <th class="border border-gray-200 p-2">BBB-</th>
+                                {% for val in conf_matrix[9] %}
+                                <td class="border border-gray-200 p-2">{{ val }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <th class="border border-gray-200 p-2">BB+</th>
+                                {% for val in conf_matrix[10] %}
+                                <td class="border border-gray-200 p-2">{{ val }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <th class="border border-gray-200 p-2">BB</th>
+                                {% for val in conf_matrix[11] %}
+                                <td class="border border-gray-200 p-2">{{ val }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <th class="border border-gray-200 p-2">BB-</th>
+                                {% for val in conf_matrix[12] %}
+                                <td class="border border-gray-200 p-2">{{ val }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <th class="border border-gray-200 p-2">B+</th>
+                                {% for val in conf_matrix[13] %}
+                                <td class="border border-gray-200 p-2">{{ val }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <th class="border border-gray-200 p-2">B</th>
+                                {% for val in conf_matrix[14] %}
+                                <td class="border border-gray-200 p-2">{{ val }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <th class="border border-gray-200 p-2">B-</th>
+                                {% for val in conf_matrix[15] %}
+                                <td class="border border-gray-200 p-2">{{ val }}</td>
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
-        <div class="box">
-            <h2>Confusion Matrix</h2>
-            <table class="heatmap">
-                <thead>
-                    <tr>
-                        <th></th> <!-- Empty top-left corner -->
-                        <th>AAA</th>
-                        <th>AA+</th>
-                        <th>AA</th>
-                        <th>AA-</th>
-                        <th>A+</th>
-                        <th>A</th>
-                        <th>A-</th>
-                        <th>BBB+</th>
-                        <th>BBB</th>
-                        <th>BBB-</th>
-                        <th>BB+</th>
-                        <th>BB</th>
-                        <th>BB-</th>
-                        <th>B+</th>
-                        <th>B</th>
-                        <th>B-</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <th>AAA</th>
-                        {% for val in conf_matrix[0] %}
-                        <td>{{ val }}</td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <th>AA+</th>
-                        {% for val in conf_matrix[1] %}
-                        <td>{{ val }}</td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <th>AA</th>
-                        {% for val in conf_matrix[2] %}
-                        <td>{{ val }}</td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <th>AA-</th>
-                        {% for val in conf_matrix[3] %}
-                        <td>{{ val }}</td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <th>A+</th>
-                        {% for val in conf_matrix[4] %}
-                        <td>{{ val }}</td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <th>A</th>
-                        {% for val in conf_matrix[5] %}
-                        <td>{{ val }}</td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <th>A-</th>
-                        {% for val in conf_matrix[6] %}
-                        <td>{{ val }}</td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <th>BBB+</th>
-                        {% for val in conf_matrix[7] %}
-                        <td>{{ val }}</td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <th>BBB</th>
-                        {% for val in conf_matrix[8] %}
-                        <td>{{ val }}</td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <th>BBB-</th>
-                        {% for val in conf_matrix[9] %}
-                        <td>{{ val }}</td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <th>BB+</th>
-                        {% for val in conf_matrix[10] %}
-                        <td>{{ val }}</td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <th>BB</th>
-                        {% for val in conf_matrix[11] %}
-                        <td>{{ val }}</td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <th>BB-</th>
-                        {% for val in conf_matrix[12] %}
-                        <td>{{ val }}</td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <th>B+</th>
-                        {% for val in conf_matrix[13] %}
-                        <td>{{ val }}</td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <th>B</th>
-                        {% for val in conf_matrix[14] %}
-                        <td>{{ val }}</td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <th>B-</th>
-                        {% for val in conf_matrix[15] %}
-                        <td>{{ val }}</td>
-                        {% endfor %}
-                    </tr>
-                </tbody>
-            </table>
+
+
+        <div class="mt-6">
+            <!-- Classification Report -->
+            <div class="box bg-white p-6 rounded-lg shadow-md mb-6">
+                <button class="collapse-button text-lg font-bold text-gray-800"
+                    onclick="toggleCollapse('classification-report')">
+                    Classification Report
+                </button>
+                <div id="classification-report" class="collapse-content">
+                    <table class="w-full border-collapse border border-gray-200 mt-4">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="border border-gray-200 p-2">Label</th>
+                                <th class="border border-gray-200 p-2">Precision</th>
+                                <th class="border border-gray-200 p-2">Recall</th>
+                                <th class="border border-gray-200 p-2">F1-Score</th>
+                                <th class="border border-gray-200 p-2">Support</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for label, metrics in class_report.items() %}
+                            {% if metrics is mapping %}
+                            <tr>
+                                <td class="border border-gray-200 p-2">{{ label }}</td>
+                                <td class="border border-gray-200 p-2">{{ '%.2f'|format(metrics.precision) }}</td>
+                                <td class="border border-gray-200 p-2">{{ '%.2f'|format(metrics.recall) }}</td>
+                                <td class="border border-gray-200 p-2">{{ '%.2f'|format(metrics['f1-score']) }}</td>
+                                <td class="border border-gray-200 p-2">{{ metrics.support }}</td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Feature Importances -->
+            <div class="box bg-white p-6 rounded-lg shadow-md mb-6">
+                <button class="collapse-button text-lg font-bold text-gray-800"
+                    onclick="toggleCollapse('feature-importances')">
+                    Feature Importances
+                </button>
+                <div id="feature-importances" class="collapse-content">
+                    <table class="w-full border-collapse border border-gray-200 mt-4">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="border border-gray-200 p-2">Feature</th>
+                                <th class="border border-gray-200 p-2">Importance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for feature, importance in model_info.feature_importances.items() %}
+                            <tr>
+                                <td class="border border-gray-200 p-2">{{ feature }}</td>
+                                <td class="border border-gray-200 p-2">{{ '%.2f'|format(importance) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
-        <div class="box">
-            <h2>Feature Importances</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Feature</th>
-                        <th>Importance</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for feature, importance in model_info.feature_importances.items() %}
-                    <tr>
-                        <td>{{ feature }}</td>
-                        <td>{{ '%.2f'|format(importance) }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
 
-        {% if show_predict_button %}
-        <!-- <div class="center">
-            <form action="/predict/" method="get">
-                <button type="submit">PredictWS</button>
-            </form>
-        </div> -->
-
-        <div class="center">
-            <form action="/predict_all/" method="get">
-                <button type="submit">PredictNoWS</button>
-            </form>
-        </div>
-        {% endif %}
     </div>
-
-
-
     <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const cells = document.querySelectorAll(".heatmap td");
-    let max = 0;
+        document.addEventListener("DOMContentLoaded", function () {
+            const cells = document.querySelectorAll(".js-heatmap td");
+            let max = 0;
 
-    // Find the maximum value in the matrix
-    cells.forEach(cell => {
-        const val = parseInt(cell.textContent, 10);
-        if (val > max) max = val;
-    });
+            // Find the maximum value in the matrix
+            cells.forEach(cell => {
+                const val = parseInt(cell.textContent, 10);
+                if (val > max) max = val;
+            });
 
-    // Define the color palette
-    const colors = ["#F8F9FA", "#E9ECEF", "#DEE2E6", "#CED4DA", "#ADB5BD", "#6C757D", "#495057", "#343A40", "#212529"];
-    const darkColors = ["#6C757D", "#495057", "#343A40", "#212529"];
+            // Define the color palette
+            const colors = ["#F8F9FA", "#E9ECEF", "#DEE2E6", "#CED4DA", "#ADB5BD", "#6C757D", "#495057", "#343A40", "#212529"];
+            const darkColors = ["#6C757D", "#495057", "#343A40", "#212529"];
 
-    // Apply coloring based on value
-    cells.forEach(cell => {
-        const val = parseInt(cell.textContent, 10);
-        const ratio = val / max;
+            // Apply coloring based on value
+            cells.forEach(cell => {
+                const val = parseInt(cell.textContent, 10);
+                const ratio = val / max;
 
-        let color;
-        if (ratio > 0.875) {
-            color = colors[8];
-        } else if (ratio > 0.75) {
-            color = colors[7];
-        } else if (ratio > 0.625) {
-            color = colors[6];
-        } else if (ratio > 0.5) {
-            color = colors[5];
-        } else if (ratio > 0.375) {
-            color = colors[4];
-        } else if (ratio > 0.25) {
-            color = colors[3];
-        } else if (ratio > 0.125) {
-            color = colors[2];
-        } else if (ratio > 0.05) {  // Adjusted this threshold for better visibility
-            color = colors[1];
-        } else {
-            color = colors[0];
+                let color;
+                if (ratio > 0.875) {
+                    color = colors[8];
+                } else if (ratio > 0.75) {
+                    color = colors[7];
+                } else if (ratio > 0.625) {
+                    color = colors[6];
+                } else if (ratio > 0.5) {
+                    color = colors[5];
+                } else if (ratio > 0.375) {
+                    color = colors[4];
+                } else if (ratio > 0.25) {
+                    color = colors[3];
+                } else if (ratio > 0.125) {
+                    color = colors[2];
+                } else if (ratio > 0.05) {
+                    color = colors[1];
+                } else {
+                    color = colors[0];
+                }
+
+                cell.style.backgroundColor = color;
+                // Set text color to white for dark background colors
+                if (darkColors.includes(color)) {
+                    cell.style.color = "white";
+                } else {
+                    cell.style.color = "black";
+                }
+            });
+        });
+
+        function toggleCollapse(id) {
+            const content = document.getElementById(id);
+            if (content.classList.contains('show')) {
+                content.classList.remove('show');
+            } else {
+                content.classList.add('show');
+            }
         }
-
-        cell.style.backgroundColor = color;
-        // Set text color to white for dark background colors
-        if (darkColors.includes(color)) {
-            cell.style.color = "white";
-        } else {
-            cell.style.color = "black";
-        }
-    });
-});
-
     </script>
 </body>
+
 </html>

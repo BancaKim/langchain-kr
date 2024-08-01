@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -8,22 +10,21 @@
         }
         .container {
             display: flex;
+            margin: 0 auto;
         }
-        .sidebar {
-            width: 20%;
-            background-color: #f8f9fa;
-            padding: 20px;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-        }
+
         .main-content {
             width: 80%;
             padding: 20px;
+            margin: 0 auto;
+            max-width: 1600px; /* 원하는 최대 너비 */
+
         }
+
         .button {
-            display: block;
-            width: 100%;
-            margin-bottom: 10px;
-            padding: 10px;
+            flex: 1; /* 버튼이 같은 비율로 확장 */
+            max-width: 200px; /* 버튼의 최대 너비 */
+            padding: 10px 20px; /* 버튼의 내측 여백 */
             background-color: #495057;
             color: white;
             text-align: center;
@@ -32,10 +33,19 @@
             cursor: pointer;
             text-decoration: none;
             box-sizing: border-box;
+            font-size: 18x;
+            transition: background-color 0.3s;
         }
         .button:hover {
             background-color: #6c757d;
         }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px; /* 버튼 간격 */
+            padding: 20px;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -46,6 +56,7 @@
             height: 100%;
             overflow: auto;
             background-color: rgba(0,0,0,0.4);
+            margin: 0 auto;
         }
         .modal-content {
             position: absolute;
@@ -53,6 +64,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
+
         }
         .spinner {
             margin: 0 auto;
@@ -71,6 +83,8 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
+            max-width: 1600px; /* 원하는 최대 너비 */
+
         }
         table, th, td {
             border: 1px solid black;
@@ -85,7 +99,6 @@
         .summary-cards {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 20px;
         }
         .card {
             flex: 1;
@@ -93,10 +106,50 @@
             padding: 10px;
             margin: 5px;
             border-radius: 5px;
-            box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         .card h3 {
             margin-top: 0;
+        }
+
+        .bu {
+            flex: 1;
+            background-color: #EDEBFE;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .hhh {
+            text-align: center; /* 가운데 정렬 */
+            font-size: 3rem; /* 글자 크기 조정 */
+            color: #333; /* 글자 색상 */
+            margin: 20px 0; /* 상하 여백 */
+        }
+
+        .bg {
+            background-image: url('/static/images/admin1.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 40vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            color: white;
+        }
+        .title {
+            font-size: 4rem;
+            font-weight: bold;
+            margin: 30px 0;
+        }
+
+        .content {
+            max-width: 1200px;
+            width: 100%;
         }
     </style>
     <!-- DataTables CSS -->
@@ -146,16 +199,26 @@
     </script>
 </head>
 <body>
+
+    {% include 'header.html' %}
+
+    
+    <br><br>
     <div class="container">
-        <div class="sidebar">
-            <h2>Menu</h2>
-            <button class="button" onclick="startMachineLearning()">Credit Machine Learning</button>
-            <button class="button">기업정보 업데이트(예정)</button>
-            <button class="button">주가정보 업데이트(예정)</button>
-            <button class="button">재무정보 업데이트(예정)</button>
-        </div>
+        
+    
         <div class="main-content">
-            <h1>바로등급 ML 개요</h1>
+            <div class="bg">
+                <div class="content">
+                    <div class="title">
+                        바로등급 모델 관리 화면
+                    </div>
+                </div>
+            </div>
+        
+            <br><br>
+
+            <h1>바로등급 개요</h1>
             <div class="summary-cards">
                 <div class="card">
                     <h3>ML 신용평가 모델 개요</h3>
@@ -184,7 +247,14 @@
                     <p>등재 업체 수 : 2,680개 </p>
                 </div>
             </div>
-            <h1>Database Prediction Results</h1>
+            <div class="summary-cards">
+                <button class="bu" onclick="startMachineLearning()">신용평가 모델 바로가기</button>
+                <button class="bu">기업정보 업데이트<button>
+                <button class="bu">주가정보 업데이트</button>
+                <button class="bu">재무정보 업데이트</button>
+            </div>
+            <br><br>
+            <h1>바로등급 상세 현황</h1>
             <table id="resultsTable" class="display">
                 <thead>
                     <tr>
@@ -235,13 +305,14 @@
             </table>
         </div>
     </div>
-
     <!-- 모달 -->
     <div id="modal" class="modal">
         <div class="modal-content">
             <div class="spinner"></div>
-            <p>Processing...</p>
+            <p>바로등급 Model 생성 중..</p>
         </div>
     </div>
+
+<br><br>
 </body>
 </html>
