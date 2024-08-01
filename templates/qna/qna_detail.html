@@ -124,15 +124,17 @@
                 <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
             </div>
             <div class="qna-form-actions">
-                <button type="submit" class="btn btn-dark">답글 달기</button>
-                {% if username == qna.username %}
-                <a href="/qnas/update/{{ qna.id }}" class="btn btn-dark">수정</a>
-                <form action="/qnas/delete/{{ qna.id }}" method="post" style="display: inline;">
-                    <button type="submit" class="btn btn-danger">삭제</button>
+                <form action="/qnas/{{ qna.id }}/reply" method="post">
+                    <button type="submit" class="btn btn-dark">답글 달기</button>
                 </form>
+                {% if username == qna.username %}
+                    <a href="/qnas/update/{{ qna.id }}" class="btn btn-dark">수정</a>
+                    <form action="/qnas/delete/{{ qna.id }}" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-danger">삭제</button>
+                    </form>
                 {% endif %}
                 <button onclick="location.href='/qnas'" class="btn btn-dark">목록으로</button>
-            </div>
+            </div>            
         </form>
     </div>
 </section>
