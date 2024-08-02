@@ -366,7 +366,7 @@ async def autocomplete(
             LIMIT 10
         """
         )
-        results = db.execute(sql_query, {"query": f"{query}%"}).fetchall()
+        results = db.execute(sql_query, {"query": f"%{query}%"}).fetchall()
         return [row[0] for row in results]  # Return list of results
     finally:
         db.close()
