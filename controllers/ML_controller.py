@@ -37,6 +37,7 @@ def get_db():
 
 @machineLearning.get("/train/", response_class=HTMLResponse)
 async def train(request: Request):
+    username = request.session.get("username")
     model, scaler, accuracy, class_report, conf_matrix, model_info = train_model()
     
     # Define the credit ratings corresponding to each class
@@ -58,8 +59,10 @@ async def train(request: Request):
         "conf_matrix": conf_matrix,
         "model_info": model_store["model_info"],
         "credit_ratings": credit_ratings,
-        "show_predict_button": True
+        "show_predict_button": True,
+        "username": username
     })
+
 
 ## 웹소켓 방식 시간 지연등 감안하여 사용안함.
 # @machineLearning.get("/predict/", response_class=HTMLResponse)
@@ -101,6 +104,7 @@ async def train(request: Request):
 #             "elapsed_time": round(elapsed_time, 2)
 #         }
 #         await websocket.send_text(json.dumps(summary))
+
         
 #         # Store the predictions in the global store
 #         global predictions_store
@@ -112,6 +116,7 @@ async def train(request: Request):
 
 @machineLearning.get("/predict_all/", response_class=HTMLResponse)
 async def predict_all(request: Request, db: Session = Depends(get_db)):
+    username = request.session.get("username")
     start_time = time.time()
     if model_store["model"] is None or model_store["scaler"] is None:
         raise HTTPException(status_code=400, detail="Model not trained yet. Please train the model first.")
@@ -136,12 +141,14 @@ async def predict_all(request: Request, db: Session = Depends(get_db)):
         "model_info": model_info,
         "elapsed_time": elapsed_time,
         "count": len(predictions),
-        "show_db_button": True
+        "show_db_button": True,
+        "username": username 
     })
 
 
 @machineLearning.post("/insert_predictions/", response_class=JSONResponse)
 async def insert_predictions(request: Request, db: Session = Depends(get_db)):
+    username = request.session.get("username")    
     if model_store["model"] is None or model_store["scaler"] is None:
         return JSONResponse(content={"error": "Model not trained yet. Please train the model first."}, status_code=400)
     
@@ -187,7 +194,8 @@ async def insert_predictions(request: Request, db: Session = Depends(get_db)):
             "CCC_minus": probabilities_dict.get('CCC-', 0.0),
             "C": probabilities_dict.get('C', 0.0),
             "D": probabilities_dict.get('D', 0.0),
-            "model_reference": model_reference
+            "model_reference": model_reference,
+            "username": username
         }
         insert_predictions_into_db(db, result, model_reference)
 
@@ -198,11 +206,13 @@ async def insert_predictions(request: Request, db: Session = Depends(get_db)):
 
 @machineLearning.get("/view_DB_predict/", response_class=HTMLResponse)
 async def view_DB_predict(request: Request, db: Session = Depends(get_db)):
+    username = request.session.get("username")
     predictions_dict = get_db_predictions(db)
     # logger.info(predictions_dict)
     return templates.TemplateResponse("ML_template/ML_DBcreditView.html", {
         "request": request,
-        "predictions": predictions_dict
+        "predictions": predictions_dict,
+        "username": username
     })
     
     
