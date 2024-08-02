@@ -83,6 +83,7 @@
                 </div>
                 <div class="box bg-white p-6 rounded-lg shadow-md h-full flex flex-col items-start">
                     <h2 class="text-2xl font-bold mb-4">모델 정확도</h2>
+                    <br>
                     <div class="relative flex items-center justify-center h-64 w-64 mx-auto">
                         <div class="donut-chart" style="--percentage: {{ accuracy * 100 }}%;"></div>
                         <div class="absolute inset-0 flex items-center justify-center">
@@ -90,7 +91,7 @@
                         </div>
 
                     </div>
-                    <br><Br>
+                    <br><Br><br>
                     {% if show_predict_button %}
                     <div class="flex items-center justify-center mt-8" style="margin: 0 auto;">
                         <form action="/predict_all/" method="get">
@@ -108,7 +109,7 @@
                 <div>
                     <table class="js-heatmap w-full border-collapse border border-gray-200 mt-4">
                         <caption class="text-center mb-4">
-                            X-axis: Predicted Values | Y-axis: Actual Values
+                            X축: 예측값 | Y축: 실제값
                         </caption>
                         <thead>
                             <tr class="bg-gray-100">

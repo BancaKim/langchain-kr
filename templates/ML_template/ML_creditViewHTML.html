@@ -1,90 +1,114 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
+
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <title>Prediction Results</title>
     <style>
         body {
             font-family: Arial, sans-serif;
         }
-        .container {
-            width: 80%;
-            margin: 20px auto;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        table, th, td {
+
+        table,
+        th,
+        td {
             border: 1px solid black;
         }
-        th, td {
-            padding: 8px;
-            text-align: left;
-        }
-        h2 {
-            margin-top: 20px;
-        }
+
         .summary {
             margin-bottom: 20px;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div id="summary" class="summary">
-            <h1>Prediction Summary</h1>
-            <p id="modelInfo">모델명: {{ model_info.model_name }}, 생성일: {{ model_info.creation_date }}, 추정기 수: {{ model_info.n_estimators }}, 최대 피처: {{ model_info.max_features }}, 샘플 수: {{ model_info.n_samples }}</p>
-            <p id="elapsedTime">소요 시간: {{ elapsed_time }} 초</p>
-            <p id="dataCount">조회 건수: {{ count }} 건</p>
-            {% if show_db_button %}
-                <button id="dbButton" onclick="uploadToDB()">예상등급 DB에 등재</button>
-            {% endif %}
+
+<body class="bg-gray-100">
+
+    {% include 'header.html' %}
+
+    <div class="container mx-auto p-8">
+
+        <div class="bg-cover bg-center h-72 flex items-center justify-center text-center p-8 text-white"
+            style="background-image: url('/static/images/admin3.jpg');">
+            <div class="max-w-4xl w-full">
+                <h1 class="text-5xl font-bold">바로등급 산출 결과</h1>
+            </div>
         </div>
-        <h1>Prediction Details</h1>
-        <table id="resultsTable">
-            <thead>
-                <tr>
-                    <th>법인번호</th>
-                    <th>법인명</th>
-                    <th>AAA</th>
-                    <th>AA+</th>
-                    <th>AA</th>
-                    <th>AA-</th>
-                    <th>A+</th>
-                    <th>A</th>
-                    <th>A-</th>
-                    <th>BBB+</th>
-                    <th>BBB</th>
-                    <th>BBB-</th>
-                    <th>BB+</th>
-                    <th>BB</th>
-                    <th>BB-</th>
-                    <th>B+</th>
-                    <th>B</th>
-                    <th>B-</th>
-                </tr>
-            </thead>
-            <tbody id="resultsBody">
-                {% for result in predictions %}
-                    <tr>
-                        <td>{{ result.jurir_no }}</td>
-                        <td>{{ result.corp_name }}</td>
-                        {% for grade in ['AAA', 'AA+', 'AA', 'AA-', 'A+', 'A', 'A-', 'BBB+', 'BBB', 'BBB-', 'BB+', 'BB', 'BB-', 'B+', 'B', 'B-'] %}
+        <br> 
+
+        <div class="container mx-auto p-4 bg-white shadow-lg rounded-lg mb-4">
+
+            <div id="summary" class="summary mt-10">
+                <h2 class="text-3xl font-semibold mb-4">분석 요약</h2>
+                <p id="modelInfo" class="mb-2">모델명: {{ model_info.model_name }}, 생성일: {{ model_info.creation_date }},
+                    추정기 수:
+                    {{ model_info.n_estimators }}, 최대 피처: {{ model_info.max_features }}, 샘플 수: {{ model_info.n_samples
+                    }}
+                </p>
+                <p id="elapsedTime" class="mb-2">소요 시간: {{ elapsed_time }} 초</p>
+                <p id="dataCount" class="mb-2">조회 건수: {{ count }} 건</p>
+                <br>
+                {% if show_db_button %}
+                <button id="dbButton" onclick="uploadToDB()"
+                    class="px-6 py-3 bg-gray-800 text-white rounded hover:bg-gray-900">바로등급 DB 적재</button>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="container mx-auto p-4 bg-white shadow-lg rounded-lg">
+            <h2 class="text-3xl font-semibold mt-10 mb-4">바로등급 산출 상세</h2>
+            <h2 class="text-xl font-semibold mt-10 mb-4">검색기능 추가 예정</h2>
+            
+            <div class="overflow-x-auto">
+                <table id="resultsTable" class="min-w-full bg-white">
+                    <thead>
+                        <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                            <th class="py-3 px-6 text-left">법인번호</th>
+                            <th class="py-3 px-6 text-left">법인명</th>
+                            <th class="py-3 px-6 text-left">AAA</th>
+                            <th class="py-3 px-6 text-left">AA+</th>
+                            <th class="py-3 px-6 text-left">AA</th>
+                            <th class="py-3 px-6 text-left">AA-</th>
+                            <th class="py-3 px-6 text-left">A+</th>
+                            <th class="py-3 px-6 text-left">A</th>
+                            <th class="py-3 px-6 text-left">A-</th>
+                            <th class="py-3 px-6 text-left">BBB+</th>
+                            <th class="py-3 px-6 text-left">BBB</th>
+                            <th class="py-3 px-6 text-left">BBB-</th>
+                            <th class="py-3 px-6 text-left">BB+</th>
+                            <th class="py-3 px-6 text-left">BB</th>
+                            <th class="py-3 px-6 text-left">BB-</th>
+                            <th class="py-3 px-6 text-left">B+</th>
+                            <th class="py-3 px-6 text-left">B</th>
+                            <th class="py-3 px-6 text-left">B-</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody" class="text-gray-600 text-sm font-light">
+                        {% for result in predictions %}
+                        <tr class="border-b border-gray-200 hover:bg-gray-100">
+                            <td class="py-3 px-6 text-left whitespace-nowrap">{{ result.jurir_no }}</td>
+                            <td class="py-3 px-6 text-left">{{ result.corp_name }}</td>
+                            {% for grade in ['AAA', 'AA+', 'AA', 'AA-', 'A+', 'A', 'A-', 'BBB+', 'BBB', 'BBB-', 'BB+',
+                            'BB',
+                            'BB-', 'B+', 'B', 'B-'] %}
                             {% if result.sorted_probabilities.get(grade, 0) > 0 %}
-                                <td>{{ result.sorted_probabilities.get(grade) }}</td>
+                            <td class="py-3 px-6 text-left">{{ result.sorted_probabilities.get(grade) }}</td>
                             {% else %}
-                                <td></td>
+                            <td class="py-3 px-6 text-left"></td>
                             {% endif %}
+                            {% endfor %}
+                        </tr>
                         {% endfor %}
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const rows = document.querySelectorAll("#resultsBody tr");
 
             rows.forEach(row => {
@@ -101,11 +125,11 @@
                 // Apply background colors to top 3 values
                 top3Indices.forEach((index, i) => {
                     if (i === 0) {
-                        cells[index].style.backgroundColor = "#ADB5BD"; // Highest value
+                        cells[index].classList.add('bg-gray-400'); // Highest value
                     } else if (i === 1) {
-                        cells[index].style.backgroundColor = "#CED4DA"; // Second highest value
+                        cells[index].classList.add('bg-gray-300'); // Second highest value
                     } else if (i === 2) {
-                        cells[index].style.backgroundColor = "#DEE2E6"; // Third highest value
+                        cells[index].classList.add('bg-gray-200'); // Third highest value
                     }
                 });
             });
@@ -124,4 +148,5 @@
         }
     </script>
 </body>
+
 </html>
