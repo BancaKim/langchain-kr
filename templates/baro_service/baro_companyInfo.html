@@ -540,24 +540,24 @@
                     </tr>
                     <tr>
                         <td class="py-2 px-4 border-b">부채비율</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ fs2020.debtRatio2020 }}%</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ fs2021.debtRatio2021 }}%</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ fs2022.debtRatio2022 }}%</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ fs2023.debtRatio2023 }}%</td>
+                        <td class="py-2 px-4 border-b table-cell">{{  '{:.1f}'.format(fs2020.debtRatio2020) }}%</td>
+                        <td class="py-2 px-4 border-b table-cell">{{  '{:.1f}'.format(fs2021.debtRatio2021) }}%</td>
+                        <td class="py-2 px-4 border-b table-cell">{{  '{:.1f}'.format(fs2022.debtRatio2022) }}%</td>
+                        <td class="py-2 px-4 border-b table-cell">{{  '{:.1f}'.format(fs2023.debtRatio2023) }}%</td>
                     </tr>
                     <tr>
                         <td class="py-2 px-4 border-b">순이익률</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ fs2020.margin2020 }}%</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ fs2021.margin2021 }}%</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ fs2022.margin2022 }}%</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ fs2023.margin2023 }}%</td>
+                        <td class="py-2 px-4 border-b table-cell">{{ '{:.1f}'.format(fs2020.margin2020 * 100) }}%</td>
+                        <td class="py-2 px-4 border-b table-cell">{{  '{:.1f}'.format(fs2021.margin2021 * 100) }}%</td>
+                        <td class="py-2 px-4 border-b table-cell">{{  '{:.1f}'.format(fs2022.margin2022 * 100)}}%</td>
+                        <td class="py-2 px-4 border-b table-cell">{{  '{:.1f}'.format(fs2023.margin2023 * 100) }}%</td>
                     </tr>
                     <tr>
                         <td class="py-2 px-4 border-b">매출회전률</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ fs2020.turnover2020 }}%</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ fs2021.turnover2021 }}%</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ fs2022.turnover2022 }}%</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ fs2023.turnover2023 }}%</td>
+                        <td class="py-2 px-4 border-b table-cell">{{ fs2020.turnover2020 }}</td>
+                        <td class="py-2 px-4 border-b table-cell">{{ fs2021.turnover2021 }}</td>
+                        <td class="py-2 px-4 border-b table-cell">{{ fs2022.turnover2022 }}</td>
+                        <td class="py-2 px-4 border-b table-cell">{{ fs2023.turnover2023 }}</td>
                     </tr>
                     <tr>
                         <td class="py-2 px-4 border-b">Leverage</td>
