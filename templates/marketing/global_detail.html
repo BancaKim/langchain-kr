@@ -8,113 +8,67 @@
 <link rel="stylesheet" href="/static/css/font.css">
 
 <style>
-    /* 테이블 스타일 */
+    .content-wrapper {
+        max-width: 1530px;  /* 최대 너비 증가 */
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+    }
     .table {
-        width: 1500px;
+        width: 100%;
+        min-width: 1200px;  /* 최소 너비 증가 */
         text-align: left;
         direction: ltr;
         color: #4a5568;
-        /* text-gray-800 */
         background-color: #f8fafc;
-        /* bg-white */
         border-collapse: collapse;
-        margin: 0 auto;
-        /* 테이블을 가로로 중앙에 정렬 */
     }
-
+    .table th, .table td {
+        padding: 0.75rem 1rem;
+        white-space: nowrap;
+    }
     .table tr:first-of-type {
         background-color: #f1f5f9;
-        /* 헤더 행 배경 색상 */
         font-weight: bold;
-        /* 폰트 두께를 bold로 설정 */
         color: #2d3748;
-        /* 텍스트 색상 */
         border-bottom: 2px solid #e2e8f0;
-        /* 하단 테두리 색상 */
     }
-
-    /* 테이블 헤더의 배경색을 정의 (필요에 따라 조정 가능) */
-    .table thead tr {
-        background-color: #f1f5f9;
-        /* 헤더 행 배경 색상 */
-        font-weight: bold;
-        /* 폰트 두께를 bold로 설정 */
-        color: #2d3748;
-        /* 텍스트 색상 */
-    }
-
-    /* 첫 번째 행의 텍스트 색상과 배경색을 구분하기 위한 선택자 */
-    .table tr:first-of-type td {
-        background-color: #f1f5f9;
-        /* 헤더 행 배경 색상 */
-        font-weight: bold;
-        /* 폰트 두께를 bold로 설정 */
-        color: #2d3748;
-        /* 텍스트 색상 */
-    }
-
-    .table thead {
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        /* shadow-md */
-        border-radius: 0.5rem;
-        /* sm:rounded-lg */
-        font-size: 0.875rem;
-        /* text-s */
-        color: #4a5568;
-        /* text-gray-800 */
-        text-transform: uppercase;
-        background-color: #f1f5f9;
-        /* bg-gray-50 */
-    }
-
-    .table thead th {
-        padding: 0.75rem 1.5rem;
-        /* px-6 py-3 */
-    }
-
     .table tbody tr {
         background-color: #fff;
-        /* bg-white */
         border-bottom: 1px solid #e2e8f0;
-        /* border-b */
     }
-
     .table tbody tr:nth-of-type(even) {
         background-color: #f9fafb;
-        /* nth-of-type(even) */
     }
-
     .table tbody tr:hover {
         background-color: #edf2f7;
-        /* hover:bg-gray-100 */
     }
-
-    .table tbody th {
-        font-weight: 500;
-        /* font-medium */
-        color: #2d3748;
-        /* text-gray-900 */
-        white-space: nowrap;
-        /* whitespace-nowrap */
+    /* 법인명(채무자) 컬럼 너비 조정 */
+    .table th:first-child,
+    .table td:first-child {
+        max-width: 300px;  /* 너비 증가 */
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
-
-    .table tbody td {
-        padding: 0.75rem 1.5rem;
-        /* px-6 py-4 */
+    /* 마지막 4개 컬럼 숨기기 */
+    .table th:nth-last-child(-n+4),
+    .table td:nth-last-child(-n+4) {
+        display: none;
     }
-
-    .table tbody a {
-        font-weight: 500;
-        /* font-medium */
-        color: #9f7aea;
-        /* text-purple-600 */
-        text-decoration: none;
+    /* 각 컬럼의 너비 조정 */
+    .table th, .table td {
+        width: auto;  /* 자동 너비 조정 */
     }
-
-    .table tbody a:hover {
-        text-decoration: underline;
-        /* hover:underline */
-    }
+    .table th:nth-child(2), .table td:nth-child(2) { width: 10%; }  /* 관계 */
+    .table th:nth-child(3), .table td:nth-child(3) { width: 12%; }  /* 채권자 */
+    .table th:nth-child(4), .table td:nth-child(4) { width: 10%; }  /* 내용 */
+    .table th:nth-child(5), .table td:nth-child(5) { width: 10%; }  /* 목적 */
+    .table th:nth-child(6), .table td:nth-child(6) { width: 12%; }  /* 보증시작일 */
+    .table th:nth-child(7), .table td:nth-child(7) { width: 12%; }  /* 보증종료일 */
+    .table th:nth-child(8), .table td:nth-child(8) { width: 14%; }  /* 채무보증한도_기초 */
 </style>
 
 {% endblock %}
@@ -154,7 +108,11 @@
     </div>
 </div>
 
-{{ table | safe }}
+<div class="content-wrapper ">
+    <div class="table-container rounded-lg shadow-lg">
+        {{ table | safe }}
+    </div>
+</div>
 
 {% endblock %}
 
