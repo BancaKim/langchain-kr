@@ -37,6 +37,7 @@ def get_db():
 
 @machineLearning.get("/train/", response_class=HTMLResponse)
 async def train(request: Request):
+    username = request.session.get("username")
     model, scaler, accuracy, class_report, conf_matrix, model_info = train_model()
     
     # Define the credit ratings corresponding to each class
@@ -58,15 +59,18 @@ async def train(request: Request):
         "conf_matrix": conf_matrix,
         "model_info": model_store["model_info"],
         "credit_ratings": credit_ratings,
-        "show_predict_button": True
+        "show_predict_button": True,
+        "username": username
     })
 
 @machineLearning.get("/predict/", response_class=HTMLResponse)
 async def predict(request: Request):
-    return templates.TemplateResponse("ML_template/ML_creditViewWS.html", {"request": request})
+    username = request.session.get("username")
+    return templates.TemplateResponse("ML_template/ML_creditViewWS.html", {"request": request, "username": username})
 
 @machineLearning.websocket("/ws/predict/")
-async def websocket_predict(websocket: WebSocket, db: Session = Depends(get_db)):
+async def websocket_predict(websocket: WebSocket,request: Request, db: Session = Depends(get_db)):
+    username = request.session.get("username")
     await websocket.accept()
     start_time = time.time()
     try:
@@ -97,7 +101,8 @@ async def websocket_predict(websocket: WebSocket, db: Session = Depends(get_db))
                 "max_features": model_store["model_info"]["max_features"],
                 "n_samples": model_store["model_info"]["n_samples"]
             },
-            "elapsed_time": round(elapsed_time, 2)
+            "elapsed_time": round(elapsed_time, 2),
+            "username": username
         }
         await websocket.send_text(json.dumps(summary))
         
@@ -111,6 +116,7 @@ async def websocket_predict(websocket: WebSocket, db: Session = Depends(get_db))
 
 @machineLearning.get("/predict_all/", response_class=HTMLResponse)
 async def predict_all(request: Request, db: Session = Depends(get_db)):
+    username = request.session.get("username")
     start_time = time.time()
     if model_store["model"] is None or model_store["scaler"] is None:
         raise HTTPException(status_code=400, detail="Model not trained yet. Please train the model first.")
@@ -135,12 +141,14 @@ async def predict_all(request: Request, db: Session = Depends(get_db)):
         "model_info": model_info,
         "elapsed_time": elapsed_time,
         "count": len(predictions),
-        "show_db_button": True
+        "show_db_button": True,
+        "username": username 
     })
 
 
 @machineLearning.post("/insert_predictions/", response_class=JSONResponse)
 async def insert_predictions(request: Request, db: Session = Depends(get_db)):
+    username = request.session.get("username")    
     if model_store["model"] is None or model_store["scaler"] is None:
         return JSONResponse(content={"error": "Model not trained yet. Please train the model first."}, status_code=400)
     
@@ -186,7 +194,8 @@ async def insert_predictions(request: Request, db: Session = Depends(get_db)):
             "CCC_minus": probabilities_dict.get('CCC-', 0.0),
             "C": probabilities_dict.get('C', 0.0),
             "D": probabilities_dict.get('D', 0.0),
-            "model_reference": model_reference
+            "model_reference": model_reference,
+            "username": username
         }
         insert_predictions_into_db(db, result, model_reference)
 
@@ -197,11 +206,13 @@ async def insert_predictions(request: Request, db: Session = Depends(get_db)):
 
 @machineLearning.get("/view_DB_predict/", response_class=HTMLResponse)
 async def view_DB_predict(request: Request, db: Session = Depends(get_db)):
+    username = request.session.get("username")
     predictions_dict = get_db_predictions(db)
     # logger.info(predictions_dict)
     return templates.TemplateResponse("ML_template/ML_DBcreditView.html", {
         "request": request,
-        "predictions": predictions_dict
+        "predictions": predictions_dict,
+        "username": username
     })
     
     
