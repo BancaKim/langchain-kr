@@ -214,7 +214,7 @@ def get_jurir_no_list(db: Session):
         WHERE b.totalAsset2023 > 0
     ) AS subquery
     ORDER BY subquery.totalAsset2023 DESC
-
+    limit 100;
     ;
     """)
     result = db.execute(query)

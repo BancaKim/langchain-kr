@@ -82,6 +82,7 @@ pymysql = "^1.1.1"
 passlib = "^1.7.4"
 dart-fss = "^0.4.10"
 imbalanced-learn = "^0.12.3"
+yfinance = "^0.2.41"
 
 
 [build-system]
