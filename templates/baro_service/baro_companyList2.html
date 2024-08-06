@@ -7,15 +7,50 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
 <link rel="stylesheet" href="/static/css/font.css">
 <script src="/static/js/AI_search.js" defer></script>
+<style>
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4);
+        margin: 0 auto;
+    }
+    .modal-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+    .spinner {
+        margin: 0 auto;
+        width: 50px;
+        height: 50px;
+        border: 6px solid #f3f3f3;
+        border-top: 6px solid #3498db;
+        border-radius: 50%;
+        animation: spin 2s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 
-<div class="w-full" style="background-image: url('static/images/home4.png'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 50vh;">
-    
-    <div class="p-8 w-full max-w-screen-xl mx-auto" >
+<div class="w-full"
+    style="background-image: url('static/images/home4.png'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 50vh;">
+
+    <div class="p-8 w-full max-w-screen-xl mx-auto">
         <span class="block text-left text-xl mb-2">
-            <a href="/" class="mr-2 text-white">홈 &nbsp; |</a> 
+            <a href="/" class="mr-2 text-white">홈 &nbsp; |</a>
             <a href="/baro_companyList" class="ml-2 text-white">바로등급</a>
         </span>
         <br><br><br>
@@ -114,14 +149,16 @@
                         </td>
                         <td class="px-6 py-4 border-b whitespace-nowrap">{{ '{:,}'.format(company.earningBeforeTax2023)
                             }} 억원</td>
+
+
                         <td class="px-6 py-4 border-b whitespace-nowrap">
                             <a href="/baro_companyInfo?jurir_no={{ company.company_jurir_no }}"
                                 class="text-purple-500 hover:underline">확인</a>
                         </td>
-                        <!--법인명-->
+
                         <td class="px-6 py-4 border-b whitespace-nowrap">
                             <a href="/baro_contact?jurir_no={{ company.company_jurir_no }}&register=true"
-                            class="text-purple-500 hover:underline">등록</a>
+                                class="text-purple-500 hover:underline">등록</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -179,14 +216,21 @@
                         </td>
                         <td class="px-6 py-4 border-b whitespace-nowrap">{{ '{:,}'.format(company.earningBeforeTax2023)
                             }} 억원</td>
+
                         <td class="px-6 py-4 border-b whitespace-nowrap">
                             <a href="/baro_companyInfo?jurir_no={{ company.company_jurir_no }}"
                                 class="text-purple-500 hover:underline">확인</a>
+                            <!--
+                                <a href="/baro_companyInfo?jurir_no={{ company.company_jurir_no }}" class="text-purple-500 hover:underline company-info-link" data-url="/baro_companyInfo?jurir_no={{ company.company_jurir_no }}">확인2</a>
+                            -->
+
                         </td>
-                        <!--추가, 임시로 뉴스 연결해둠-->
+
+
                         <td class="px-6 py-4 border-b whitespace-nowrap">
-                            <a href="/baro_news2?jurir_no={{ company.company_jurir_no }}"
-                            class="text-purple-500 hover:underline">등록</a>
+                            <a href="/baro_contact?jurir_no={{ company.company_jurir_no }}&register=true"
+                                class="text-purple-500 hover:underline">등록</a>
+
                         </td>
                         </td>
                     </tr>
@@ -233,7 +277,46 @@
     }
 
     document.getElementById('search_button').addEventListener('click', searchCompanies);
+
+
+    // 로딩 스피너 표시 함수
+    function showLoadingSpinner() {
+        document.getElementById('loading-modal').style.display = 'flex';
+        setTimeout(() => {
+            document.getElementById('loading-modal').style.display = 'none';
+        }, 5000); // 5초 후에 숨김
+    }
+
+    // 검색 버튼 클릭 시 로딩 스피너 표시
+    document.getElementById('search_button').addEventListener('click', function (event) {
+        event.preventDefault(); // 기본 동작 방지 (폼 제출 방지)
+        showLoadingSpinner();
+        // 검색 처리 로직 추가
+    });
+
+    // "확인" 링크 클릭 시 로딩 스피너 표시
+    document.querySelectorAll('.company-info-link').forEach(function (link) {
+        link.addEventListener('click', function (event) {
+            event.preventDefault(); // 기본 동작 방지 (링크 이동 방지)
+            showLoadingSpinner();
+            // 링크 클릭 처리 로직 추가
+            setTimeout(() => {
+                window.location.href = link.getAttribute('data-url'); // 이동할 URL로 변경
+            }, 5000); // 로딩 스피너가 사라진 후 이동
+        });
+    });
+
+
+
+
 </script>
+
+<div class="modal" id="loading-modal">
+    <div class="modal-content">
+        <div class="spinner"></div>
+        <p class="mt-4 text-white">잠시만 기다려 주세요...</p>
+    </div>
+</div>
 
 {% endblock %}
 {% include 'footer.html' %}

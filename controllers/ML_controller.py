@@ -63,55 +63,55 @@ async def train(request: Request):
         "username": username
     })
 
-@machineLearning.get("/predict/", response_class=HTMLResponse)
-async def predict(request: Request):
-    username = request.session.get("username")
-    return templates.TemplateResponse("ML_template/ML_creditViewWS.html", {"request": request, "username": username})
 
-@machineLearning.websocket("/ws/predict/")
-async def websocket_predict(websocket: WebSocket,request: Request, db: Session = Depends(get_db)):
-    username = request.session.get("username")
-    await websocket.accept()
-    start_time = time.time()
-    try:
-        if model_store["model"] is None or model_store["scaler"] is None:
-            await websocket.send_text(json.dumps({"error": "Model not trained yet. Please train the model first."}))
-            await websocket.close()
-            return
+## 웹소켓 방식 시간 지연등 감안하여 사용안함.
+# @machineLearning.get("/predict/", response_class=HTMLResponse)
+# async def predict(request: Request):
+#     return templates.TemplateResponse("ML_template/ML_creditViewWS.html", {"request": request})
 
-        error, predictions = generate_predictions(db, model_store["model"], model_store["scaler"])
+# @machineLearning.websocket("/ws/predict/")
+# async def websocket_predict(websocket: WebSocket, db: Session = Depends(get_db)):
+#     await websocket.accept()
+#     start_time = time.time()
+#     try:
+#         if model_store["model"] is None or model_store["scaler"] is None:
+#             await websocket.send_text(json.dumps({"error": "Model not trained yet. Please train the model first."}))
+#             await websocket.close()
+#             return
+
+#         error, predictions = generate_predictions(db, model_store["model"], model_store["scaler"])
         
-        if error:
-            await websocket.send_text(json.dumps(error))
-            await websocket.close()
-            return
+#         if error:
+#             await websocket.send_text(json.dumps(error))
+#             await websocket.close()
+#             return
 
-        for result in predictions:
-            await websocket.send_text(json.dumps(result))
-            await asyncio.sleep(0.1)
+#         for result in predictions:
+#             await websocket.send_text(json.dumps(result))
+#             await asyncio.sleep(0.1)
 
-        elapsed_time = time.time() - start_time
-        summary = {
-            "message": "completed",
-            "count": len(predictions),
-            "model_info": {
-                "model_name": model_store["model_info"]["model_name"],
-                "creation_date": model_store["model_info"]["creation_date"],
-                "n_estimators": model_store["model_info"]["n_estimators"],
-                "max_features": model_store["model_info"]["max_features"],
-                "n_samples": model_store["model_info"]["n_samples"]
-            },
-            "elapsed_time": round(elapsed_time, 2),
-            "username": username
-        }
-        await websocket.send_text(json.dumps(summary))
+#         elapsed_time = time.time() - start_time
+#         summary = {
+#             "message": "completed",
+#             "count": len(predictions),
+#             "model_info": {
+#                 "model_name": model_store["model_info"]["model_name"],
+#                 "creation_date": model_store["model_info"]["creation_date"],
+#                 "n_estimators": model_store["model_info"]["n_estimators"],
+#                 "max_features": model_store["model_info"]["max_features"],
+#                 "n_samples": model_store["model_info"]["n_samples"]
+#             },
+#             "elapsed_time": round(elapsed_time, 2)
+#         }
+#         await websocket.send_text(json.dumps(summary))
+
         
-        # Store the predictions in the global store
-        global predictions_store
-        predictions_store = predictions
+#         # Store the predictions in the global store
+#         global predictions_store
+#         predictions_store = predictions
 
-    except WebSocketDisconnect:
-        logger.info("WebSocket connection closed")
+#     except WebSocketDisconnect:
+#         logger.info("WebSocket connection closed")
         
 
 @machineLearning.get("/predict_all/", response_class=HTMLResponse)

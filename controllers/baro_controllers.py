@@ -8,7 +8,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import distinct, text, func
 from schemas.baro_schemas import CompanyInfoSchema
-from services_def.baro_service import get_autocomplete_suggestions, get_corp_info_code, get_corp_info_jurir_no, get_corp_info_name, get_company_info, get_stockgraph
+from services_def.baro_service import get_autocomplete_suggestions, get_corp_info_code, get_corp_info_jurir_no, get_corp_info_name, get_company_info, get_stockgraph, get_stockgraph1
 from services_def.baro_service import get_FS2023, get_FS2022, get_FS2021, get_FS2020, get_Stock_data, get_company_info_list, search_company, get_company_infoFS_list
 import logging
 from typing import Dict, List, Optional
@@ -67,7 +67,7 @@ async def read_company_info(request: Request, jurir_no: str = Query(...), db: Se
     FS2021 = get_FS2021(db, jurir_no)
     FS2020 = get_FS2020(db, jurir_no)
     stock_data=get_Stock_data(db, company_info.corp_code)
-    stockgraph = await get_stockgraph( company_info.stock_code)  # await 사용
+    stockgraph = await get_stockgraph1( company_info.stock_code)  # await 사용
     
     adres = company_info.adres
     kakao_map_api_key = os.getenv("KAKAO_MAP_API_KEY")
@@ -200,7 +200,7 @@ async def read_company_info(
                 FS2021 = get_FS2021(db, jurir_no)
                 FS2020 = get_FS2020(db, jurir_no)
                 stock_data = get_Stock_data(db, company_info.corp_code)
-                stockgraph = await get_stockgraph( company_info.stock_code)  # await 사용
+                stockgraph = await get_stockgraph1( company_info.stock_code)  # await 사용
                 
                 adres = company_info.adres
                 kakao_map_api_key = os.getenv("KAKAO_MAP_API_KEY")
@@ -383,7 +383,7 @@ async def autocomplete(
             LIMIT 10
         """
         )
-        results = db.execute(sql_query, {"query": f"{query}%"}).fetchall()
+        results = db.execute(sql_query, {"query": f"%{query}%"}).fetchall()
         return [row[0] for row in results]  # Return list of results
     finally:
         db.close()

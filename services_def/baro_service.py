@@ -1,4 +1,4 @@
-
+import yfinance as yf
 from datetime import datetime, timedelta
 from typing import Dict, List, Union
 from bs4 import BeautifulSoup
@@ -209,3 +209,33 @@ async def get_stockgraph(stock_code: str) -> Dict[str, List[Dict[str, Union[str,
 
     stock_data.reverse()  # 데이터를 오래된 순으로 정렬
     return {"stock_data": stock_data[:90]}  # 최대 90일치 데이터만 반환
+
+
+
+
+async def get_stockgraph1(stock_code: str) -> Dict[str, List[Dict[str, Union[str, float]]]]:
+    # 주식 코드에 올바른 접미사 추가
+    stock_code = stock_code if '.' in stock_code else f'{stock_code}.KS'  # 예: 한국 주식의 경우 ".KS" 또는 ".KQ"
+
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=90)
+
+    # yfinance를 사용하여 데이터 가져오기
+    ticker = yf.Ticker(stock_code)
+    hist = ticker.history(start=start_date.strftime('%Y-%m-%d'), end=end_date.strftime('%Y-%m-%d'))
+
+    # 데이터가 없는 경우 처리
+    if hist.empty:
+        raise ValueError(f"No data found for stock code: {stock_code}")
+
+    stock_data = []
+    for date, row in hist.iterrows():
+        stock_data.append({
+            "t": date.strftime('%Y-%m-%d'),
+            "o": row['Open'],
+            "h": row['High'],
+            "l": row['Low'],
+            "c": row['Close']
+        })
+
+    return {"stock_data": stock_data}
