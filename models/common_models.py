@@ -96,12 +96,6 @@ class Reply(Base):
     owner = relationship("User", back_populates="replies")
     qna = relationship("Qna", back_populates="replies")
 
-class Contact(Base):
-    __tablename__ = 'contacts'
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100), index=True)
-    email = Column(String(100), index=True)
-    message = Column(Text)
 
 class Post(Base):
     __tablename__ = "posts"
@@ -117,4 +111,14 @@ class Post(Base):
     user_rank = Column(String(50), nullable=False)
     corporation_name = Column(String(255), nullable=True)  # New Column
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+class BusinessCard(Base):
+    __tablename__ = "business_cards"
+
+    id = Column(Integer, primary_key=True, index=True)
+    filename = Column(String(255), nullable=False)  # 길이를 255로 지정
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    username = Column(String(100), nullable=False)  # 길이 지정
+
+    # Optional: you can add more fields based on requirements, e.g., company name, phone number, etc.
 

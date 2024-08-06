@@ -1,0 +1,67 @@
+<!-- news2.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ corporation_name }} 관련 뉴스</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .news-list {
+            margin-top: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .news-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .news-item:last-child {
+            border-bottom: none;
+        }
+        .news-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        .news-link {
+            color: #007bff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ corporation_name }} 관련 뉴스</h1>
+
+    <div class="news-list">
+        {% if error %}
+            <p style="color: red;">{{ error }}</p>
+        {% elif news %}
+            {% for article in news %}
+                <div class="news-item">
+                    <a href="{{ article.link }}" class="news-link" target="_blank">
+                        <p class="news-title">{{ article.title | safe }}</p>
+                    </a>
+                    <p>{{ article.description | safe }}</p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>관련 뉴스가 없습니다.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

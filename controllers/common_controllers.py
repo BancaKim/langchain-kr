@@ -1,3 +1,4 @@
+from datetime import datetime
 from email.mime.text import MIMEText
 import json
 import os
@@ -25,9 +26,11 @@ from fastapi import (
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, HTMLResponse
 from pydantic import BaseModel
-from sqlalchemy import or_
+from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
-from models.common_models import Branch, Contact, Position, Post, Rank, RegionGroup, RegionHeadquarter, User, Notice, Qna, Reply
+from database import SessionLocal
+from models.baro_models import CompanyInfo
+from models.common_models import Branch, BusinessCard, Position, Post, Rank, RegionGroup, RegionHeadquarter, User, Notice, Qna, Reply
 from services_def.dependencies import get_db, get_password_hash, verify_password
 from schemas.common_schemas import (
     UserCreate,
@@ -41,14 +44,25 @@ from services_def.email_utils import find_supervisor_email, send_email
 from services_def.connection_manager import manager
 import urllib.parse
 
-# logger = logging.getLogger('uvicorn.error')
-# logger.setLevel(logging.DEBUG)
+from services_def.news import fetch_naver_news
+
+logger = logging.getLogger('uvicorn.error')
+logger.setLevel(logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 load_dotenv()  # .env 파일 로드
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
+
+# 의존성 생성
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 # 파일 업로드 관련
@@ -865,13 +879,106 @@ async def websocket_endpoint(websocket: WebSocket, username: str):
         }))
 
 
-# 기능홈페이지
+# 기능홈페이지(임시)
 @router.get("/contact4")
 async def read_contact(request: Request):
     username = request.session.get("username")
     return templates.TemplateResponse(
         "contact/contact4.html", {"request": request, "username": username}
     )
+    
+# 기능홈페이지
+@router.get("/contact55")
+async def read_contact(request: Request):
+    username = request.session.get("username")
+    return templates.TemplateResponse(
+        "contact/contact55.html", {"request": request, "username": username}
+    )
+    
+# 기능홈페이지
+@router.get("/contact5")
+async def read_contact(request: Request, jurir_no: str = Query(...), db: Session = Depends(get_db)):
+    username = request.session.get("username")
+    company_info = db.query(CompanyInfo).filter(CompanyInfo.jurir_no == jurir_no).first()
+    if not company_info:
+        raise HTTPException(status_code=404, detail="Company not found")
+
+    kakao_map_api_key = os.getenv("KAKAO_MAP_API_KEY")
+    if not kakao_map_api_key:
+        raise HTTPException(status_code=500, detail="Kakao Map API key is not set")
+    
+    # 명함 데이터를 가져오기
+    business_cards = db.query(BusinessCard).all()
+    
+    logging.info(f"Address: {company_info.adres}")  # 디버깅을 위해 주소 출력
+    logging.info(f"API Key: {kakao_map_api_key}")  # API 키 확인
+    logging.info(f"Username: {username}")  # 사용자명 확인
+    
+    return templates.TemplateResponse(
+        "contact/contact5.html", 
+        {
+            "request": request, 
+            "username": username, 
+            "company_info": company_info,
+            "kakao_map_api_key": kakao_map_api_key,
+            "adres": company_info.adres,
+            "business_cards": business_cards  # 명함 데이터를 템플릿으로 전달
+        }
+    )
+
+
+@router.post("/contact5")
+async def show_company_details(
+    request: Request,
+    db: Session = Depends(get_db),
+    name: Optional[str] = Form(None),
+    search_type: Optional[str] = Form(None)
+):
+    username = request.session.get("username")
+    try:
+        company_info = None
+        news_articles = []
+        news_error = None
+        
+        if name:
+            if search_type == "company_name":
+                company_info = db.query(CompanyInfo).filter(func.trim(CompanyInfo.corp_name) == name).first()
+            elif search_type == "company_code":
+                company_info = db.query(CompanyInfo).filter(func.trim(CompanyInfo.corp_code) == name).first()
+        
+        if not company_info:
+            raise HTTPException(status_code=404, detail="Company not found")
+        
+        # 뉴스 기사 가져오기
+        try:
+            news_articles = fetch_naver_news(company_info.corp_name)
+        except HTTPException as e:
+            news_error = str(e)
+        
+        kakao_map_api_key = os.getenv("KAKAO_MAP_API_KEY")
+        if not kakao_map_api_key:
+            raise HTTPException(status_code=500, detail="Kakao Map API key is not set")
+        
+        # 명함 데이터를 가져오기
+        business_cards = db.query(BusinessCard).all()
+        
+        return templates.TemplateResponse(
+            "contact/contact5.html",
+            {
+                "request": request,
+                "username": username,
+                "company_info": company_info,                
+                "news": news_articles,
+                "corporation_name": company_info.corp_name,
+                "error": news_error if news_error else None,
+                "kakao_map_api_key": kakao_map_api_key,
+                "adres": company_info.adres,
+                "business_cards": business_cards  # 명함 데이터를 템플릿으로 전달
+            }
+        )
+    except Exception as e:
+        logging.error("An error occurred:", str(e))
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 # 비밀번호 가져오기, 채팅방 비밀번호
 CHAT_PASSWORD = os.getenv("CHAT_PASSWORD")
@@ -889,3 +996,50 @@ async def verify_password2(data: PasswordVerification):
     result = data.password == correct_password
     logging.info(f"Verifying password. Result: {result}")
     return {"success": result}
+
+@router.get("/news", response_class=HTMLResponse)
+async def show_news_page(request: Request):
+    return templates.TemplateResponse("contact/news.html", {"request": request})
+
+@router.post("/news", response_class=HTMLResponse)
+async def search_news(request: Request, corporation_name: str = Form(...)):
+    try:
+        news_articles = fetch_naver_news(corporation_name)
+        return templates.TemplateResponse("contact/news.html", {"request": request, "news": news_articles, "corporation_name": corporation_name})
+    except HTTPException as e:
+        return templates.TemplateResponse("contact/news.html", {"request": request, "error": str(e), "news": [], "corporation_name": corporation_name})
+
+@router.post("/upload-business-card")
+async def upload_business_card(
+    username: str = Form(...), 
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    try:
+        # 파일 저장
+        file_location = f"static/business_cards/{file.filename}"
+        with open(file_location, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        # 데이터베이스에 파일 정보 저장
+        business_card = BusinessCard(
+            filename=file.filename,
+            username=username,
+            created_at=datetime.utcnow()  # 현재 시간을 UTC로 저장
+        )
+        db.add(business_card)
+        db.commit()
+
+
+        # 명함 목록 페이지로 리디렉션
+        return RedirectResponse(url="/card", status_code=303)
+    except Exception as e:
+        db.rollback()  # 오류 발생 시 데이터베이스 롤백
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/card")
+async def show_cards(request: Request, db: Session = Depends(get_db)):
+    username = request.session.get("username")
+    cards = db.query(BusinessCard).all()
+    return templates.TemplateResponse("contact/card.html", {"request": request, "cards": cards, "username": username})
