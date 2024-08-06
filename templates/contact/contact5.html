@@ -1,0 +1,341 @@
+{% include 'header.html' %}
+
+{% block head %}
+<style>
+    #streamContent {
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    .equal-height {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .equal-height>div {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .container {
+        max-width: 80%;
+    }
+
+    .min-h-600 {
+        min-height: 600px;
+    }
+
+    .news-list {
+        margin-top: 20px;
+        width: 100%;
+        /* Changed from max-width to width for full width */
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+    }
+
+    .news-item {
+        margin-bottom: 20px;
+        padding: 15px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .news-title {
+        font-size: 20px;
+        /* Increased font size */
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 8px;
+        /* Add space between title and description */
+    }
+
+    .news-description {
+        margin-top: 5px;
+        font-size: 16px;
+        color: #555;
+    }
+
+    .news-link {
+        color: #007bff;
+        text-decoration: none;
+    }
+
+    .map-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 5px;
+    }
+
+    #map {
+        width: 100%;
+        height: 400px;
+    }
+</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/font.css">
+{% endblock %}
+
+{% block content %}
+<div class="w-full"
+    style="background-image: url('/static/images/home7.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 40vh;">
+    <div class="p-8 w-full max-w-screen-xl mx-auto">
+        <span class="block text-left text-xl mb-2">
+            <a href="/" class="mr-2 text-white ">홈 &nbsp; |</a>
+            <a href="/credit/creditReview" class="ml-2 text-white">섭외등록 &nbsp; |</a>
+            <span class="text-white"> &nbsp; 등록조회</span>
+        </span>
+        <br><br><br><br>
+
+        <div class="text-center mb-4">
+            <h1 class="text-5xl font-bold text-white">섭외등록</h1>
+            <h2></h2>
+        </div>
+        <br><br><br>
+    </div>
+</div>
+<br>
+
+<div class="container mx-auto my-8 px-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 equal-height">
+        <!-- 기업정보 영역 -->
+        <div class="col-span-1 flex flex-col">
+            <div class="flex-1 bg-white rounded-lg shadow-lg">
+                <div class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg">
+                    <h2 class="text-xl font-semibold text-gray-800">기본 정보</h2>
+                </div>
+                <div class="p-6">
+                    {% if company_info %}
+                    <br>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li>
+                            <p class="text-lg font-semibold mb-4">기업명: {{ company_info.corp_name }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">대표: {{ company_info.ceo_nm }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">법인구분:
+                                {% if company_info.corp_cls == 'Y' %}
+                                유가 (Y)
+                                {% elif company_info.corp_cls == 'K' %}
+                                코스닥 (K)
+                                {% elif company_info.corp_cls == 'N' %}
+                                코넥스 (N)
+                                {% elif company_info.corp_cls == 'E' %}
+                                기타 (E)
+                                {% else %}
+                                {{ company_info.corp_cls }}
+                                {% endif %}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">주소: {{ company_info.adres }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">홈페이지: {{ company_info.hm_url }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">H.P: {{ company_info.phn_no }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">Fax: {{ company_info.fax_no }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">산업코드: {{ company_info.induty_code }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">법인번호: {{ company_info.jurir_no }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">설립일: {{ company_info.est_dt }}</p>
+                        </li>
+                    </ul>
+                    {% else %}
+                    <p class="text-gray-600">해당 기업은 금융감독원(Dart API)에서 정보를 제공받을 수 없습니다.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 스트리밍된 콘텐츠가 이곳에 삽입됩니다 -->
+        <div id="streamContent" class="col-span-2 flex flex-col">
+            <!-- 스트리밍된 콘텐츠가 이곳에 삽입됩니다 -->
+        </div>
+    </div>
+
+    <br>
+
+    <!-- 명함집 섹션 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 equal-height">
+        <div class="col-span-1 flex flex-col">
+            <!-- 명함집 섹션 -->
+            <div class="flex-1 bg-white rounded-lg shadow-lg mb-6">
+                <div class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg">
+                    <h2 class="text-xl font-semibold text-gray-800">주요 임직원 명함집</h2>
+                </div>
+                <div class="p-6 grid grid-cols-1 gap-8">
+                    <!-- 각각의 명함 썸네일을 세로로 정렬 -->
+                    {% for card in business_cards %}
+                    <div class="relative overflow-hidden transform transition duration-500 hover:scale-110">
+                        <a href="/card">
+                            <img src="/static/business_cards/{{ card.filename }}" alt="Business Card"
+                                class="w-full h-auto object-cover rounded-lg shadow-md">
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+
+
+        </div>
+
+        <!-- 빈 공간으로 간격 조절 -->
+        <div class="col-span-2 flex flex-col">
+            <!-- 여기에 다른 콘텐츠를 추가하거나 빈 공간으로 남겨둘 수 있습니다 -->
+        </div>
+    </div>
+
+    <br>
+
+    <!-- 뉴스 섹션 -->
+    <div class="flex-1 bg-white rounded-lg shadow-lg">
+        <div class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg">
+            <h2 class="text-xl font-semibold text-gray-800">{{ corporation_name }} 관련 뉴스</h2>
+        </div>
+        <div class="p-6">
+            <div class="news-list">
+                {% if error %}
+                <p style="color: red;">{{ error }}</p>
+                {% elif news %}
+                {% for article in news %}
+                <div class="news-item">
+                    <a href="{{ article.link }}" class="news-link" target="_blank">
+                        <p class="news-title">{{ article.title | safe }}</p>
+                    </a>
+                    <p class="news-description">{{ article.description | safe }}</p>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p>관련 뉴스가 없습니다.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+
+
+    <br><br>
+
+    <!-- Kakao Map Section -->
+    <div class="box bg-white p-6 rounded-lg shadow-md">
+        <section class="notice mb-6">
+            <div class="page-title">
+                <div class="container">
+                    <h3 class="text-3xl font-bold mb-4">상세 주소</h3>
+                </div>
+            </div>
+
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+        </section>
+    </div>
+
+    <style>
+        .map-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 5px;
+        }
+
+        #map {
+            width: 100%;
+            height: 400px;
+        }
+    </style>
+
+    <script type="text/javascript"
+        src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_map_api_key }}&libraries=services"></script>
+
+    <script>
+        // 카카오 맵 초기화
+        var mapContainer = document.getElementById('map');
+        var mapOption = {
+            center: new kakao.maps.LatLng(37.520877, 126.927907), // 초기 중심 좌표
+            level: 5 // 초기 확대 수준
+        };
+        var map = new kakao.maps.Map(mapContainer, mapOption);
+
+        // 주소-좌표 변환 객체를 생성
+        var geocoder = new kakao.maps.services.Geocoder();
+
+        // 주소 검색 함수
+        function searchAddress(address) {
+            geocoder.addressSearch(address, function (result, status) {
+                if (status === kakao.maps.services.Status.OK) {
+                    var bounds = new kakao.maps.LatLngBounds();
+                    for (var i = 0; i < result.length; i++) {
+                        displayMarker(result[i]);
+                        bounds.extend(new kakao.maps.LatLng(result[i].y, result[i].x));
+                    }
+                    map.setBounds(bounds);
+                } else {
+                    alert('주소 검색 결과가 없습니다.');
+                }
+            });
+        }
+
+        // 지도에 마커를 표시하는 함수
+        function displayMarker(place) {
+            var marker = new kakao.maps.Marker({
+                map: map,
+                position: new kakao.maps.LatLng(place.y, place.x)
+            });
+
+            // 마커에 클릭 이벤트를 등록
+            kakao.maps.event.addListener(marker, 'click', function () {
+                var infowindow = new kakao.maps.InfoWindow({ zIndex: 1 });
+                infowindow.setContent('<div style="padding:5px;font-size:12px;">' + place.address_name + '</div>');
+                infowindow.open(map, marker);
+            });
+        }
+
+        // 페이지 로드 시 주소 검색 수행
+        document.addEventListener('DOMContentLoaded', function () {
+            const address = "{{ adres }}"; // 주소를 템플릿 변수로 받아옴
+            console.log(address);
+            searchAddress(address);
+        });
+    </script>
+</div>
+
+<br><br>
+
+<div class="btn-group my-4 flex justify-center">
+    <button onclick="history.back()"
+        class="px-4 py-2 text-white rounded-md hover:bg-[#6a46b0] focus:ring-4 focus:ring-[#9a7ce0] focus:outline-none"
+        style="background-color: #7F56D9;">
+        뒤로가기
+    </button>
+
+    &nbsp; &nbsp; &nbsp; &nbsp;
+
+    <button onclick="window.location.href='/baro_companyList';"
+        class="px-4 py-2 text-white rounded-md hover:bg-[#6a46b0] focus:ring-4 focus:ring-[#9a7ce0] focus:outline-none"
+        style="background-color: #7F56D9;">
+        바로등급
+    </button>
+</div>
+
+<br><br><br><br>
+
+{% endblock %}
+
+{% include 'footer.html' %}

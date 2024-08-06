@@ -13,6 +13,7 @@ from services_def.baro_service import get_FS2023, get_FS2022, get_FS2021, get_FS
 import logging
 from typing import Dict, List, Optional
 from models.baro_models import CompanyInfo
+from services_def.news import fetch_naver_news
 
 
 logging.basicConfig(level=logging.INFO)
@@ -333,6 +334,22 @@ async def get_map2(request: Request, jurir_no: str = Query(...), db: Session = D
     kakao_map_api_key = os.getenv("KAKAO_MAP_API_KEY")
     return templates.TemplateResponse("contact/map2.html", {"request": request, "kakao_map_api_key": kakao_map_api_key, "adres": adres})
 
+# 법인명으로 뉴스 검색
+@baro.get("/baro_news2", response_class=HTMLResponse)
+async def search_news_by_jurir_no(request: Request, jurir_no: str = Query(...), db: Session = Depends(get_db)):
+    # 데이터베이스에서 법인명을 조회
+    company_info = db.query(CompanyInfo).filter(CompanyInfo.jurir_no == jurir_no).first()
+    if not company_info:
+        raise HTTPException(status_code=404, detail="Company not found")
+    
+    
+    try:
+        news_articles = fetch_naver_news(company_info.corp_name)
+        # print(f"News articles fetched for {company_info.corp_name}: {news_articles}")  # 디버깅용 로그 추가
+        return templates.TemplateResponse("contact/news2.html", {"request": request, "news": news_articles, "corporation_name": company_info.corp_name})
+    except HTTPException as e:
+        return templates.TemplateResponse("contact/news2.html", {"request": request, "error": str(e), "news": [], "corporation_name": company_info.corp_name})
+# 철민 수정끝
     
 @baro.get("/test1234")
 async def read_join(request: Request):
