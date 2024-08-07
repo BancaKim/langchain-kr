@@ -1,42 +1,14 @@
-function searchCorp() {
-    const searchType = document.getElementById('search_type').value;
-    const searchValue = document.getElementById('company_name').value;
-
-    fetch(`/credit_companyinfo?search_type=${searchType}&search_value=${searchValue}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                document.getElementById('result').innerHTML = `<p>${data.error}</p>`;
-            } else {
-                document.getElementById('result').innerHTML = `
-                    <p>report_num: ${data.report_num}</p>
-                    <p>corp_code: ${data.corp_code}</p>
-                    <p>corp_name: ${data.corp_name}</p>
-                    <p>report_nm: ${data.report_nm}</p>
-                    <p>rcept_no: ${data.rcept_no}</p>
-                    <p>rcept_dt: ${data.rcept_dt}</p>
-                    <p>report_content: ${data.report_content}</p>
-                `;
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            document.getElementById('result').innerHTML = `<p>Something went wrong</p>`;
-        });
-}
-
-
 document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.getElementById('company_name');
-    const searchType = document.getElementById('search_type');
-    const resultContainer = document.getElementById('result');
+    const resultContainer = document.getElementById('autocomplete-results');
+    const searchTypeSelect = document.getElementById('search_type');
 
     searchInput.addEventListener('input', function () {
         const query = searchInput.value;
-        const type = searchType.value;
+        const searchType = searchTypeSelect.value;  // Get the selected search type
 
         if (query.length >= 1) {
-            fetch(`/autocomplete?search_type=${type}&query=${query}`)
+            fetch(`../autocomplete?query=${query}&search_type=${searchType}`)
                 .then(response => response.json())
                 .then(data => {
                     displaySuggestions(data);
@@ -45,7 +17,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     console.error('Error:', error);
                 });
         } else {
-            resultContainer.innerHTML = ''; // 입력값이 없으면 결과를 비웁니다.
+            resultContainer.innerHTML = ''; // Clear results if input is empty
+            resultContainer.classList.add('hidden'); // Hide the results
         }
     });
 
@@ -54,19 +27,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (suggestions.length > 0) {
             const list = document.createElement('ul');
-            list.classList.add('suggestions-list');
+            list.classList.add('list-none', 'p-0', 'm-0');
 
             suggestions.forEach(item => {
                 const listItem = document.createElement('li');
                 listItem.textContent = item;
+                listItem.classList.add('p-2', 'cursor-pointer', 'hover:bg-gray-100');
                 listItem.addEventListener('click', function () {
                     searchInput.value = item;
-                    resultContainer.innerHTML = ''; // 선택하면 결과를 비웁니다.
+                    resultContainer.innerHTML = ''; // Clear results when an item is selected
+                    resultContainer.classList.add('hidden'); // Hide the results
                 });
                 list.appendChild(listItem);
             });
 
             resultContainer.appendChild(list);
+            resultContainer.classList.remove('hidden'); // Show the results
+        } else {
+            resultContainer.classList.add('hidden'); // Hide the results if no suggestions
         }
     }
 });

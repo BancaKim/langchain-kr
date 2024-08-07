@@ -1,6 +1,4 @@
-{% extends "base.html" %}
-
-{% block title %}AI심사보고서{% endblock %}
+{% include 'header.html' %}
 
 {% block head %}
 <meta charset="UTF-8">
@@ -8,50 +6,72 @@
 <link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
 <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
 <link rel="stylesheet" href="/static/css/font.css">
+<script src="/static/js/AI_search.js" defer></script>
 {% endblock %}
 
 {% block content %}
 
-<br><br>
-<span class="block text-right text-xl mb-2">AI심사보고서 > 업체검색</span>
-<br><br>
-<div class="text-center mb-4">
-    <h1 class="text-5xl font-bold">심사보고서 업체 검색</h1>
-</div>
-<br><br>
+
+<div class="w-full" style="background-image: url('/static/images/home7.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 50vh;">
+    <div class="p-8 w-full max-w-screen-xl mx-auto" >
+
+        <span class="block text-left text-xl mb-2">
+            <a href="/" class="mr-2 text-white ">홈  &nbsp; |</a> 
+            <a href="/credit/creditReview" class="ml-2 text-white">AI심사보고서</a>
+        </span>
+        <br><br><br>
 
 
-
-<!-- 검색란 -->
-
-<div class="w-full max-w-4xl mx-auto">
-    <div class="flex relative">
-        <div class="relative w-48">
-            <select id="search_type"
-                class="block w-full py-2.5 px-4 text-base font-medium text-gray-900 bg-gray-100 border border-gray-300 rounded-s-lg hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600">
-                <option value="company_name">회사명</option>
-                <option value="company_code">회사코드</option>
-            </select>
+        <div class="text-center mb-4">
+            <h1 class="text-5xl font-bold text-white">AI 기반 기업여신 심사 보고서</h1>
         </div>
-        <input type="search" id="company_name" name="company_name"
-            class="block p-2.5 w-full text-base text-gray-900 bg-gray-50 rounded-e-lg border-s-gray-50 border-s-2 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-s-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
-            placeholder="정보를 입력하세요..." required />
-        <button type="submit" id="search_button"
-            class="absolute top-0 end-0 p-2.5 text-sm font-medium h-full text-white bg-purple-700 rounded-e-lg border border-blue-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
-            </svg>
-        </button>
+        <br><br><br>
+
+
+        <!-- 검색란 -->
+        <div class="w-full max-w-4xl mx-auto">
+            <div class="relative flex">
+                <!-- 검색 타입 선택 -->
+                <div class="relative w-48">
+                    <select id="search_type"
+                        class="block w-full py-2.5 px-4 text-base font-medium text-gray-900 bg-gray-50 border-gray-300 rounded-s-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600">
+                        <option value="company_name">회사명</option>
+                        <option value="company_code">회사코드</option>
+                    </select>
+                </div>
+                <!-- 검색 입력 필드 -->
+                <div class="relative w-full">
+                    <input type="search" id="company_name" name="company_name"
+                        class="block p-2.5 w-full text-base text-gray-900 bg-gray-50 rounded-e-lg border-s-gray-50 border-s-2 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-s-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
+                        placeholder="정보를 입력하세요..." required />
+                    <!-- 자동완성 결과 표시 -->
+                    <div id="autocomplete-results"
+                        class="absolute top-full left-0 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-10 hidden">
+                        <!-- JavaScript로 동적으로 결과 항목을 추가합니다. -->
+                    </div>
+                </div>
+                <!-- 검색 버튼 -->
+                <button type="submit" id="search_button"
+                    class="absolute top-0 end-0 p-2.5 text-sm font-medium h-full text-white bg-purple-700 rounded-e-lg border border-blue-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 20 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <br><br><br>
     </div>
 </div>
 
-<br><br><br>
 
+<br><br><br>
 <div class=" flex justify-center">
-    <table class="w-1600 text-base text-left rtl:text-right text-gray-500 dark:text-gray-400" id="company_table">
+    <table class="w-1600 text-base text-left rtl:text-right text-gray-800 dark:text-gray-600" id="company_table">
         <thead
-            class="shadow-md sm:rounded-lg text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            class="shadow-md sm:rounded-lg text-s text-gray-800 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-600">
             <tr>
                 <th scope="col" class="px-6 py-3">
                     순서
@@ -99,7 +119,7 @@
                     {{reportContent.rcept_dt}}
                 </td>
                 <td class="px-6 py-4">
-                    <a href="/credit/reviewDetail/{{reportContent.rcept_no}}"
+                    <a href="/credit/reviewDetail/{{reportContent.rcept_no}}/{{reportContent.corp_code}}"
                         class="font-medium text-purple-600 dark:text-purple-400 hover:underline">보고서 생성</a>
                 </td>
             </tr>
@@ -115,17 +135,18 @@
     {% for i in range(1, total_pages + 1) %}
     {% if i == page %}
     <span
-        class="py-2 px-4 mx-1 text-gray-700 border border-gray-300 bg-gray-200 rounded-lg dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600">{{
+        class="py-2 px-4 mx-1 text-gray-700 border border-gray-100 bg-gray-50 rounded-lg dark:bg-gray-200 dark:text-gray-300 dark:border-gray-100">{{
         i }}</span>
     {% else %}
     <a href="?page={{ i }}&name={{ search_term or '' }}"
-        class="py-2 px-4 mx-1 text-gray-500 border border-gray-300 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:text-white">{{
+        class="py-2 px-4 mx-1 text-gray-500 border border-gray-100 rounded-lg hover:bg-gray-200 dark:text-gray-400 dark:border-gray-100 dark:hover:bg-gray-200 dark:hover:text-white">{{
         i }}</a>
     {% endif %}
     {% endfor %}
 </div>
 
-<br><br><br><br><br><br>
+
+
 
 
 <!-- 페이지 함수-->
@@ -133,10 +154,31 @@
     let currentPage = {{ page }};
     const perPage = {{ per_page }};
 
+ /*   
     async function searchCompanies() {
         const name = document.getElementById('company_name').value;
         try {
             const response = await fetch(`/credit/api/companies/search?name=${encodeURIComponent(name)}&page=1&per_page=${perPage}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            updateTable(data);
+            updatePagination(data);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    } 
+*/
+    async function searchCompanies() {
+        const name = document.getElementById('company_name').value;
+        const searchType = document.getElementById('search_type').value; // Get the selected search type
+        //const page = currentPage;
+         const perPage = 10; // Or dynamically set this value if needed
+         const page = 1; // Or dynamically set this value if using pagination
+
+        try {
+            const response = await fetch(`/credit/api/companies/search?name=${encodeURIComponent(name)}&search_type=${encodeURIComponent(searchType)}&page=${page}&per_page=${perPage}`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -151,7 +193,7 @@
     function updateTable(data) {
         const tableBody = document.getElementById('company_list');
         tableBody.innerHTML = '';
-        data.reportContents.forEach((company, index) => {
+        data.reportContents.forEach((company) => {
             const row = `
             <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                 <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
@@ -173,11 +215,11 @@
                     ${company.rcept_dt}
                 </td>
                 <td class="px-6 py-4">
-                    <a href="/credit/reviewDetail/${company.rcept_no}"
+                    <a href="/credit/reviewDetail/${company.rcept_no}/${company.corp_code}"
                         class="font-medium text-purple-600 dark:text-purple-400 hover:underline">보고서 생성</a>
                 </td>
             </tr>
-                `;
+            `;
             tableBody.innerHTML += row;
         });
     }
@@ -194,11 +236,13 @@
         }
     }
 
+   
     function changePage(page) {
         currentPage = page;
         const name = document.getElementById('company_name').value;
         window.location.href = `/credit/creditReview/?page=${page}&name=${encodeURIComponent(name)}`;
     }
+
 
     document.getElementById('search_button').addEventListener('click', searchCompanies);
 
@@ -206,8 +250,48 @@
         if (e.key === 'Enter') {
             searchCompanies();
         }
+    }); 
+
+    // 자동완성 함수
+    document.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('company_name');
+        const resultsContainer = document.getElementById('autocomplete-results');
+
+        input.addEventListener('input', async () => {
+            const query = input.value;
+
+            if (query.length > 2) {
+                // 서버에서 자동완성 결과를 가져옵니다.
+                const response = await fetch(`/api/autocomplete?query=${encodeURIComponent(query)}`);
+                const results = await response.json();
+
+                // 자동완성 결과를 동적으로 생성합니다.
+                resultsContainer.innerHTML = results.map(result => `
+                    <a href="#" class="block px-4 py-2 text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600">
+                        ${result}
+                    </a>
+                `).join('');
+
+                resultsContainer.classList.remove('hidden');
+            } else {
+                resultsContainer.classList.add('hidden');
+            }
+        });
+
+        // 입력 필드 외부 클릭 시 자동완성 결과 숨기기
+        document.addEventListener('click', (event) => {
+            if (!resultsContainer.contains(event.target) && event.target !== input) {
+                resultsContainer.classList.add('hidden');
+            }
+        });
     });
+
+
+
 </script>
 
 
 {% endblock %}
+
+
+{% include 'footer.html' %}

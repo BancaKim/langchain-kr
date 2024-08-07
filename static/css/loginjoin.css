@@ -1,20 +1,22 @@
 @font-face {
-    font-family: 'NPSfontBold';
-    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2310@1.0/NPSfontBold.woff2') format('woff2');
-    font-weight: 700;
+    font-family: 'Freesentation-9Black';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-9Black.woff2') format('woff2');
+    font-weight: 900;
     font-style: normal;
-}
+    }
     body{
-    font-family: 'NPSfontBold';
-}  
+    font-family: 'Freesentation-9Black';
+    font-size: 18px; /* 기본 폰트 크기 설정 */
+    line-height: 1.6; /* 줄 높이 설정 */
+    }
 
-home-container {
+.home-container {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: calc(100vh - 60px); /* 네비게이션 바 높이를 고려 */
     padding: 20px;
-    background-color: #f8f9fa;
+    background-color: #f8f9fa;    
 }
 
 .home-content {
@@ -25,7 +27,7 @@ home-container {
     background-color: #ffffff;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+    overflow: hidden;   
 }
 
 .home-left-section {

@@ -15,9 +15,7 @@ from langchain.prompts import PromptTemplate
 from langchain.chains.llm import LLMChain
 from langchain.chat_models import ChatOpenAI
 from langchain.chains.combine_documents.stuff import StuffDocumentsChain
-from sqlalchemy import Column, DateTime, Integer, String, Text
-from database import Base, SessionLocal
-from typing import List, Dict, Any
+from database import SessionLocal
 
 from models.credit_models import ReportContent
 

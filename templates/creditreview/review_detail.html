@@ -1,6 +1,4 @@
-{% extends "base.html" %}
-
-{% block title %}AI심사보고서{% endblock %}
+{% include 'header.html' %}
 
 {% block head %}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -24,6 +22,9 @@
 
             try {
                 const response = await fetch('/credit/stream-content/{{reportContent.rcept_no}}');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
 
@@ -53,8 +54,96 @@
         white-space: pre-wrap;
         word-break: break-word;
     }
+
+
+    .equal-height {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .equal-height > div {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .container {
+        max-width: 80%;
+    }
+
+    .min-h-600 {
+        min-height: 600px;
+    }
+
+
+    /* 채팅창 스타일 */
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 500px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .chat-messages {
+        flex: 1;
+        padding: 16px;
+        overflow-y: auto;
+        background-color: #f9f9f9;
+    }
+
+    .chat-message {
+        margin-bottom: 16px;
+    }
+
+    .chat-message.user {
+        text-align: right;
+    }
+
+    .chat-message p {
+        display: inline-block;
+        padding: 12px;
+        border-radius: 8px;
+        max-width: 70%;
+    }
+
+    .chat-message.user p {
+        background-color: #7f56d9;
+        color: #fff;
+    }
+
+    .chat-message.bot p {
+        background-color: #e5e7eb;
+        color: #000;
+    }
+
+    .chat-input {
+        display: flex;
+        border-top: 1px solid #ccc;
+        background-color: #fff;
+    }
+
+    .chat-input input {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: 0;
+        outline: none;
+    }
+
+    .chat-input button {
+        padding: 12px 20px;
+        border: none;
+        background-color: #7f56d9;
+        color: #fff;
+        cursor: pointer;
+    }
+
+    .chat-input button:hover {
+        background-color: #6a46b0;
+    }
 </style>
-<link rel="stylesheet" href="/static/css/review_detail.css">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
@@ -65,28 +154,133 @@
 
 
 {% block content %}
+<div class="w-full" style="background-image: url('/static/images/home7.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 40vh;">
+    <div class="p-8 w-full max-w-screen-xl mx-auto" >
 
-<br><br>
-<span class="block text-right text-xl mb-2">AI심사보고서 > 보고서 현황</span>
-<br><br>
-<div class="text-center mb-4">
-    <h1 class="text-5xl font-bold">심사보고서 종합의견</h1>
+        <span class="block text-left text-xl mb-2">
+            <a href="/" class="mr-2 text-white ">홈 &nbsp; |</a> 
+            <a href="/credit/creditReview" class="ml-2 text-white">AI심사보고서  &nbsp; |</a>
+            <span class="text-white"> &nbsp; 종합의견</span>
+        </span>
+        <br><br><br><br>
+
+
+        <div class="text-center mb-4">
+            <h1 class="text-5xl font-bold text-white">심사보고서 종합 의견</h1>
+            <h2></h2>
+        </div>
+        <br><br><br>
+    </div>
 </div>
-
 <br>
 
-<!--
-<p><strong>순서:</strong> {{reportContent.report_num}}</p>
-<p><strong>회사코드:</strong> {{reportContent.corp_code}}</p>
-<p><strong>회사명:</strong> {{reportContent.corp_name}}</p>
-<p><strong>보고서명:</strong> {{reportContent.report_nm}}</p>
-<p><strong>보고서번호:</strong> {{reportContent.rcept_no}}</p>
--->
+<div class="container mx-auto my-8 px-6">
 
-<div id="streamContent" 
-    class="max-w-4xl mx-auto my-8 p-6 bg-white rounded-lg shadow-md dark:bg-gray-800 dark:text-gray-200">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 equal-height">
+        <!-- 기업정보 영역 -->
+        <div class="col-span-1 flex flex-col space-y-6">
+            <div class="flex-1 bg-white rounded-lg shadow-lg">
+                <div class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg">
+                    <h2 class="text-xl font-semibold text-gray-800">기본 정보</h2>
+                </div>
+                <div class="p-6">
+                    {% if company_info %}
+                    <br>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li>
+                            <p class="text-lg font-semibold mb-4">기업명: {{ company_info.corp_name }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">대표: {{ company_info.ceo_nm }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">법인구분:
+                                {% if company_info.corp_cls == 'Y' %}
+                                유가 (Y)
+                                {% elif company_info.corp_cls == 'K' %}
+                                코스닥 (K)
+                                {% elif company_info.corp_cls == 'N' %}
+                                코넥스 (N)
+                                {% elif company_info.corp_cls == 'E' %}
+                                기타 (E)
+                                {% else %}
+                                {{ company_info.corp_cls }}
+                                {% endif %}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">주소: {{ company_info.adres }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">홈페이지: {{ company_info.hm_url }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">H.P: {{ company_info.phn_no }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">Fax: {{ company_info.fax_no }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">산업코드: {{ company_info.induty_code }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">법인번호: {{ company_info.jurir_no }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">설립일: {{ company_info.est_dt }}</p>
+                        </li>
+
+                        <!-- 채팅창 추가-->
+                        <li>
+                            <p class="text-lg font-semibold mb-4">AI 챗봇</p>
+                        </li>
+                            <div class="chat-container" style="height: 600px;">
+                                <div class="chat-messages"  id="chatMessages">
+                                    <div class="chat-message bot">
+                                        <p>안녕하세요! <br> AI 기업금융 전문가Spoon 입니다. 
+                                        <br> {{company_info.corp_name}}에 대해 궁금한 점이 있으신가요?</p>
+                                    </div>
+                                </div>
+                                <div class="chat-input">
+                                    <input type="text" id="chatInput" placeholder="메시지를 입력하세요...">
+                                    <button onclick="">전송</button>
+                                </div>
+                            </div>
+                    </ul>
+                    {% else %}
+                    <p class="text-gray-600">해당 기업은 금융감독원(Dart API)에서 정보를 제공받을 수 없습니다.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div id="streamContent" class="col-span-2 flex flex-col">
+            <!-- 스트리밍된 콘텐츠가 이곳에 삽입됩니다 -->
+        </div>
+    </div>
+
+    <br>
+
+    <div class="flex-1 bg-white rounded-lg shadow-lg">
+        <div class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg">
+            <h2 class="text-xl font-semibold text-gray-800">관심 뉴스</h2>
+        </div>
+        <div class="p-6">
+        뉴스 스크래핑 추가 예정
+        </div>
+    </div>
 </div>
 
+<style>
+    .container {
+        max-width: 80%;
+    }
+
+    .min-h-600 {
+        min-height: 600px;
+    }
+</style>
+
+<br><br>
 
 <div class="btn-group my-4 flex justify-center">
     <button onclick="history.back()"
@@ -94,9 +288,10 @@
         style="background-color: #7F56D9;">
         뒤로가기
     </button>
-    &nbsp;    &nbsp;
 
-    <button onclick="history.back()"
+    &nbsp; &nbsp; &nbsp; &nbsp;
+
+    <button onclick="window.location.href='/baro_companyList';"
         class="px-4 py-2 text-white rounded-md hover:bg-[#6a46b0] focus:ring-4 focus:ring-[#9a7ce0] focus:outline-none"
         style="background-color: #7F56D9;">
         바로등급
@@ -104,4 +299,8 @@
 
 </div>
 
+<br><br><br><br>
+
 {% endblock %}
+
+{% include 'footer.html' %}

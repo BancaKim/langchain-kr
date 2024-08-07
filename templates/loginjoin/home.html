@@ -6,31 +6,56 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/static/css/loginjoin.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/font.css">
+
+<style>
+    .home-left-section {
+        display: flex;
+        background-image: url('static/images/home4.png'); /* 배경 이미지 경로  8 */
+        background-size: cover; /* 배경 이미지가 div를 완전히 덮도록 설정 */
+        background-position: center; /* 배경 이미지의 중앙 정렬 */
+        background-repeat: no-repeat; /* 배경 이미지 반복 방지 */
+        padding: 20px; /* 내부 여백 추가 */
+        color: #fff; /* 텍스트 색상 설정 (이미지에 대비되도록) */
+        text-align: center; /* 텍스트 중앙 정렬 */
+        flex-direction: column; 
+        justify-content: center;
+    }
+</style>
 {% endblock %}
+
+
 {% block content %}
+
+
 <div class="home-container">
     <div class="home-content">
-        <div class="home-left-section">
-            <h1 class="home-title">기업금융 <br/><br/>Total-Solution Spoon</h1><br/>
-            <p class="home-description">기업금융을 보다 더 쉽게!</p>
+        <div class="home-left-section ">
+            <div class="text-center text-white p-8 ">
+                <h1 class="text-3xl mb-4">기업금융 <br>Total Solution Spoon</h1>
+                <p class="text-xl">기업금융을 보다 더 쉽게!</p>
+            </div>
         </div>
         <div class="home-right-section">
             <h2 class="home-welcome">Spoon 서비스에 오신 것을 환영합니다!</h2>
             <p class="home-subtitle">어려운 기업금융에 대한 솔루션을 제공하는 Spoon입니다.</p>
             <form id="homeLoginForm" action="/login" method="post" class="home-form">
                 <div class="home-form-group">
-                    <label for="username">사용자 이름:</label>
+                    <label for="username">ID</label>
                     <input type="text" id="username" name="username" required>
                 </div>
                 <div class="home-form-group">
-                    <label for="password">비밀번호:</label>
+                    <label for="password">PW</label>
                     <input type="password" id="password" name="password" required>
                 </div>
                 <div class="home-buttons">
                     <button type="submit" class="home-button">로그인</button>
                 </div>
             </form>
-            <a href="/join" class="home-signup-link">회원이 아직 아니신가요? <span>회원가입</span>하세요</a>
+            <a href="/join" class="home-signup-link text-gray-500 hover:underline">회원이 아직 아니신가요? 회원가입 바로가기</a>
         </div>
     </div>
 </div>
@@ -47,4 +72,6 @@
 </script>
 {% endif %}
 {% endblock %}
+
+
 {% include 'footer.html' %}

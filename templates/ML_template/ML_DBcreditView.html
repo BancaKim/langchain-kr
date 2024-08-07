@@ -1,0 +1,318 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Database Predictions</title>
+    <style>
+
+        .container {
+            display: flex;
+            margin: 0 auto;
+        }
+
+        .main-content {
+            width: 80%;
+            padding: 20px;
+            margin: 0 auto;
+            max-width: 1600px; /* 원하는 최대 너비 */
+
+        }
+
+        .button {
+            flex: 1; /* 버튼이 같은 비율로 확장 */
+            max-width: 200px; /* 버튼의 최대 너비 */
+            padding: 10px 20px; /* 버튼의 내측 여백 */
+            background-color: #495057;
+            color: white;
+            text-align: center;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            box-sizing: border-box;
+            font-size: 18x;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #6c757d;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px; /* 버튼 간격 */
+            padding: 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            margin: 0 auto;
+        }
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+
+        }
+        .spinner {
+            margin: 0 auto;
+            width: 50px;
+            height: 50px;
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #3498db;
+            border-radius: 50%;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            max-width: 1600px; /* 원하는 최대 너비 */
+
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        h1 {
+            margin-top: 20px;
+        }
+        .summary-cards {
+            display: flex;
+            justify-content: space-between;
+        }
+        .card {
+            flex: 1;
+            background-color: #e9ecef;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .card h3 {
+            margin-top: 0;
+        }
+
+        .bu {
+            flex: 1;
+            background-color: #EDEBFE;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .hhh {
+            text-align: center; /* 가운데 정렬 */
+            font-size: 3rem; /* 글자 크기 조정 */
+            color: #333; /* 글자 색상 */
+            margin: 20px 0; /* 상하 여백 */
+        }
+
+        .bg {
+            background-image: url('/static/images/admin1.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 40vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            color: white;
+        }
+        .title {
+            font-size: 4rem;
+            font-weight: bold;
+            margin: 30px 0;
+        }
+
+        .content {
+            max-width: 1200px;
+            width: 100%;
+        }
+    </style>
+    <!-- DataTables CSS -->
+     
+    <link rel="stylesheet" href="/static/css/font.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+    <!-- jQuery -->
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <!-- DataTables JS -->
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+    <script>
+        function startMachineLearning() {
+            document.getElementById('modal').style.display = 'block';
+            setTimeout(function() {
+                window.location.href = "/train/";
+            }, 1000);  // 연산이 시작된 후 1초 후에 페이지 이동 (테스트용, 실제 연산 시간에 맞게 조정 필요)
+        }
+        
+        $(document).ready(function() {
+            $('#resultsTable').DataTable();
+        });
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const rows = document.querySelectorAll("#resultsBody tr");
+
+            rows.forEach(row => {
+                const cells = Array.from(row.querySelectorAll("td")).slice(2); // Skip first two cells (법인번호, 법인명)
+                const values = cells.map(cell => parseFloat(cell.textContent) || 0);
+
+                // Find the indices of the top 3 values
+                const sortedIndices = values
+                    .map((value, index) => [value, index])
+                    .sort((a, b) => b[0] - a[0]);
+
+                const top3Indices = sortedIndices.slice(0, 3).map(item => item[1]);
+
+                // Apply background colors to top 3 values
+                top3Indices.forEach((index, i) => {
+                    if (i === 0) {
+                        cells[index].style.backgroundColor = "#ADB5BD"; // Highest value
+                    } else if (i === 1) {
+                        cells[index].style.backgroundColor = "#CED4DA"; // Second highest value
+                    } else if (i === 2) {
+                        cells[index].style.backgroundColor = "#DEE2E6"; // Third highest value
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+
+    {% include 'header.html' %}
+
+    
+    <br>
+    <div class="container">
+        
+    
+        <div class="main-content">
+            <div class="bg">
+                <div class="content">
+                    <div class="title">
+                        바로등급 모델 관리 화면
+                    </div>
+                </div>
+            </div>
+        
+            <br><br>
+
+            <h1>바로등급 개요</h1>
+            <div class="summary-cards">
+                <div class="card">
+                    <h3>ML 신용평가 모델 개요</h3>
+                    <p>적용 모델: RandomForestClassifier</p>
+                    <p>생성일 : 2024-08-01 10:31:52</p>
+                    <p>평가 업체 수 : 5,360</p>
+                    <p>모델 적합도 : 0.86</p>
+                </div>
+                <div class="card">
+                    <h3>기업정보 개요</h3>
+                    <p>자료 출처 : Open DART API</p>
+                    <p>주요 내용 : 법인번호, 주소, 상장여부 등</p>
+                    <p>등재 업체 수 : 104,574개</p>
+                </div>
+                <div class="card">
+                    <h3>기업 재무정보 개요</h3>
+                    <p>자료 출처 : 금융위원회_기업 재무정보 API</p>
+                    <p>주요 내용 : 주요 재무정보 8개 항목</p>
+                    <p>등재 업체 수 : 10,277개 </p>
+                    <p>가용 연도 : 2023, 2022, 2021, 2020</p>
+                </div>
+                <div class="card">
+                    <h3>주가 정보 개요</h3>
+                    <p>자료 출처 : FinanceDataReader 등</p>
+                    <p>주요 내용 : 기간별 수익률 등 12개 항목 </p>
+                    <p>등재 업체 수 : 2,680개 </p>
+                </div>
+            </div>
+            <div class="summary-cards">
+                <button class="bu" onclick="startMachineLearning()">신용평가 모델 바로가기</button>
+                <button class="bu">기업정보 업데이트<button>
+                <button class="bu">주가정보 업데이트</button>
+                <button class="bu">재무정보 업데이트</button>
+            </div>
+            <br><br>
+            <h1>바로등급 상세 현황</h1>
+            <table id="resultsTable" class="display">
+                <thead>
+                    <tr>
+                        <th>법인번호</th>
+                        <th>법인명</th>
+                        <th>AAA</th>
+                        <th>AA+</th>
+                        <th>AA</th>
+                        <th>AA-</th>
+                        <th>A+</th>
+                        <th>A</th>
+                        <th>A-</th>
+                        <th>BBB+</th>
+                        <th>BBB</th>
+                        <th>BBB-</th>
+                        <th>BB+</th>
+                        <th>BB</th>
+                        <th>BB-</th>
+                        <th>B+</th>
+                        <th>B</th>
+                        <th>B-</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsBody">
+                    {% for result in predictions %}
+                        <tr>
+                            <td>{{ result['corporate_number'] }}</td>
+                            <td>{{ result['company_name'] }}</td>
+                            <td>{{ result['AAA'] }}</td>
+                            <td>{{ result['AA_plus'] }}</td>
+                            <td>{{ result['AA'] }}</td>
+                            <td>{{ result['AA_minus'] }}</td>
+                            <td>{{ result['A_plus'] }}</td>
+                            <td>{{ result['A'] }}</td>
+                            <td>{{ result['A_minus'] }}</td>
+                            <td>{{ result['BBB_plus'] }}</td>
+                            <td>{{ result['BBB'] }}</td>
+                            <td>{{ result['BBB_minus'] }}</td>
+                            <td>{{ result['BB_plus'] }}</td>
+                            <td>{{ result['BB'] }}</td>
+                            <td>{{ result['BB_minus'] }}</td>
+                            <td>{{ result['B_plus'] }}</td>
+                            <td>{{ result['B'] }}</td>
+                            <td>{{ result['B_minus'] }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- 모달 -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="spinner"></div>
+            <p>바로등급 Model 생성 중..</p>
+        </div>
+    </div>
+
+<br><br>
+</body>
+</html>

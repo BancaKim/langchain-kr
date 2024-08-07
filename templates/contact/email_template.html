@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+</head>
+<body style="font-family: 'Malgun Gothic', Arial, sans-serif; line-height: 1.6; background-color: #f4f4f4; margin: 0; padding: 0;">
+    <table cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+        <tr>
+            <td style="padding: 40px;">
+                <h1 style="color: #333333; font-size: 24px; margin-bottom: 20px; text-align: center;">{{ title }}</h1>
+                <ul style="list-style-type: none; padding: 0; margin: 0 0 20px 0;">
+                    <li style="color: #666666; font-size: 16px; margin-bottom: 10px; padding: 10px; background-color: #f9f9f9; border-left: 4px solid #9E77ED;">
+                        <strong style="color: #333;">작성자:</strong> {{ username }}
+                    </li>
+                    <li style="color: #666666; font-size: 16px; margin-bottom: 10px; padding: 10px; background-color: #f9f9f9; border-left: 4px solid #9E77ED;">
+                        <strong style="color: #333;">내용:</strong> {{ content }}
+                    </li>
+                    <li style="color: #666666; font-size: 16px; margin-bottom: 10px; padding: 10px; background-color: #f9f9f9; border-left: 4px solid #9E77ED;">
+                        <strong style="color: #333;">법인명:</strong> {{ corporation_name }}
+                    </li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color: #9E77ED; color: white; text-align: center; padding: 15px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+                <p style="margin: 0; font-size: 14px;">이 메일은 Spoon 서비스를 통해 자동 생성되었습니다.</p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
