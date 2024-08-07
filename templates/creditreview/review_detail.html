@@ -240,9 +240,10 @@
                                         <br> {{company_info.corp_name}}에 대해 궁금한 점이 있으신가요?</p>
                                     </div>
                                 </div>
+                                <div class="chatchat-container" id="chatContainer"></div>
                                 <div class="chat-input">
-                                    <input type="text" id="chatInput" placeholder="메시지를 입력하세요...">
-                                    <button onclick="">전송</button>
+                                    <input type="text" id="userInput" placeholder="질문을 입력하세요...">
+                                    <button id="sendButton">전송</button>
                                 </div>
                             </div>
                     </ul>
@@ -252,6 +253,51 @@
                 </div>
             </div>
         </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const chatContainer = document.getElementById('chatContainer');
+                const userInput = document.getElementById('userInput');
+                const sendButton = document.getElementById('sendButton');
+        
+                sendButton.addEventListener('click', sendMessage);
+                userInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+        
+                function sendMessage() {
+                    const message = userInput.value.trim();
+                    console.log(message)
+                    if (message) {
+                        addMessage('user', message);
+                        fetchBotResponse(message);
+                        userInput.value = '';
+                    }
+                }
+        
+                function addMessage(sender, content) {
+                    console.log("addMessage:")
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `chat-message ${sender}-message`;
+                    messageDiv.textContent = content;
+                    chatContainer.appendChild(messageDiv);
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
+        
+                async function fetchBotResponse(message) {
+                    try {
+                        const response = await fetch(`/credit/chatMessage?corp_code={{ company_info.corp_code }}&user_input=${encodeURIComponent(message)}`);
+                        const data = await response.json();
+                        addMessage('bot', data.answer);
+                    } catch (error) {
+                        console.error('Error:', error);
+                        addMessage('bot', '죄송합니다. 오류가 발생했습니다.');
+                    }
+                }
+            });
+        </script>
 
         <div id="streamContent" class="col-span-2 flex flex-col">
             <!-- 스트리밍된 콘텐츠가 이곳에 삽입됩니다 -->
