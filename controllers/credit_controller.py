@@ -1,6 +1,6 @@
 import asyncio
 from math import ceil
-from typing import List, Optional
+from typing import List, Optional, TypedDict
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy import text
@@ -10,7 +10,22 @@ from database import SessionLocal
 from models.baro_models import CompanyInfo
 from models.credit_models import ReportContent
 from dotenv import load_dotenv
+from services_def.chatbot_logic import generate_response, setup_chatbot
 from services_def.dependencies import get_db
+from langchain_upstage import UpstageGroundednessCheck
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import FAISS
+from services_def.rag.utils import format_docs, format_searched_docs
+from langchain import hub
+from langchain_openai import ChatOpenAI
+from langchain_core.output_parsers import StrOutputParser
+from operator import itemgetter
+from langchain_core.prompts import ChatPromptTemplate
+from langgraph.graph import END, StateGraph
+from langgraph.checkpoint.memory import MemorySaver
+from langchain_core.runnables import RunnableConfig
+from langchain_community.tools.tavily_search import TavilySearchResults
 
 credit = APIRouter(prefix="/credit")
 templates = Jinja2Templates(directory="templates")
@@ -269,3 +284,18 @@ async def autocomplete(
         return [row[0] for row in results]  # Return list of results
     finally:
         db.close()
+
+@credit.get("/chatMessage")
+async def getMessage(    
+    request: Request,
+    corp_code: str = None,
+    user_input: str = None,
+    db: Session = Depends(get_db)):
+    
+    reportContent = db.query(ReportContent).filter(ReportContent.corp_code == corp_code).first()
+    content = reportContent.report_content
+    chatbot_app = setup_chatbot(content)
+    
+    answer = generate_response(chatbot_app, user_input)
+    
+    return JSONResponse(content={"answer": answer})
