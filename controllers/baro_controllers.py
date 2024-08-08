@@ -1,6 +1,8 @@
+import base64
 import os
 from fastapi import APIRouter, Form, HTTPException, Request, Depends, Query
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from datetime import date
 from database import SessionLocal
@@ -8,12 +10,14 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import distinct, text, func
 from schemas.baro_schemas import CompanyInfoSchema
-from services_def.baro_service import get_autocomplete_suggestions, get_corp_info_code, get_corp_info_jurir_no, get_corp_info_name, get_company_info, get_stockgraph, get_stockgraph1
-from services_def.baro_service import get_FS2023, get_FS2022, get_FS2021, get_FS2020, get_Stock_data, get_company_info_list, search_company, get_company_infoFS_list
+from services_def.baro_service import  FavoriteService, get_company_info, get_favorite_companies,  get_stockgraph1, generate_pdf, get_username_from_session
+from services_def.baro_service import get_FS2023, get_FS2022, get_FS2021, get_FS2020, get_Stock_data,  search_company, get_company_infoFS_list
 import logging
 from typing import Dict, List, Optional
 from models.baro_models import CompanyInfo
+import requests
 from services_def.news import fetch_naver_news
+
 
 
 logging.basicConfig(level=logging.INFO)
@@ -67,7 +71,12 @@ async def read_company_info(request: Request, jurir_no: str = Query(...), db: Se
     FS2021 = get_FS2021(db, jurir_no)
     FS2020 = get_FS2020(db, jurir_no)
     stock_data=get_Stock_data(db, company_info.corp_code)
-    stockgraph = await get_stockgraph1( company_info.stock_code)  # await 사용
+    
+    try:
+        stockgraph = await get_stockgraph1(company_info.stock_code)  # await 사용
+    except ValueError as e:
+        print(f"Failed to retrieve stock graph: {e}")
+        stockgraph = {"stock_data": []}  # 빈 데이터를 반환하거나 적절히 처리
     
     adres = company_info.adres
     kakao_map_api_key = os.getenv("KAKAO_MAP_API_KEY")
@@ -110,43 +119,17 @@ async def read_company_info(request: Request, jurir_no: str = Query(...), db: Se
 
     credit_rate = db.execute(query1, {"corporate_number": jurir_no}).fetchone()
     
-    if not credit_rate:
-        default_ratings = {
-            'AAA+': 0,
-            'AAA': 0,
-            'AAA-': 0,
-            'AA+': 0,
-            'AA': 0,
-            'AA-': 0,
-            'A+': 0,
-            'A': 0,
-            'A-': 0,
-            'BBB+': 0,
-            'BBB': 0,
-            'BBB-': 0,
-            'BB+': 0,
-            'BB': 0,
-            'BB-': 0,
-            'B+': 0,
-            'B': 0,
-            'B-': 0,
-            'CCC+': 0,
-            'CCC': 0,
-            'CCC-': 0,
-            'C': 0,
-            'D': 0
-        }
-        ratings = default_ratings
-    else:
-        ratings = {custom_key_mapping.get(k, k): v for k, v in credit_rate._mapping.items() if v is not None}
 
-    # Sort and select top 3 ratings
-    top3_ratings = sorted(ratings.items(), key=lambda item: item[1], reverse=True)[:3]
-    
-    # Ensure at least 3 entries in top3_rate with default values if less than 3 available
-    top3_rate = [{"key": column, "value": value} for column, value in top3_ratings]
-    while len(top3_rate) < 3:
-        top3_rate.append({"key": "N/A", "value": 0})  # Use "N/A" or other default key
+    if not credit_rate:
+                        top3_rate = [{"key": "credit_rate", "value": "None"}]
+    else:
+                        ratings = {custom_key_mapping.get(k, k): v for k, v in credit_rate._mapping.items() if v is not None}
+                        top3_ratings = sorted(ratings.items(), key=lambda item: item[1], reverse=True)[:3]
+                        top3_rate = [{"key": column, "value": value} for column, value in top3_ratings]
+                        
+                        # Ensure at least 3 entries in top3_rate with default values if less than 3 available
+                        while len(top3_rate) < 3:
+                            top3_rate.append({"key": "N/A", "value": 0})  # Use "N/A" or other default key
 
     return templates.TemplateResponse("baro_service/baro_companyInfo.html", {
         "request": request,
@@ -162,6 +145,8 @@ async def read_company_info(request: Request, jurir_no: str = Query(...), db: Se
         "adres": adres,
         "top3_rate": top3_rate
     })
+    
+    
 
 @baro.post("/baro_companyInfo2")
 async def read_company_info(
@@ -198,13 +183,19 @@ async def read_company_info(
                 FS2023 = get_FS2023(db, jurir_no)
                 FS2022 = get_FS2022(db, jurir_no)
                 FS2021 = get_FS2021(db, jurir_no)
-                FS2020 = get_FS2020(db, jurir_no)
+                FS2020 = get_FS2020(db, jurir_no)                
+                                    
                 stock_data = get_Stock_data(db, company_info.corp_code)
-                stockgraph = await get_stockgraph1( company_info.stock_code)  # await 사용
+                try:
+                    stockgraph = await get_stockgraph1(company_info.stock_code)  # await 사용
+                except ValueError as e:
+                    print(f"Failed to retrieve stock graph: {e}")
+                    stockgraph = {"stock_data": []}  # 빈 데이터를 반환하거나 적절히 처리
+       
                 
                 adres = company_info.adres
                 kakao_map_api_key = os.getenv("KAKAO_MAP_API_KEY")
-                           
+
                 custom_key_mapping = {
                     'AAA_plus': 'AAA+',
                     'AAA': 'AAA',
@@ -244,41 +235,15 @@ async def read_company_info(
                 credit_rate = db.execute(query1, {"corporate_number": jurir_no}).fetchone()
     
                 if not credit_rate:
-                    default_ratings = {
-                        'AAA+': 0,
-                        'AAA': 0,
-                        'AAA-': 0,
-                        'AA+': 0,
-                        'AA': 0,
-                        'AA-': 0,
-                        'A+': 0,
-                        'A': 0,
-                        'A-': 0,
-                        'BBB+': 0,
-                        'BBB': 0,
-                        'BBB-': 0,
-                        'BB+': 0,
-                        'BB': 0,
-                        'BB-': 0,
-                        'B+': 0,
-                        'B': 0,
-                        'B-': 0,
-                        'CCC+': 0,
-                        'CCC': 0,
-                        'CCC-': 0,
-                        'C': 0,
-                        'D': 0
-                    }
-                    ratings = default_ratings
+                    top3_rate = [{"key": "credit_rate", "value": "None"}]
                 else:
                     ratings = {custom_key_mapping.get(k, k): v for k, v in credit_rate._mapping.items() if v is not None}
-
-                ratings = {custom_key_mapping.get(k, k): v for k, v in credit_rate._mapping.items() if v is not None}
-                top3_ratings = sorted(ratings.items(), key=lambda item: item[1], reverse=True)[:3]
-                
-                top3_rate = [{"key": column, "value": value} for column, value in top3_ratings]      
-                while len(top3_rate) < 3:
-                    top3_rate.append({"key": "N/A", "value": 0})  # Use "N/A" or other default key          
+                    top3_ratings = sorted(ratings.items(), key=lambda item: item[1], reverse=True)[:3]
+                    top3_rate = [{"key": column, "value": value} for column, value in top3_ratings]
+                    
+                    # Ensure at least 3 entries in top3_rate with default values if less than 3 available
+                    while len(top3_rate) < 3:
+                        top3_rate.append({"key": "N/A", "value": 0})  # Use "N/A" or other default key
                 
             else:
                 print("Company info is None")
@@ -308,6 +273,7 @@ async def read_company_info(
         print("An error occurred:", str(e))
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
+
 # 법인명으로 섭외등록 연결 김철민 수정
 @baro.get("/baro_contact", response_class=HTMLResponse)
 async def read_company_info(request: Request, jurir_no: str = Query(...), register: bool = False, db: Session = Depends(get_db)):
@@ -334,7 +300,7 @@ async def get_map2(request: Request, jurir_no: str = Query(...), db: Session = D
     kakao_map_api_key = os.getenv("KAKAO_MAP_API_KEY")
     return templates.TemplateResponse("contact/map2.html", {"request": request, "kakao_map_api_key": kakao_map_api_key, "adres": adres})
 
-# 법인명으로 뉴스 검색
+
 @baro.get("/baro_news2", response_class=HTMLResponse)
 async def search_news_by_jurir_no(request: Request, jurir_no: str = Query(...), db: Session = Depends(get_db)):
     # 데이터베이스에서 법인명을 조회
@@ -349,12 +315,8 @@ async def search_news_by_jurir_no(request: Request, jurir_no: str = Query(...), 
         return templates.TemplateResponse("contact/news2.html", {"request": request, "news": news_articles, "corporation_name": company_info.corp_name})
     except HTTPException as e:
         return templates.TemplateResponse("contact/news2.html", {"request": request, "error": str(e), "news": [], "corporation_name": company_info.corp_name})
-# 철민 수정끝
-    
-@baro.get("/test1234")
-async def read_join(request: Request):
-    return templates.TemplateResponse("baro_service/test.html", {"request": request})
 
+    
 
 
 @baro.get("/autocomplete", response_model=List[str])
@@ -390,3 +352,160 @@ async def autocomplete(
 
 
 
+## ####################################################################################################################################
+
+def get_base64_image(image_path):
+    with open(image_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode('utf-8')
+    
+@baro.get("/generate-pdf", response_class=FileResponse)
+async def generate_pdf_endpoint(jurir_no: str, request: Request, db: Session = Depends(get_db)):
+    username = request.session.get("username")
+    company_info = get_company_info(db, jurir_no)
+    
+    # 예를 들어, 이미지 경로와 함께 Base64 문자열을 가져옵니다.
+    financialbarchart = get_base64_image("static/images/financialbarchart.png")
+    stockchart = get_base64_image("static/images/stockchart.png")
+        
+    if not company_info:
+        raise HTTPException(status_code=404, detail="Company not found")
+    
+    FS2023 = get_FS2023(db, jurir_no)
+    FS2022 = get_FS2022(db, jurir_no)
+    FS2021 = get_FS2021(db, jurir_no)
+    FS2020 = get_FS2020(db, jurir_no)
+    stock_data = get_Stock_data(db, company_info.corp_code)
+    
+    try:
+        stockgraph = await get_stockgraph1(company_info.stock_code)
+    except ValueError as e:
+        print(f"Failed to retrieve stock graph: {e}")
+        stockgraph = {"stock_data": []}
+    
+    adres = company_info.adres
+    kakao_map_api_key = os.getenv("KAKAO_MAP_API_KEY")
+    
+    custom_key_mapping = {
+        'AAA_plus': 'AAA+',
+        'AAA': 'AAA',
+        'AAA_minus': 'AAA-',
+        'AA_plus': 'AA+',
+        'AA': 'AA',
+        'AA_minus': 'AA-',
+        'A_plus': 'A+',
+        'A': 'A',
+        'A_minus': 'A-',
+        'BBB_plus': 'BBB+',
+        'BBB': 'BBB',
+        'BBB_minus': 'BBB-',
+        'BB_plus': 'BB+',
+        'BB': 'BB',
+        'BB_minus': 'BB-',
+        'B_plus': 'B+',
+        'B': 'B',
+        'B_minus': 'B-',
+        'CCC_plus': 'CCC+',
+        'CCC': 'CCC',
+        'CCC_minus': 'CCC-',
+        'C': 'C',
+        'D': 'D'
+    }
+    
+    query1 = text("""
+    SELECT AAA_plus, AAA, AAA_minus, AA_plus, AA, AA_minus, A_plus, A, A_minus, 
+           BBB_plus, BBB, BBB_minus, BB_plus, BB, BB_minus, B_plus, B, B_minus, 
+           CCC_plus, CCC, CCC_minus, C, D
+    FROM spoon.predict_ratings
+    WHERE base_year = '2023' AND corporate_number = :corporate_number
+    ORDER BY timestamp DESC
+    LIMIT 1;
+    """)
+
+    credit_rate = db.execute(query1, {"corporate_number": jurir_no}).fetchone()
+    
+    if not credit_rate:
+        top3_rate = [{"key": "credit_rate", "value": "None"}]
+    else:
+        ratings = {custom_key_mapping.get(k, k): v for k, v in credit_rate._mapping.items() if v is not None}
+        top3_ratings = sorted(ratings.items(), key=lambda item: item[1], reverse=True)[:3]
+        top3_rate = [{"key": column, "value": value} for column, value in top3_ratings]
+        
+        while len(top3_rate) < 3:
+            top3_rate.append({"key": "N/A", "value": 0})
+
+    # 템플릿을 문자열로 렌더링
+    html_content = templates.get_template("baro_service/spoon_report.html").render({
+        "request": None,
+        "company_info": company_info,
+        "fs2023": FS2023,
+        "fs2022": FS2022,
+        "fs2021": FS2021,
+        "fs2020": FS2020,
+        "stock_data": stock_data,
+        "stockgraph": stockgraph,
+        "kakao_map_api_key": kakao_map_api_key,
+        "adres": adres,
+        "top3_rate": top3_rate,
+        "financialbarchart_base64": f"data:image/png;base64,{financialbarchart}",
+        "stockchart_base64": f"data:image/png;base64,{stockchart}",
+        "username": username
+    })
+    
+    pdf_path = generate_pdf(html_content)
+    return FileResponse(pdf_path, media_type='application/pdf', filename="Spoon_Report.pdf")
+
+
+class ImageData(BaseModel):
+    image: str
+
+@baro.post("/upload-image/{image_type}")
+async def upload_image(image_type: str, image_data: ImageData):
+    try:
+        # 데이터 URL에서 "data:image/png;base64," 제거
+        base64_image = image_data.image.split(",")[1]
+        image_binary = base64.b64decode(base64_image)
+
+        # 이미지 파일명 설정
+        image_path = os.path.join("static/images/", f"{image_type}.png")
+
+        # 디렉토리 존재 여부 확인 및 생성
+        os.makedirs("static/images/", exist_ok=True)
+
+        # 이미지 저장
+        with open(image_path, "wb") as f:
+            f.write(image_binary)
+        
+        return {"message": f"Image saved as {image_path}"}
+    
+    except Exception as e:
+        # 오류 발생 시 상세 정보와 함께 HTTP 500 오류 반환
+        print(f"Error: {e}")
+        raise HTTPException(status_code=500, detail=f"Error saving image: {str(e)}")
+    
+    
+    
+@baro.post("/api/favorite/{corp_code}")
+async def toggle_favorite(corp_code: str, request: Request, db: Session = Depends(get_db)):
+    username = get_username_from_session(request)
+    print("post:" + username)
+    service = FavoriteService(db)
+    result = service.toggle_favorite(username, corp_code)
+    return result
+
+@baro.get("/api/favorite/{corp_code}")
+async def check_favorite(corp_code: str, request: Request, db: Session = Depends(get_db)):
+    username = get_username_from_session(request)
+    print("get:" + username)
+    service = FavoriteService(db)
+    is_favorited = service.is_favorite(username, corp_code)
+    return {"is_favorited": is_favorited}
+
+
+@baro.get("/api/favorites")
+async def read_favorites(request: Request, db: Session = Depends(get_db)):
+    username = get_username_from_session(request)
+    try:
+        companies = get_favorite_companies(db, username)
+        return companies  # 빈 리스트를 반환해도 예외를 던지지 않습니다.
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal Server Error")
