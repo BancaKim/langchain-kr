@@ -108,6 +108,8 @@ class Post(Base):
     position_name = Column(String(50), nullable=False)
     user_rank = Column(String(50), nullable=False)
     corporation_name = Column(String(255), nullable=True)  # New Column
+    contact_type = Column(String(50), nullable=True)  # 섭외유형
+    contact_method = Column(String(50), nullable=True)  # 섭외방법
     created_at = Column(DateTime, server_default=func.now())
     
 class BusinessCard(Base):

@@ -2211,25 +2211,6 @@ protobuf = ">=3.20.2,<4.21.1 || >4.21.1,<4.21.2 || >4.21.2,<4.21.3 || >4.21.3,<4
 grpc = ["grpcio (>=1.44.0,<2.0.0.dev0)"]
 
 [[package]]
-name = "gpt4all"
-version = "2.8.0"
-description = "Python bindings for GPT4All"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "gpt4all-2.8.0-py3-none-macosx_10_15_universal2.whl", hash = "sha256:c9e0726b9c2c2d9e742722b437256ae1854e858f971c9d088b9b8fb369ce3466"},
-]
-
-[package.dependencies]
-requests = "*"
-tqdm = "*"
-
-[package.extras]
-all = ["gpt4all[cuda]"]
-cuda = ["nvidia-cublas-cu12", "nvidia-cuda-runtime-cu12"]
-dev = ["black", "gpt4all[all]", "isort", "mkautodoc", "mkdocs-jupyter", "mkdocs-material", "mkdocs-material[imaging]", "mkdocstrings[python]", "pytest", "setuptools", "twine", "typing-extensions (>=3.10)", "wheel"]
-
-[[package]]
 name = "greenlet"
 version = "3.0.3"
 description = "Lightweight in-process concurrent programming"
@@ -10001,5 +9982,4 @@ test = ["pytest"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-content-hash = "9db9175d337e8ad410da43f1149c8eda795df17f2380ac2ddd303feff40f4e32"
-
+content-hash = "06d7b5e16fb7fccdea3ae3a4c127195a0aa00dbd7de6dc58253b8aab40fd3ce4"

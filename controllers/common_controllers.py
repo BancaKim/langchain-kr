@@ -599,6 +599,8 @@ async def create_post(
     background_tasks: BackgroundTasks,
     content: str = Form(None),
     corporation_name: str = Form(...),  # Receiving corporation name
+    contact_type: str = Form(...),
+    contact_method: str = Form(...),
     send_email_flag: str = Form(None),
     db: Session = Depends(get_db)
 ):
@@ -616,7 +618,9 @@ async def create_post(
         branch_office_name=user.branch.name,
         position_name=user.position.name,
         user_rank=user.rank.level,
-        corporation_name=corporation_name
+        corporation_name=corporation_name,
+        contact_type=contact_type,
+        contact_method=contact_method,
     )
     db.add(new_post)
     db.commit()
@@ -627,7 +631,7 @@ async def create_post(
     #     del request.session['corporation_name']
 
     # 이메일 전송 로직
-    if send_email_flag:
+    if send_email_flag == 'true':  # send_email_flag가 'true'일 때만 이메일 전송
         supervisor_email = find_supervisor_email(db, user.region_headquarter.name)
         if supervisor_email:
             email_content = {
@@ -908,9 +912,9 @@ async def read_contact(request: Request, jurir_no: str = Query(...), db: Session
     # 포스트 데이터를 가져오기
     posts = db.query(Post).all()
     
-    logging.info(f"Address: {company_info.adres}")  # 디버깅을 위해 주소 출력
-    logging.info(f"API Key: {kakao_map_api_key}")  # API 키 확인
-    logging.info(f"Username: {username}")  # 사용자명 확인
+    # logging.info(f"Address: {company_info.adres}")  # 디버깅을 위해 주소 출력
+    # logging.info(f"API Key: {kakao_map_api_key}")  # API 키 확인
+    # logging.info(f"Username: {username}")  # 사용자명 확인
     
     return templates.TemplateResponse(
         "contact/contact5.html", 
