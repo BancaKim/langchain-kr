@@ -75,7 +75,7 @@
     .sticky-notes-container {
         overflow-y: auto;
         padding: 20px;
-        background-color: #f0f0f0;
+        background-color: #fafafa;
         border-radius: 8px;
         height: 100%;
     }
@@ -89,7 +89,7 @@
     .sticky-note {
         width: 48%;
         height: 200px; /* Set a specific height */
-        background-color: #ffffd1;
+        background-color: #f2f2f7 !important;
         padding: 20px;
         border-radius: 5px;
         box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
@@ -100,9 +100,6 @@
         justify-content: space-between;
     }
 
-    .sticky-note:nth-child(2n) {
-        background-color: #d1ffff;
-    }
 
     .sticky-note-content {
         font-size: 1.1em;
@@ -153,10 +150,10 @@
         padding: 0.5em 1em !important;
     }
     .swal2-styled.swal2-confirm {
-        background-color: #3085d6 !important;
+        background-color: #7F56D9 !important;
     }
     .swal2-styled.swal2-cancel {
-        background-color: #d33 !important;
+        background-color: #333333 !important;
     }
     .swal2-popup .swal2-styled:focus {
         box-shadow: none !important;
@@ -276,7 +273,7 @@
             {% for post in posts|batch(2) %}
                 <div class="sticky-note-row flex space-x-4">
                     {% for p in post %}
-                        <div class="sticky-note flex-1 bg-yellow-100 p-4 rounded-lg shadow-md">
+                        <div class="sticky-note flex-1 bg-purple-50 p-4 rounded-lg shadow-md">
                             <p class="sticky-note-content">{{ p.content }}</p>
                             <div class="sticky-note-info text-sm text-gray-600 mt-2">
                                 <span>{{ p.username }} | {{ p.created_at.strftime('%Y-%m-%d') }}</span>
@@ -421,7 +418,7 @@
                     <form id="contactForm" class="mt-4">
                         <div class="form-group mb-4">
                             <label for="username" class="block text-gray-800 text-lg font-semibold mb-2">작성자</label>
-                            <input type="text" id="username" name="username" class="form-control bg-gray-100 text-gray-700 border border-gray-300 rounded-md p-2 w-full" value="{{ username }}" readonly>
+                            <input type="text" id="username" name="username" class="form-control bg-white text-gray-700 border border-gray-300 rounded-md p-2 w-full" value="{{ username }}" readonly>
                         </div>
                         <div class="form-group mb-4">
                             <label for="content" class="block text-gray-800 text-lg font-semibold mb-2">내용</label>
@@ -431,12 +428,29 @@
                             <label for="corporation_name" class="block text-gray-800 text-lg font-semibold mb-2">법인명</label>
                             <input type="text" id="corporation_name" name="corporation_name" class="form-control bg-white text-gray-700 border border-gray-300 rounded-md p-2 w-full" value="{{ company_info.corp_name }}" readonly>
                         </div>
+                        <div class="form-group mb-4">
+                            <label for="contact_type" class="block text-gray-800 text-lg font-semibold mb-2">섭외유형</label>
+                            <select id="contact_type" name="contact_type" class="form-control bg-white text-gray-700 border border-gray-300 rounded-md p-2 w-full">
+                                <option value="사전분석">사전분석</option>
+                                <option value="상품제안">상품제안</option>
+                                <option value="고객관리">고객관리</option>
+                            </select>
+                        </div>
+                        <div class="form-group mb-4">
+                            <label for="contact_method" class="block text-gray-800 text-lg font-semibold mb-2">섭외방법</label>
+                            <select id="contact_method" name="contact_method" class="form-control bg-white text-gray-700 border border-gray-300 rounded-md p-2 w-full">
+                                <option value="내점">내점</option>
+                                <option value="전화">전화</option>
+                                <option value="방문">방문</option>
+                            </select>
+                        </div>
                     </form>
                 `,
                 width: '700px',  // 팝업창의 너비를 700px로 설정
                 height: '700px', // 팝업창의 높이를 700px로 설정
                 showCancelButton: true,
                 confirmButtonText: '등록',
+                confirmButtonColor: '#7F56D9',
                 preConfirm: () => {
                     const content = document.getElementById('content').value;
                     if (!content) {
@@ -444,7 +458,9 @@
                     }
                     return {
                         content: content,
-                        corporation_name: document.getElementById('corporation_name').value
+                        corporation_name: document.getElementById('corporation_name').value,
+                        contact_type: document.getElementById('contact_type').value,
+                        contact_method: document.getElementById('contact_method').value
                     };
                 }
             }).then((result) => {
@@ -460,13 +476,24 @@
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: '예',
-                cancelButtonText: '아니오'
+                confirmButtonColor: '#7F56D9',
+                cancelButtonText: '아니오',
+                cancelButtonColor: '#333333',
             }).then((result) => {
                 const form = new FormData();
                 form.append('content', formData.content);
                 form.append('corporation_name', formData.corporation_name);
-                form.append('send_email_flag', result.isConfirmed ? 'true' : 'false');
-    
+                form.append('contact_type', formData.contact_type);
+                form.append('contact_method', formData.contact_method);
+        
+                // '예' 버튼을 눌렀을 때만 send_email_flag를 true로 설정
+                if (result.isConfirmed) {
+                    form.append('send_email_flag', 'true');
+                } else {
+                    form.append('send_email_flag', 'false');
+                }
+        
+                // 게시글 등록
                 fetch('/contact/create', {
                     method: 'POST',
                     body: form
@@ -477,7 +504,8 @@
                             title: '등록 성공',
                             icon: 'success',
                             text: '섭외등록이 완료되었습니다.',
-                            confirmButtonText: '확인'
+                            confirmButtonText: '확인',
+                            confirmButtonColor: '#7F56D9'
                         }).then(() => {
                             location.reload(); // Reload the page to show the new post
                         });
@@ -490,12 +518,15 @@
                         title: '오류 발생',
                         icon: 'error',
                         text: error.message,
-                        confirmButtonText: '확인'
+                        confirmButtonText: '확인',
+                        confirmButtonColor: '#7F56D9'
                     });
                 });
             });
         }
+        
     </script>
+    
     
     {% if login_required %}
     <script>
@@ -503,7 +534,8 @@
             Swal.fire({
                 title: '로그인이 필요합니다.',
                 icon: 'warning',
-                confirmButtonText: '확인'
+                confirmButtonText: '확인',
+                confirmButtonColor: '#7F56D9'
             }).then((result) => {
                 if (result.isConfirmed) {
                     window.location.href = "/login"; // 로그인 페이지로 리디렉션
