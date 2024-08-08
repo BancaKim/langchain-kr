@@ -7,21 +7,22 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
 <link rel="stylesheet" href="/static/css/font.css">
 <script src="/static/js/AI_search.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 
 {% block content %}
 
-<div class="w-full" style="background-image: url('static/images/home4.png'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 50vh;">
-    
-    <div class="p-8 w-full max-w-screen-xl mx-auto" >
+<div class="w-full"
+    style="background-image: url('/static/images/home8.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 50vh;">
+    <div class="p-8 w-full max-w-screen-xl mx-auto">
         <span class="block text-left text-xl mb-2">
-            <a href="/" class="mr-2 text-white">홈 &nbsp; |</a> 
-            <a href="/contact55" class="ml-2 text-white">섭외등록</a>
+            <a href="/" class="mr-2 text-white">홈 &nbsp; |</a>
+            <a href="/contact" class="ml-2 text-white">섭외등록</a>
         </span>
         <br><br><br>
 
         <div class="text-center mb-4">
-            <h1 class="text-5xl font-bold text-white">기업금융 Total-Marketing</h1>
+            <h1 class="text-5xl font-bold text-white">섭외 등록</h1>
         </div>
         <br><br><br>
 
@@ -63,13 +64,226 @@
     </div>
 </div>
 
-<br><br><br>
 
-통계나 시각화 등 기타자료 추가예정
+<!-- /qnas로 이동하는 버튼 추가 -->
+<div class="flex justify-end mb-16 pr-8"> <!-- 오른쪽 정렬 및 아래쪽 여백 -->
+    <a href="/qnas"
+        class="px-4 py-2 text-sm font-medium text-white bg-purple-700 rounded-md hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
+        기업금융 Q&A 이동하기
+    </a>
+</div>
 
-<br><br>
 
-<!-- 변경된 스크립트 부분 -->
+<div class="w-full max-w-screen-xl mx-auto p-8">
+    <h2 class="text-3xl font-bold mb-6">섭외 통계</h2>
+
+    <div class="space-y-12">
+        <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+            <h3 class="text-xl font-semibold mb-4">법인별 섭외내역 통계</h3>
+            <div style="height: 400px;">
+                <canvas id="corporationChart"></canvas>
+            </div>
+        </div>
+    
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-xl font-semibold mb-4">직급별 섭외내역 통계</h3>
+            <p id="totalContactsText" class="text-right text-sm text-gray-600">총 섭외 건수: 41</p> <!-- 총 섭외 건수 표시 -->
+            <div style="height: 400px;">
+                <canvas id="positionChart"></canvas>
+            </div>
+        </div>
+        
+    
+        <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+            <h3 class="text-xl font-semibold mb-4">지역본부별 섭외내역 통계</h3>
+            <div style="height: 400px;">
+                <canvas id="regionChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+<div class="w-full max-w-screen-xl mx-auto p-8 mt-12">
+    <h2 class="text-3xl font-bold mb-6">섭외 전체 내역(PG예정)</h2>
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        {% if posts %}
+            <ul class="divide-y divide-gray-200">
+                {% for post in posts %}
+                    <li class="py-4">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="text-lg font-semibold text-gray-800">{{ post.corporation_name }}</p>
+                                <p class="text-gray-600">{{ post.content }}</p>
+                                <p class="text-sm text-gray-500">{{ post.username }} | {{ post.created_at.strftime('%Y-%m-%d') }}</p>
+                            </div>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-gray-600">현재 등록된 섭외 내역이 없습니다.</p>
+        {% endif %}
+    </div>
+</div>
+
+
+<script>
+  // 법인별 섭외내역 통계 (수평 막대 차트)
+const corporationCtx = document.getElementById('corporationChart').getContext('2d');
+new Chart(corporationCtx, {
+    type: 'bar',
+    data: {
+        labels: ['법인별 섭외 내역'],  // 한 카테고리로 정의
+        datasets: [
+            {
+                label: '삼성전자(주)',
+                data: [65], // 삼성전자 데이터만 포함
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            },
+            {
+                label: 'LG전자(주)',
+                data: [59], // LG전자 데이터만 포함
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            },
+            {
+                label: 'SK텔레콤(주)',
+                data: [80], // SK텔레콤 데이터만 포함
+                backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                borderColor: 'rgba(255, 206, 86, 1)',
+                borderWidth: 1
+            },
+            {
+                label: '현대자동차(주)',
+                data: [81], // 현대자동차 데이터만 포함
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            },
+            {
+                label: '(주)셀트리온',
+                data: [56], // 셀트리온 데이터만 포함
+                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 1
+            }
+        ]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            x: {
+                beginAtZero: true
+            }
+        },
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top'
+            }
+        }
+    }
+});
+
+
+
+   // 직급별 섭외내역 통계 (도넛 차트)
+const positionCtx = document.getElementById('positionChart').getContext('2d');
+const totalContacts = 41; // 총 섭외 건수
+document.getElementById('totalContactsText').textContent = '총 섭외 건수: ' + totalContacts;
+
+new Chart(positionCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['계장', '대리', '과장', '차장', '부지점장'],
+        datasets: [{
+            label: '섭외 건수',
+            data: [12, 19, 3, 5, 2],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'right',
+            }
+        }
+    }
+});
+
+
+
+    // 지역본부별 섭외내역 통계 (다중 선 그래프)
+    const regionCtx = document.getElementById('regionChart').getContext('2d');
+    new Chart(regionCtx, {
+        type: 'line',
+        data: {
+            labels: ['1월', '2월', '3월', '4월', '5월', '6월'],
+            datasets: [
+                {
+                    label: '강남1(방배중앙)',
+                    data: [30, 35, 40, 38, 42, 45],
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    tension: 0.1
+                },
+                {
+                    label: '강남2(신사동)',
+                    data: [50, 48, 52, 55, 53, 58],
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    tension: 0.1
+                },
+                {
+                    label: '경인1(용현남)',
+                    data: [45, 47, 43, 48, 50, 52],
+                    borderColor: 'rgba(255, 206, 86, 1)',
+                    backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                    tension: 0.1
+                },
+                {
+                    label: '경인2(가좌공단)',
+                    data: [60, 58, 62, 65, 63, 68],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+
 <script>
     async function searchCompanies(event) {
         event.preventDefault(); // 기본 폼 제출 방지
@@ -102,7 +316,6 @@
 
     document.getElementById('search_button').addEventListener('click', searchCompanies);
 </script>
-
 
 {% endblock %}
 {% include 'footer.html' %}

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text, func
+from sqlalchemy import Column, Date, Integer, String, ForeignKey, DateTime, Text, func
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -99,10 +99,8 @@ class Reply(Base):
 
 class Post(Base):
     __tablename__ = "posts"
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String(255), nullable=False)
-    content = Column(Text, nullable=False)
-    file_path = Column(String(255), nullable=True)
+    id = Column(Integer, primary_key=True, index=True)    
+    content = Column(Text, nullable=False)    
     username = Column(String(100), nullable=False)
     region_group_name = Column(String(50), nullable=False)
     region_headquarter_name = Column(String(50), nullable=False)
@@ -110,7 +108,7 @@ class Post(Base):
     position_name = Column(String(50), nullable=False)
     user_rank = Column(String(50), nullable=False)
     corporation_name = Column(String(255), nullable=True)  # New Column
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(DateTime, server_default=func.now())
     
 class BusinessCard(Base):
     __tablename__ = "business_cards"

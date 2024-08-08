@@ -20,6 +20,7 @@
 
     .container {
         max-width: 80%;
+        margin: 0 auto;
     }
 
     .min-h-600 {
@@ -29,7 +30,6 @@
     .news-list {
         margin-top: 20px;
         width: 100%;
-        /* Changed from max-width to width for full width */
         background-color: #fff;
         border-radius: 8px;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -44,11 +44,9 @@
 
     .news-title {
         font-size: 20px;
-        /* Increased font size */
         font-weight: bold;
         color: #333;
         margin-bottom: 8px;
-        /* Add space between title and description */
     }
 
     .news-description {
@@ -73,12 +71,104 @@
         width: 100%;
         height: 400px;
     }
+
+    .sticky-notes-container {
+        overflow-y: auto;
+        padding: 20px;
+        background-color: #f0f0f0;
+        border-radius: 8px;
+        height: 100%;
+    }
+
+    .sticky-note-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+
+    .sticky-note {
+        width: 48%;
+        height: 200px; /* Set a specific height */
+        background-color: #ffffd1;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .sticky-note:nth-child(2n) {
+        background-color: #d1ffff;
+    }
+
+    .sticky-note-content {
+        font-size: 1.1em;
+        line-height: 1.4;
+        flex-grow: 1;
+        overflow-y: auto;
+    }
+
+    .sticky-note-info {
+        font-size: 0.9em;
+        color: #555;
+        margin-top: 10px;
+    }
+
+    .flex-grow {
+        flex-grow: 1;
+    }
+
+    .col-span-1,
+    .col-span-2 {
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Container for scrolling */
+    .business-cards-container,
+    .sticky-notes-container {
+        height: 100%;
+        /* Ensure they take the full available height */
+        overflow-y: auto;
+        /* Enable vertical scrolling */
+    }
+
+    .business-card-section {
+        max-height: 400px;
+        /* Set a max height to enable scrolling */
+    }
+
+    .memo-section {
+        max-height: 960px;
+        /* Set a max height to enable scrolling */
+    }
+    .swal2-popup {
+        font-size: 1rem !important;
+    }
+    .swal2-styled {
+        font-size: 1rem !important;
+        padding: 0.5em 1em !important;
+    }
+    .swal2-styled.swal2-confirm {
+        background-color: #3085d6 !important;
+    }
+    .swal2-styled.swal2-cancel {
+        background-color: #d33 !important;
+    }
+    .swal2-popup .swal2-styled:focus {
+        box-shadow: none !important;
+    }
 </style>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
 <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
 <link rel="stylesheet" href="/static/css/font.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 {% endblock %}
 
 {% block content %}
@@ -91,7 +181,6 @@
             <span class="text-white"> &nbsp; 등록조회</span>
         </span>
         <br><br><br><br>
-
         <div class="text-center mb-4">
             <h1 class="text-5xl font-bold text-white">섭외등록</h1>
             <h2></h2>
@@ -100,18 +189,20 @@
     </div>
 </div>
 <br>
-
-<div class="container mx-auto my-8 px-6">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 equal-height">
-        <!-- 기업정보 영역 -->
-        <div class="col-span-1 flex flex-col">
-            <div class="flex-1 bg-white rounded-lg shadow-lg">
+<div class="container mx-auto my-8 px-6 min-h-screen flex flex-col">
+    <div class="flex items-center mb-10">
+        <h2 class="text-4xl font-bold flex-1">{{ company_info.corp_name }}</h2>
+    </div>
+    <div class="flex-grow grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Left Column: Basic Info and Business Cards -->
+        <div class="col-span-1 flex flex-col space-y-6">
+            <!-- Company Info -->
+            <div class="flex-shrink-0 bg-white rounded-lg shadow-lg">
                 <div class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg">
                     <h2 class="text-xl font-semibold text-gray-800">기본 정보</h2>
                 </div>
                 <div class="p-6">
                     {% if company_info %}
-                    <br>
                     <ul class="list-disc pl-5 space-y-2">
                         <li>
                             <p class="text-lg font-semibold mb-4">기업명: {{ company_info.corp_name }}</p>
@@ -120,18 +211,7 @@
                             <p class="text-lg font-semibold mb-4">대표: {{ company_info.ceo_nm }}</p>
                         </li>
                         <li>
-                            <p class="text-lg font-semibold mb-4">법인구분:
-                                {% if company_info.corp_cls == 'Y' %}
-                                유가 (Y)
-                                {% elif company_info.corp_cls == 'K' %}
-                                코스닥 (K)
-                                {% elif company_info.corp_cls == 'N' %}
-                                코넥스 (N)
-                                {% elif company_info.corp_cls == 'E' %}
-                                기타 (E)
-                                {% else %}
-                                {{ company_info.corp_cls }}
-                                {% endif %}</p>
+                            <p class="text-lg font-semibold mb-4">법인구분: {{ company_info.corp_cls }}</p>
                         </li>
                         <li>
                             <p class="text-lg font-semibold mb-4">주소: {{ company_info.adres }}</p>
@@ -160,51 +240,65 @@
                     {% endif %}
                 </div>
             </div>
-        </div>
 
-        <!-- 스트리밍된 콘텐츠가 이곳에 삽입됩니다 -->
-        <div id="streamContent" class="col-span-2 flex flex-col">
-            <!-- 스트리밍된 콘텐츠가 이곳에 삽입됩니다 -->
-        </div>
-    </div>
-
-    <br>
-
-    <!-- 명함집 섹션 -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 equal-height">
-        <div class="col-span-1 flex flex-col">
-            <!-- 명함집 섹션 -->
-            <div class="flex-1 bg-white rounded-lg shadow-lg mb-6">
+            <!-- Business Card Section -->
+            <div
+                class="flex-shrink-0 bg-white rounded-lg shadow-lg flex-grow overflow-hidden flex flex-col business-card-section">
                 <div class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg">
                     <h2 class="text-xl font-semibold text-gray-800">주요 임직원 명함집</h2>
                 </div>
-                <div class="p-6 grid grid-cols-1 gap-8">
-                    <!-- 각각의 명함 썸네일을 세로로 정렬 -->
-                    {% for card in business_cards %}
-                    <div class="relative overflow-hidden transform transition duration-500 hover:scale-110">
-                        <a href="/card">
-                            <img src="/static/business_cards/{{ card.filename }}" alt="Business Card"
-                                class="w-full h-auto object-cover rounded-lg shadow-md">
-                        </a>
+                <div class="p-6 space-y-4 overflow-y-auto flex-grow business-cards-container">
+                    <div class="grid grid-cols-1 gap-4">
+                        {% for card in business_cards %}
+                        <div class="relative overflow-hidden transform transition duration-500 hover:scale-110">
+                            <a href="/card">
+                                <img src="/static/business_cards/{{ card.filename }}" alt="Business Card"
+                                    class="w-full h-auto object-cover rounded-lg shadow-md">
+                            </a>
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
                 </div>
             </div>
-
-
-
         </div>
 
-        <!-- 빈 공간으로 간격 조절 -->
-        <div class="col-span-2 flex flex-col">
-            <!-- 여기에 다른 콘텐츠를 추가하거나 빈 공간으로 남겨둘 수 있습니다 -->
-        </div>
+<!-- Memo Section -->
+<div class="col-span-2 flex flex-col bg-white rounded-lg shadow-lg overflow-hidden memo-section">
+    <div class="bg-gray-100 border-b border-gray-300 p-3 flex justify-between items-center">
+        <h2 class="text-xl font-semibold text-gray-800">섭외 내역</h2>
+        <!-- Create a button to trigger the modal -->
+        <button onclick="openCreateModal()" class="px-4 py-2 text-white bg-purple-700 rounded-md hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300">
+            등록하기
+        </button>
     </div>
+    <div class="flex-grow p-6 overflow-y-auto sticky-notes-container">
+        {% if posts %}
+            {% for post in posts|batch(2) %}
+                <div class="sticky-note-row flex space-x-4">
+                    {% for p in post %}
+                        <div class="sticky-note flex-1 bg-yellow-100 p-4 rounded-lg shadow-md">
+                            <p class="sticky-note-content">{{ p.content }}</p>
+                            <div class="sticky-note-info text-sm text-gray-600 mt-2">
+                                <span>{{ p.username }} | {{ p.created_at.strftime('%Y-%m-%d') }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-gray-600">포스트가 없습니다.</p>
+        {% endif %}
+    </div>
+</div>
+
+
+</div>
+
 
     <br>
 
     <!-- 뉴스 섹션 -->
-    <div class="flex-1 bg-white rounded-lg shadow-lg">
+    <div class="flex-1 bg-white rounded-lg shadow-lg mb-6">
         <div class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg">
             <h2 class="text-xl font-semibold text-gray-800">{{ corporation_name }} 관련 뉴스</h2>
         </div>
@@ -228,9 +322,7 @@
         </div>
     </div>
 
-
-
-    <br><br>
+    <br>
 
     <!-- Kakao Map Section -->
     <div class="box bg-white p-6 rounded-lg shadow-md">
@@ -246,20 +338,6 @@
             </div>
         </section>
     </div>
-
-    <style>
-        .map-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 5px;
-        }
-
-        #map {
-            width: 100%;
-            height: 400px;
-        }
-    </style>
 
     <script type="text/javascript"
         src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_map_api_key }}&libraries=services"></script>
@@ -301,7 +379,9 @@
 
             // 마커에 클릭 이벤트를 등록
             kakao.maps.event.addListener(marker, 'click', function () {
-                var infowindow = new kakao.maps.InfoWindow({ zIndex: 1 });
+                var infowindow = new kakao.maps.InfoWindow({
+                    zIndex: 1
+                });
                 infowindow.setContent('<div style="padding:5px;font-size:12px;">' + place.address_name + '</div>');
                 infowindow.open(map, marker);
             });
@@ -314,28 +394,127 @@
             searchAddress(address);
         });
     </script>
-</div>
 
-<br><br>
+    <br><br>
 
-<div class="btn-group my-4 flex justify-center">
-    <button onclick="history.back()"
-        class="px-4 py-2 text-white rounded-md hover:bg-[#6a46b0] focus:ring-4 focus:ring-[#9a7ce0] focus:outline-none"
-        style="background-color: #7F56D9;">
-        뒤로가기
-    </button>
+    <div class="btn-group my-8 flex justify-center">
+        <button onclick="history.back()"
+            class="px-4 py-2 text-white rounded-md hover:bg-[#6a46b0] focus:ring-4 focus:ring-[#9a7ce0] focus:outline-none"
+            style="background-color: #7F56D9;">
+            뒤로가기
+        </button>
 
-    &nbsp; &nbsp; &nbsp; &nbsp;
+        &nbsp; &nbsp; &nbsp; &nbsp;
 
-    <button onclick="window.location.href='/baro_companyList';"
-        class="px-4 py-2 text-white rounded-md hover:bg-[#6a46b0] focus:ring-4 focus:ring-[#9a7ce0] focus:outline-none"
-        style="background-color: #7F56D9;">
-        바로등급
-    </button>
-</div>
+        <button onclick="window.location.href='/baro_companyList';"
+            class="px-4 py-2 text-white rounded-md hover:bg-[#6a46b0] focus:ring-4 focus:ring-[#9a7ce0] focus:outline-none"
+            style="background-color: #7F56D9;">
+            바로등급
+        </button>
+    </div>
 
-<br><br><br><br>
+    <script>
+        function openCreateModal() {
+            Swal.fire({
+                title: '섭외 등록',
+                html: `
+                    <form id="contactForm" class="mt-4">
+                        <div class="form-group mb-4">
+                            <label for="username" class="block text-gray-800 text-lg font-semibold mb-2">작성자</label>
+                            <input type="text" id="username" name="username" class="form-control bg-gray-100 text-gray-700 border border-gray-300 rounded-md p-2 w-full" value="{{ username }}" readonly>
+                        </div>
+                        <div class="form-group mb-4">
+                            <label for="content" class="block text-gray-800 text-lg font-semibold mb-2">내용</label>
+                            <textarea id="content" name="content" rows="3" class="form-control bg-white text-gray-700 border border-gray-300 rounded-md p-2 w-full" required></textarea>
+                        </div>
+                        <div class="form-group mb-4">
+                            <label for="corporation_name" class="block text-gray-800 text-lg font-semibold mb-2">법인명</label>
+                            <input type="text" id="corporation_name" name="corporation_name" class="form-control bg-white text-gray-700 border border-gray-300 rounded-md p-2 w-full" value="{{ company_info.corp_name }}" readonly>
+                        </div>
+                    </form>
+                `,
+                width: '700px',  // 팝업창의 너비를 700px로 설정
+                height: '700px', // 팝업창의 높이를 700px로 설정
+                showCancelButton: true,
+                confirmButtonText: '등록',
+                preConfirm: () => {
+                    const content = document.getElementById('content').value;
+                    if (!content) {
+                        Swal.showValidationMessage('내용을 입력해주세요');
+                    }
+                    return {
+                        content: content,
+                        corporation_name: document.getElementById('corporation_name').value
+                    };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    handleSubmit(result.value);
+                }
+            });
+        }
+    
+        function handleSubmit(formData) {
+            Swal.fire({
+                title: '섭외등록이 완료되었어요. 본부장님께 등록내역 송부도 진행할까요?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: '예',
+                cancelButtonText: '아니오'
+            }).then((result) => {
+                const form = new FormData();
+                form.append('content', formData.content);
+                form.append('corporation_name', formData.corporation_name);
+                form.append('send_email_flag', result.isConfirmed ? 'true' : 'false');
+    
+                fetch('/contact/create', {
+                    method: 'POST',
+                    body: form
+                })
+                .then(response => {
+                    if (response.ok) {
+                        Swal.fire({
+                            title: '등록 성공',
+                            icon: 'success',
+                            text: '섭외등록이 완료되었습니다.',
+                            confirmButtonText: '확인'
+                        }).then(() => {
+                            location.reload(); // Reload the page to show the new post
+                        });
+                    } else {
+                        throw new Error('등록 실패');
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        title: '오류 발생',
+                        icon: 'error',
+                        text: error.message,
+                        confirmButtonText: '확인'
+                    });
+                });
+            });
+        }
+    </script>
+    
+    {% if login_required %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            Swal.fire({
+                title: '로그인이 필요합니다.',
+                icon: 'warning',
+                confirmButtonText: '확인'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "/login"; // 로그인 페이지로 리디렉션
+                }
+            });
+        });
+    </script>
+    {% endif %}
 
-{% endblock %}
+    <br><br>
 
-{% include 'footer.html' %}
+    {% endblock %}
+
+    {% include 'footer.html' %}

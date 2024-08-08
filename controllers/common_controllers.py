@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from email.mime.text import MIMEText
 import json
 import os
@@ -597,56 +597,40 @@ async def get_posts(request: Request, db: Session = Depends(get_db), page: int =
 async def create_post(
     request: Request,
     background_tasks: BackgroundTasks,
-    title: str = Form(...),
-    content: str = Form(...),
-    corporation_name: str = Form(...),
-    file: UploadFile = File(None),
+    content: str = Form(None),
+    corporation_name: str = Form(...),  # Receiving corporation name
     send_email_flag: str = Form(None),
     db: Session = Depends(get_db)
 ):
-    file_path = None
-    if file and file.filename:
-        upload_dir = os.path.join("static", "uploads")
-        os.makedirs(upload_dir, exist_ok=True)
-        file_path = os.path.join(upload_dir, file.filename)
-        try:
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
-        except Exception as e:
-            raise HTTPException(status_code=500, detail="파일 업로드에 실패했습니다.")
-
     username = request.session.get("username")
     user = db.query(User).filter(User.username == username).first()
     if not user:
         raise HTTPException(status_code=400, detail="사용자를 찾을 수 없습니다.")
-    file_path = f"/{file_path}"  # Static URL for accessing the file
 
+    # Create the new post
     new_post = Post(
-        title=title,
         content=content,
-        file_path=file_path,
         username=user.username,
         region_group_name=user.region_group.name,
         region_headquarter_name=user.region_headquarter.name,
         branch_office_name=user.branch.name,
         position_name=user.position.name,
         user_rank=user.rank.level,
-        corporation_name=corporation_name  # 세션 또는 사용자가 입력한 법인명
+        corporation_name=corporation_name
     )
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
 
-    # 세션에서 법인명 제거
-    if 'corporation_name' in request.session:
-        del request.session['corporation_name']
+    # # Remove corporation name from session if it exists
+    # if 'corporation_name' in request.session:
+    #     del request.session['corporation_name']
 
     # 이메일 전송 로직
     if send_email_flag:
         supervisor_email = find_supervisor_email(db, user.region_headquarter.name)
         if supervisor_email:
             email_content = {
-                "title": title,
                 "username": username,
                 "content": content,
                 "corporation_name": corporation_name
@@ -663,18 +647,25 @@ async def create_post(
 
 
 
+
+
 # 섭외등록 생성 페이지
 @router.get("/contact/create")
 async def create_post_page(request: Request):
     username = request.session.get("username")
+    # Fetch company_info from the session or database
     corporation_name = request.session.get("corporation_name", None)
-    login_required = not bool(username)  # 로그인 상태 확인
+    company_info = request.session.get("company_info", None)
+    login_required = not bool(username)  # 로그인 여부 확인
     return templates.TemplateResponse("contact/contact_create.html", {
         "request": request,
         "username": username,
         "corporation_name": corporation_name,
+        "company_info": company_info,
         "login_required": login_required
     })
+
+
 
 # 검색 및 페이지네이션 처리 함수
 @router.get("/contact/search")
@@ -889,13 +880,17 @@ async def read_contact(request: Request):
     
 # 기능홈페이지
 @router.get("/contact55")
-async def read_contact(request: Request):
+async def read_contact(request: Request, db: Session = Depends(get_db)):
     username = request.session.get("username")
+    posts = db.query(Post.corporation_name, Post.content, Post.username, Post.created_at).all()
+
     return templates.TemplateResponse(
-        "contact/contact55.html", {"request": request, "username": username}
+        "contact/contact55.html",
+        {"request": request, "username": username, "posts": posts}
     )
+
     
-# 기능홈페이지
+# 세부정보
 @router.get("/contact5")
 async def read_contact(request: Request, jurir_no: str = Query(...), db: Session = Depends(get_db)):
     username = request.session.get("username")
@@ -910,6 +905,9 @@ async def read_contact(request: Request, jurir_no: str = Query(...), db: Session
     # 명함 데이터를 가져오기
     business_cards = db.query(BusinessCard).all()
     
+    # 포스트 데이터를 가져오기
+    posts = db.query(Post).all()
+    
     logging.info(f"Address: {company_info.adres}")  # 디버깅을 위해 주소 출력
     logging.info(f"API Key: {kakao_map_api_key}")  # API 키 확인
     logging.info(f"Username: {username}")  # 사용자명 확인
@@ -922,7 +920,8 @@ async def read_contact(request: Request, jurir_no: str = Query(...), db: Session
             "company_info": company_info,
             "kakao_map_api_key": kakao_map_api_key,
             "adres": company_info.adres,
-            "business_cards": business_cards  # 명함 데이터를 템플릿으로 전달
+            "business_cards": business_cards,  # 명함 데이터를 템플릿으로 전달
+            "posts": posts  # 포스트 데이터를 템플릿으로 전달
         }
     )
 
@@ -962,6 +961,9 @@ async def show_company_details(
         # 명함 데이터를 가져오기
         business_cards = db.query(BusinessCard).all()
         
+        # 포스트 데이터를 가져오기
+        posts = db.query(Post).all()
+        
         return templates.TemplateResponse(
             "contact/contact5.html",
             {
@@ -973,7 +975,8 @@ async def show_company_details(
                 "error": news_error if news_error else None,
                 "kakao_map_api_key": kakao_map_api_key,
                 "adres": company_info.adres,
-                "business_cards": business_cards  # 명함 데이터를 템플릿으로 전달
+                "business_cards": business_cards,  # 명함 데이터를 템플릿으로 전달
+                "posts": posts  # 포스트 데이터를 템플릿으로 전달
             }
         )
     except Exception as e:
