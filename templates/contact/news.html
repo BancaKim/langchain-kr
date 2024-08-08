@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>기업 뉴스 검색</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .search-form {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .search-form input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            margin-right: 10px;
+        }
+        .search-form input[type="submit"] {
+            padding: 10px 20px;
+            border-radius: 4px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+        .news-list {
+            margin-top: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .news-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .news-item:last-child {
+            border-bottom: none;
+        }
+        .news-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        .news-link {
+            color: #007bff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>기업 뉴스 검색</h1>
+    <div class="search-form">
+        <form method="post" action="/news">
+            <input type="text" name="corporation_name" placeholder="법인명 입력" required>
+            <input type="submit" value="검색">
+        </form>
+    </div>
+
+    {% if corporation_name %}
+        <div class="news-list">
+            <h2>{{ corporation_name }} 관련 뉴스</h2>
+            {% if error %}
+                <p style="color: red;">{{ error }}</p>
+            {% elif news %}
+                {% for article in news %}
+                    <div class="news-item">
+                        <a href="{{ article.link }}" class="news-link" target="_blank">
+                            <p class="news-title">{{ article.title | safe }}</p>
+                        </a>
+                        <p>{{ article.description | safe }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>관련 뉴스가 없습니다.</p>
+            {% endif %}
+        </div>
+    {% endif %}
+</body>
+</html>

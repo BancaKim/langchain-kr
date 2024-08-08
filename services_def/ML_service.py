@@ -23,7 +23,7 @@ def train_model():
     df = pd.read_csv(file_path)
     df = df.dropna()
 
-    feature_columns = ['IR',
+    feature_columns = [
             'asset2023', 'debt2023', 'equity2023', 'revenue2023', 'operatingincome2023', 'EBT2023', 'margin2023', 'turnover2023', 'leverage2023',
             'asset2022', 'debt2022', 'equity2022', 'revenue2022', 'operatingincome2022', 'EBT2022', 'margin2022', 'turnover2022', 'leverage2022',
             'asset2021', 'debt2021', 'equity2021', 'revenue2021', 'operatingincome2021', 'EBT2021', 'margin2021', 'turnover2021', 'leverage2021']
@@ -97,9 +97,26 @@ def preprocess_and_predict_proba(new_data, model, scaler):
     return probabilities
 
 ## 등급 부여를 위한 법인 정보 추출
+        # "SELECT a.corp_name, a.jurir_no, COALESCE(g.IR등급, 7) AS IR, "
+        # "b.totalAsset2023 AS asset2023, b.totalDebt2023 AS debt2023, b.totalEquity2023 AS equity2023, "
+        # "b.revenue2023 AS revenue2023, b.operatingIncome2023 AS operatingincome2023, b.earningBeforeTax2023 AS EBT2023, "
+        # "b.margin2023 AS margin2023, b.turnover2023 AS turnover2023, b.leverage2023 AS leverage2023, "
+        # "c.totalAsset2022 AS asset2022, c.totalDebt2022 AS debt2022, c.totalEquity2022 AS equity2022, "
+        # "c.revenue2022 AS revenue2022, c.operatingIncome2022 AS operatingincome2022, c.earningBeforeTax2022 AS EBT2022, "
+        # "c.margin2022 AS margin2022, c.turnover2022 AS turnover2022, c.leverage2022 AS leverage2022, "
+        # "d.totalAsset2021 AS asset2021, d.totalDebt2021 AS debt2021, d.totalEquity2021 AS equity2021, "
+        # "d.revenue2021 AS revenue2021, d.operatingIncome2021 AS operatingincome2021, d.earningBeforeTax2021 AS EBT2021, "
+        # "d.margin2021 AS margin2021, d.turnover2021 AS turnover2021, d.leverage2021 AS leverage2021 "
+        # "FROM companyInfo a "
+        # "LEFT OUTER JOIN FS2023 b ON a.jurir_no = b.jurir_no "
+        # "LEFT OUTER JOIN FS2022 c ON a.jurir_no = c.jurir_no "
+        # "LEFT OUTER JOIN FS2021 d ON a.jurir_no = d.jurir_no "
+        # "LEFT OUTER JOIN kb_data_v1_copy e ON TRIM(e.법인번호) = a.jurir_no "
+        # "LEFT OUTER JOIN IRrate g ON e.산업분류코드 = g.표준산업분류 "
+        # "WHERE a.jurir_no IN :jurir_no_list"
 def get_new_data_from_db(db: Session, jurir_no_list: list):
     query = text(
-        "SELECT a.corp_name, a.jurir_no, COALESCE(g.IR등급, 7) AS IR, "
+        "SELECT a.corp_name, a.jurir_no,"
         "b.totalAsset2023 AS asset2023, b.totalDebt2023 AS debt2023, b.totalEquity2023 AS equity2023, "
         "b.revenue2023 AS revenue2023, b.operatingIncome2023 AS operatingincome2023, b.earningBeforeTax2023 AS EBT2023, "
         "b.margin2023 AS margin2023, b.turnover2023 AS turnover2023, b.leverage2023 AS leverage2023, "
@@ -109,21 +126,19 @@ def get_new_data_from_db(db: Session, jurir_no_list: list):
         "d.totalAsset2021 AS asset2021, d.totalDebt2021 AS debt2021, d.totalEquity2021 AS equity2021, "
         "d.revenue2021 AS revenue2021, d.operatingIncome2021 AS operatingincome2021, d.earningBeforeTax2021 AS EBT2021, "
         "d.margin2021 AS margin2021, d.turnover2021 AS turnover2021, d.leverage2021 AS leverage2021 "
-        "FROM companyInfo a "
-        "LEFT OUTER JOIN FS2023 b ON a.jurir_no = b.jurir_no "
+        "FROM FS2023 b "
+        "LEFT OUTER JOIN companyInfo a ON a.jurir_no = b.jurir_no "
         "LEFT OUTER JOIN FS2022 c ON a.jurir_no = c.jurir_no "
         "LEFT OUTER JOIN FS2021 d ON a.jurir_no = d.jurir_no "
-        "LEFT OUTER JOIN kb_data_v1_copy e ON TRIM(e.법인번호) = a.jurir_no "
-        "LEFT OUTER JOIN IRrate g ON e.산업분류코드 = g.표준산업분류 "
-        "WHERE a.jurir_no IN :jurir_no_list"
-    ).bindparams(bindparam('jurir_no_list', expanding=True))
+        "WHERE b.totalAsset2023 > 0 limit 100;"
+    )
 
-    result = db.execute(query, {"jurir_no_list": jurir_no_list})
+    result = db.execute(query)
     data = result.fetchall()
     columns = result.keys()
     new_data = pd.DataFrame(data, columns=columns)
     
-    logger.debug(new_data)
+    # logger.debug(new_data)
     
     return new_data
 
@@ -170,52 +185,11 @@ def insert_predictions_into_db(db: Session, prediction: dict, model_reference: s
         "model_reference": model_reference
     })
     db.commit()
-    
-    
 
-# def generate_predictions(db: Session, model, scaler, jurir_no_list: list):
-#     new_data = get_new_data_from_db(db, jurir_no_list)
-#     if new_data.empty:
-#         return {"error": "Data not found for the given jurir_no list"}, []
-
-#     predictions = []
-#     for _, row in new_data.iterrows():
-#         data = row.to_frame().T
-#         probabilities = preprocess_and_predict_proba(data, model, scaler)
-#         class_probabilities = list(zip(model.classes_, probabilities[0]))
-#         class_probabilities.sort(key=lambda x: x[1], reverse=True)
-        
-#         sorted_probabilities = []
-#         for cls, prob in class_probabilities:
-#             sorted_probabilities.append({
-#                 'class': cls, 
-#                 'probability': round(prob, 2)
-#             })
-        
-#         result = {
-#             "jurir_no": row["jurir_no"],
-#             "corp_name": row["corp_name"],
-#             "sorted_probabilities": sorted_probabilities
-#         }
-        
-#         predictions.append(result)
-
-#     return None, predictions
-
-# 재무정보 존재하는 법인번호 리스트 반환 / 신용등급 산출용
+# 여기서 법인 리스트 숫자 제한
 def get_jurir_no_list(db: Session):
     query = text("""
-    SELECT jurir_no 
-    FROM (
-        SELECT DISTINCT a.jurir_no, b.totalAsset2023
-        FROM companyInfo a 
-        LEFT OUTER JOIN FS2023 b 
-        ON a.jurir_no = b.jurir_no 
-        WHERE b.totalAsset2023 > 0
-    ) AS subquery
-    ORDER BY subquery.totalAsset2023 DESC
-
-    ;
+    select jurir_no from FS2023 where totalAsset2023 > 0 limit 100;
     """)
     result = db.execute(query)
     jurir_no_list = [row[0] for row in result.fetchall()]
@@ -270,7 +244,7 @@ def generate_predictions_dictionary(db: Session, model, scaler):
     if new_data.empty:
         return {"error": "Data not found for the given jurir_no list"}, []
             # 중복된 jurir_no 제거
-    new_data = new_data.drop_duplicates(subset=['jurir_no'])
+    # new_data = new_data.drop_duplicates(subset=['jurir_no'])
 
     predictions = []
     for _, row in new_data.iterrows():
@@ -292,7 +266,7 @@ def generate_predictions_dictionary(db: Session, model, scaler):
         predictions.append(result)
     
     
-    # logger.debug(f"Size of jurir_no_list: {len(jurir_no_list)}")
+    logger.debug(f"Size of jurir_no_list: {len(jurir_no_list)}")
     logger.debug(f"Size of predictions: {len(predictions)}")
     return None, predictions
 
