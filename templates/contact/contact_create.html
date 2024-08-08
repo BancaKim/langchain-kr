@@ -24,14 +24,11 @@
         box-shadow: none !important;
     }
 </style>
-
 {% endblock %}
 
 {% block content %}
 
-<div class="w-full"
-    style="background-image: url('/static/images/home8.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 40vh;">
-
+<div class="w-full" style="background-image: url('/static/images/home8.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 40vh;">
     <div class="p-8 w-full max-w-screen-xl mx-auto">
         <span class="block text-left text-xl mb-2">
             <a href="/" class="mr-2 text-white">홈 &nbsp; |</a>
@@ -41,55 +38,60 @@
         <br><br><br>
 
         <div class="text-center mb-4">
-            <h1 class="text-5xl font-bold text-white">섭외등록 글 작성 </h1>
+            <h1 class="text-5xl font-bold text-white">섭외등록 글 작성</h1>
         </div>
         <br><br><br>
     </div>
 </div>
-</div>
-
 
 <br><br>
 <section class="create">
     <div class="container">
- 
-        <form id="contactForm" method="post" enctype="multipart/form-data" class="bg-white border border-gray-300 rounded-lg shadow-md p-6 mb-4">
-            <div class="form-group mb-4">
-                <label for="username" class="block text-gray-800 text-lg font-semibold mb-2">작성자</label>
-                <input type="text" class="form-control bg-gray-100 text-gray-700 border border-gray-300 rounded-md p-2 w-full" id="username" name="username" value="{{ username }}" readonly>
-            </div>
-            <div class="form-group mb-4">
-                <label for="title" class="block text-gray-800 text-lg font-semibold mb-2">제목</label>
-                <input type="text" id="title" name="title" class="form-control bg-white text-gray-700 border border-gray-300 rounded-md p-2 w-full" required>
-            </div>
-            <div class="form-group mb-4">
-                <label for="content" class="block text-gray-800 text-lg font-semibold mb-2">내용</label>
-                <textarea id="content" name="content" rows="5" class="form-control bg-white text-gray-700 border border-gray-300 rounded-md p-2 w-full" required></textarea>
-            </div>
-            <div class="form-group mb-4">
-                <label for="file" class="block text-gray-800 text-lg font-semibold mb-2">파일 첨부 (선택 사항)</label>
-                <input type="file" id="file" name="file" class="bg-white text-gray-700 border border-gray-300 rounded-md p-2 w-full">
-            </div>
-            <div class="form-group mb-4">
-                <label for="corporation_name" class="block text-gray-800 text-lg font-semibold mb-2">법인명</label>
-                {% if corporation_name %}
-
-                <input type="text" id="corporation_name" name="corporation_name" class="form-control bg-white text-gray-700 border border-gray-300 rounded-md p-2 w-full" value="{{ corporation_name }}">
-                {% else %}
-                <input type="text" id="corporation_name" name="corporation_name" class="form-control bg-white text-gray-700 border border-gray-300 rounded-md p-2 w-full" required>
-                {% endif %}
-            </div>        
-            <div class="flex justify-center space-x-4 mt-4">
-                <button type="button" class=" bg-gray-800 text-white rounded hover:bg-gray-900 px-4 py-2" onclick="handleSubmit()">등록</button>
-                <button type="button" onclick="location.href='/contact'" class=" bg-gray-800 text-white rounded hover:bg-gray-900 px-4 py-2">목록으로</button>
-            </div>
-        </form>
-
+        <!-- Button to trigger the modal -->
+        <button type="button" class="bg-gray-800 text-white rounded hover:bg-gray-900 px-4 py-2" onclick="openCreateModal()">등록하기</button>
     </div>
 </section>
 
 <script>
-    function handleSubmit() {
+    function openCreateModal() {
+        Swal.fire({
+            title: '섭외 등록',
+            html: `
+                <form id="contactForm" class="mt-4">
+                    <div class="form-group mb-4">
+                        <label for="username" class="block text-gray-800 text-lg font-semibold mb-2">작성자</label>
+                        <input type="text" id="username" name="username" class="form-control bg-gray-100 text-gray-700 border border-gray-300 rounded-md p-2 w-full" value="{{ username }}" readonly>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="content" class="block text-gray-800 text-lg font-semibold mb-2">내용</label>
+                        <textarea id="content" name="content" rows="3" class="form-control bg-white text-gray-700 border border-gray-300 rounded-md p-2 w-full" required></textarea>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="corporation_name" class="block text-gray-800 text-lg font-semibold mb-2">법인명</label>
+                        <input type="text" id="corporation_name" name="corporation_name" class="form-control bg-white text-gray-700 border border-gray-300 rounded-md p-2 w-full" value="{{ corporation_name }}" readonly>
+                    </div>
+                </form>
+            `,
+            showCancelButton: true,
+            confirmButtonText: '등록',
+            preConfirm: () => {
+                const content = document.getElementById('content').value;
+                if (!content) {
+                    Swal.showValidationMessage('내용을 입력해주세요');
+                }
+                return {
+                    content: content,
+                    corporation_name: document.getElementById('corporation_name').value
+                };
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                handleSubmit(result.value);
+            }
+        });
+    }
+
+    function handleSubmit(formData) {
         Swal.fire({
             title: '섭외등록이 완료되었어요. 본부장님께 등록내역 송부도 진행할까요?',
             icon: 'question',
@@ -97,22 +99,41 @@
             confirmButtonText: '예',
             cancelButtonText: '아니오'
         }).then((result) => {
-            if (result.isConfirmed) {
-                // 사용자가 '예'를 클릭한 경우 이메일 전송 플래그를 설정하고 폼 제출
-                const form = document.getElementById('contactForm');
-                const emailInput = document.createElement('input');
-                emailInput.type = 'hidden';
-                emailInput.name = 'send_email_flag';
-                emailInput.value = 'true';
-                form.appendChild(emailInput);
-                form.submit();
-            } else {
-                // 사용자가 '아니오'를 클릭한 경우 이메일 전송 플래그 없이 폼 제출
-                document.getElementById('contactForm').submit();
-            }
+            const form = new FormData();
+            form.append('content', formData.content);
+            form.append('corporation_name', formData.corporation_name);
+            form.append('send_email_flag', result.isConfirmed ? 'true' : 'false');
+
+            fetch('/contact/create', {
+                method: 'POST',
+                body: form
+            })
+            .then(response => {
+                if (response.ok) {
+                    Swal.fire({
+                        title: '등록 성공',
+                        icon: 'success',
+                        text: '섭외등록이 완료되었습니다.',
+                        confirmButtonText: '확인'
+                    }).then(() => {
+                        window.location.href = "/contact5?jurir_no={{ company_info.jurir_no if company_info else '' }}";
+                    });
+                } else {
+                    throw new Error('등록 실패');
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    title: '오류 발생',
+                    icon: 'error',
+                    text: error.message,
+                    confirmButtonText: '확인'
+                });
+            });
         });
     }
 </script>
+
 
 {% if login_required %}
 <script>
@@ -128,7 +149,6 @@
         });
     });
 </script>
-
 {% endif %}
 <br><br><br>
 
