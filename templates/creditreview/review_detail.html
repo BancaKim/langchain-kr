@@ -288,6 +288,8 @@
         
                 async function fetchBotResponse(message) {
                     try {
+                        console.log("message:",message)
+                        console.log("company_info.corp_code:",{{company_info.corp_code}})
                         const response = await fetch(`/credit/chatMessage?corp_code={{ company_info.corp_code }}&user_input=${encodeURIComponent(message)}`);
                         const data = await response.json();
                         addMessage('bot', data.answer);
