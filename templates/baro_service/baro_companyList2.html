@@ -157,8 +157,10 @@
                         </td>
 
                         <td class="px-6 py-4 border-b whitespace-nowrap">
-                            <a href="/baro_contact?jurir_no={{ company.company_jurir_no }}&register=true"
-                                class="text-purple-500 hover:underline">등록</a>
+                            <form method="GET" action="/contact5">
+                                <input type="hidden" name="jurir_no" value="{{ company.company_jurir_no }}">
+                                <button type="submit" class="text-purple-500 hover:underline">등록</button>
+                            </form>
                         </td>
                     </tr>
                     {% endfor %}
@@ -228,11 +230,11 @@
 
 
                         <td class="px-6 py-4 border-b whitespace-nowrap">
-                            <a href="/baro_contact?jurir_no={{ company.company_jurir_no }}&register=true"
-                                class="text-purple-500 hover:underline">등록</a>
-
-                        </td>
-                        </td>
+                            <form method="GET" action="/contact5">
+                                <input type="hidden" name="jurir_no" value="{{ company.company_jurir_no }}">
+                                <button type="submit" class="text-purple-500 hover:underline">등록</button>
+                            </form>
+                        </td>                   
                     </tr>
                     {% endfor %}
                 </tbody>

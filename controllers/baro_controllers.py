@@ -308,7 +308,7 @@ async def read_company_info(
         print("An error occurred:", str(e))
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
-# 법인명으로 섭외등록 연결 김철민 수정
+# 법인명으로 섭외등록 연결
 @baro.get("/baro_contact", response_class=HTMLResponse)
 async def read_company_info(request: Request, jurir_no: str = Query(...), register: bool = False, db: Session = Depends(get_db)):
     company_info = get_company_info(db, jurir_no)
@@ -319,9 +319,26 @@ async def read_company_info(request: Request, jurir_no: str = Query(...), regist
         # 법인명을 세션에 저장
         request.session['corporation_name'] = company_info.corp_name
         # 섭외등록 페이지로 리다이렉트
-        return RedirectResponse(url="/contact/create")
+        return RedirectResponse(url="/contact5")
     # logger.info(f"company_info.corp_code: {company_info.corp_code}")
     # return templates.TemplateResponse("baro_service/baro_companyInfo.html", {"request": request, "company_info": company_info})
+
+# 섭외등록 수정 후 8월 2주차 수정
+@baro.post("/baro_contact", response_class=HTMLResponse)
+async def register_company(
+    request: Request,
+    jurir_no: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    company_info = get_company_info(db, jurir_no)
+    if not company_info:
+        raise HTTPException(status_code=404, detail="Company not found")
+    
+    # 법인명을 세션에 저장
+    request.session['corporation_name'] = company_info.corp_name
+    
+    # 섭외등록 페이지로 리다이렉트
+    return RedirectResponse(url="/contact5", status_code=303)
 
 # 지도에 주소 기반 검색 결과 표시 김철민 수정
 @baro.get("/baro_map2", response_class=HTMLResponse)
@@ -349,7 +366,7 @@ async def search_news_by_jurir_no(request: Request, jurir_no: str = Query(...), 
         return templates.TemplateResponse("contact/news2.html", {"request": request, "news": news_articles, "corporation_name": company_info.corp_name})
     except HTTPException as e:
         return templates.TemplateResponse("contact/news2.html", {"request": request, "error": str(e), "news": [], "corporation_name": company_info.corp_name})
-# 철민 수정끝
+# kcm 수정끝
     
 @baro.get("/test1234")
 async def read_join(request: Request):
