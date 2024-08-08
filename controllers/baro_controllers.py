@@ -155,6 +155,7 @@ async def read_company_info(
     name: Optional[str] = Form(None),
     search_type: Optional[str] = Form(None)
 ):
+    username = request.session.get("username")
     try:
         query = db.query(CompanyInfo)
         
@@ -266,7 +267,8 @@ async def read_company_info(
                 "stockgraph": stockgraph,  # stockgraph 변수를 템플릿에 전달
                 "kakao_map_api_key": kakao_map_api_key, 
                 "adres": adres,
-                "top3_rate": top3_rate
+                "top3_rate": top3_rate,
+                "username": username
             }
         )
     except Exception as e:
