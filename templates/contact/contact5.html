@@ -273,10 +273,15 @@
             {% for post in posts|batch(2) %}
                 <div class="sticky-note-row flex space-x-4">
                     {% for p in post %}
-                        <div class="sticky-note flex-1 bg-purple-50 p-4 rounded-lg shadow-md">
+                        <div class="sticky-note flex-1 bg-purple-50 p-4 rounded-lg shadow-md relative">
                             <p class="sticky-note-content">{{ p.content }}</p>
-                            <div class="sticky-note-info text-sm text-gray-600 mt-2">
-                                <span>{{ p.username }} | {{ p.created_at.strftime('%Y-%m-%d') }}</span>
+                            <div class="sticky-note-info absolute bottom-4 left-4 text-base">
+                                <span>섭외유형: {{ p.contact_type }}</span><br>
+                                <span>섭외방법: {{ p.contact_method }}</span>
+                            </div>
+                            <div class="sticky-note-info absolute bottom-4 right-4 text-base text-right">
+                                <span>{{ p.username }}</span><br>
+                                <span>{{ p.created_at.strftime('%Y-%m-%d') }}</span>
                             </div>
                         </div>
                     {% endfor %}
@@ -287,6 +292,9 @@
         {% endif %}
     </div>
 </div>
+
+
+
 
 
 </div>
