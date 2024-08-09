@@ -12,7 +12,16 @@ from datetime import datetime
 import json
 from sqlalchemy.orm import Session
 import time
+import pickle
+import json
+from io import BytesIO
+import pandas as pd
+from typing import Dict, List
+from models.ML_model import ModelInfo
+from mysqlConnector import create_connection, close_connection, Error
+import logging
 
+logger = logging.getLogger(__name__)
 logger = logging.getLogger('uvicorn.error')
 logger.setLevel(logging.DEBUG)
 
@@ -20,8 +29,8 @@ def train_model():
     # file_path = r'C:\01DevelopKits\FinalProject\exel\fssDown\aa_fs2022_fs2023_1526.csv'
     file_path = r'C:\01DevelopKits\FinalProject\exel\fssDown\aa_fs2022_fs2023_07310945.csv'
     # 모델로딩이 너무 느려서 파일 가벼운 aa_fs2022_fs2023_07311059.csv 로 임시로 돌림
-    df = pd.read_csv(file_path)
-    df = df.dropna()
+    df_origin = pd.read_csv(file_path)
+    df = df_origin.dropna()
 
     feature_columns = [
             'asset2023', 'debt2023', 'equity2023', 'revenue2023', 'operatingincome2023', 'EBT2023', 'margin2023', 'turnover2023', 'leverage2023',
@@ -73,11 +82,131 @@ def train_model():
         "n_estimators": model.n_estimators,
         "max_features": model.max_features,
         "feature_importances": model.feature_importances_.tolist(),
+        "feature_names": model.feature_names_in_.tolist(),  # feature_names 추가
         "n_samples": len(df)
     }
 
-    return model, scaler, accuracy, class_report, conf_matrix, model_info
+    return model, scaler, accuracy, class_report, conf_matrix, model_info, df_origin, feature_columns
 
+
+
+def save_model_info_to_db(model_info: Dict, accuracy: float, model, feature_columns: List[str]):
+    try:
+        # 모델 객체를 직렬화
+        logger.debug('모델 객체를 직렬화 시작')
+        model_binary = pickle.dumps(model, protocol=pickle.HIGHEST_PROTOCOL)
+        model_binary_size = len(model_binary)
+        logger.debug(f'모델 객체를 직렬화 완료, 크기: {model_binary_size} 바이트')
+
+        # 피처 컬럼 이름을 JSON으로 직렬화
+        logger.debug('피처 컬럼 이름을 JSON으로 직렬화 시작')
+        feature_columns_json = json.dumps(feature_columns)
+        logger.debug('피처 컬럼 이름을 JSON으로 직렬화 완료')
+
+        connection = create_connection()
+        if connection:
+            try:
+                cursor = connection.cursor()
+                logger.debug("데이터베이스에 연결됨")
+                query = """
+                INSERT INTO model_storage (model_name, creation_date, n_estimators, max_features, accuracy, feature_importances, n_samples, model_binary, feature_columns)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """
+                data = (
+                    model_info["model_name"],
+                    model_info["creation_date"],
+                    model_info["n_estimators"],
+                    model_info["max_features"],
+                    accuracy,
+                    json.dumps(dict(zip(model_info["feature_names"], model_info["feature_importances"]))),
+                    model_info["n_samples"],
+                    model_binary,
+                    feature_columns_json
+                )
+                cursor.execute(query, data)
+                connection.commit()
+                logger.info("모델이 저장되었습니다")
+            except Error as e:
+                logger.error(f"DB 삽입 중 오류 발생: {e}")
+                connection.rollback()
+            finally:
+                close_connection(connection)
+    except Exception as e:
+        logger.error(f"모델 직렬화 중 오류 발생: {e}")
+        raise e
+
+
+
+# sql alchemy 방식
+# def save_model_info_to_db(db: Session, model_info: Dict, accuracy: float, model, feature_columns: List[str]):
+#     try:
+#         # 모델 객체를 직렬화
+#         logger.debug('모델 객체를 직렬화 시작')
+#         model_binary = pickle.dumps(model)
+#         logger.debug('모델 객체를 직렬화 완료')
+        
+#         logger.debug('피처 컬럼 이름을 JSON으로 직렬화 시작')
+#         # 피처 컬럼 이름을 JSON으로 직렬화
+#         feature_columns_json = json.dumps(feature_columns)
+#         logger.debug('피처 컬럼 이름을 JSON으로 직렬화 완료')
+
+#         logger.debug('모델 정보를 데이터베이스에 저장 시작')
+#         # 모델 정보를 데이터베이스에 저장
+#         model_record = ModelInfo(
+#             model_name=model_info["model_name"],
+#             creation_date=model_info["creation_date"],
+#             n_estimators=model_info["n_estimators"],
+#             max_features=model_info["max_features"],
+#             accuracy=accuracy,
+#             feature_importances=json.dumps(dict(zip(model_info["feature_names"], model_info["feature_importances"]))),
+#             n_samples=model_info["n_samples"],
+          
+#             feature_columns=feature_columns_json,
+#         )
+        
+#         logger.debug(f'model_info: {model_info}')
+#         logger.debug(f'accuracy: {accuracy}')
+#         logger.debug(f'model: {model}')
+#         logger.debug(f'feature_columns: {feature_columns}')
+        
+#         logger.debug('db.add(model_record) 직전')
+#         db.add(model_record)
+#         logger.debug('db.add(model_record) 완료')
+#         db.commit()
+#         logger.debug('db.commit() 완료')
+#         db.refresh(model_record)
+#         logger.debug('db.refresh(model_record) 완료')
+#         return model_record
+#     except Exception as e:
+#         logger.error(f"DB 삽입 중 오류 발생: {e}")
+#         db.rollback()
+#         raise e
+
+
+
+    
+def load_model_info_from_db(db: Session, model_id: int):
+    model_record = db.query(ModelInfo).filter(ModelInfo.id == model_id).first()
+    if model_record:
+        model = pickle.loads(model_record.model_binary)  # 직렬화된 모델 객체를 역직렬화
+        feature_columns = json.loads(model_record.feature_columns)  # 피처 컬럼 이름을 JSON에서 복원
+
+        # df_origin을 CSV에서 복원
+        df_origin_csv = BytesIO(model_record.df_origin)
+        df_origin = pd.read_csv(df_origin_csv)
+
+        return model, feature_columns, df_origin
+    else:
+        return None, None, None
+
+
+
+
+
+
+
+
+# generate_predictions 에서 사용 실제로 신용등급 산출하는 로직
 def preprocess_and_predict_proba(new_data, model, scaler):
     if model is None:
         raise ValueError("The model is not trained yet. Please train the model before prediction.")
@@ -114,6 +243,8 @@ def preprocess_and_predict_proba(new_data, model, scaler):
         # "LEFT OUTER JOIN kb_data_v1_copy e ON TRIM(e.법인번호) = a.jurir_no "
         # "LEFT OUTER JOIN IRrate g ON e.산업분류코드 = g.표준산업분류 "
         # "WHERE a.jurir_no IN :jurir_no_list"
+        
+# 예측을 위한 데이터 추출
 def get_new_data_from_db(db: Session, jurir_no_list: list):
     query = text(
         "SELECT a.corp_name, a.jurir_no,"
@@ -143,6 +274,7 @@ def get_new_data_from_db(db: Session, jurir_no_list: list):
     return new_data
 
 
+# generate_predictions에서 생성된 예상치를 DB에 삽입
 def insert_predictions_into_db(db: Session, prediction: dict, model_reference: str):
     query = text("""
     INSERT INTO predict_ratings (
@@ -196,7 +328,7 @@ def get_jurir_no_list(db: Session):
     logger.debug(f"Size of jurir_no_list: {len(jurir_no_list)}")
     return jurir_no_list
 
-# 재무정보 존재하는 법인번호 리스트 받아서 신용등급 산출
+# 재무정보 존재하는 법인번호 리스트 받아서 신용등급 산출 insert_predictions에서 사용
 def generate_predictions(db: Session, model, scaler):
     jurir_no_list = get_jurir_no_list(db)
     logger.debug(f"Size of jurir_no_list: {len(jurir_no_list)}")
@@ -237,7 +369,7 @@ def generate_predictions(db: Session, model, scaler):
 
     return None, predictions
 
-
+# predict all에서 사용
 def generate_predictions_dictionary(db: Session, model, scaler):
     jurir_no_list = get_jurir_no_list(db)
     new_data = get_new_data_from_db(db, jurir_no_list)
@@ -271,6 +403,7 @@ def generate_predictions_dictionary(db: Session, model, scaler):
     return None, predictions
 
 
+# view_DB_predict 에서 사용
 def get_db_predictions(db: Session):
     query = text("""
     SELECT *

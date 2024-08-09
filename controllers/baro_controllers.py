@@ -10,8 +10,11 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import distinct, text, func
 from schemas.baro_schemas import CompanyInfoSchema
+
+from services_def.baro_service import get_autocomplete_suggestions, get_corp_info_code, get_corp_info_jurir_no, get_corp_info_name, get_company_info, get_stockgraph, get_stockgraph1
+from services_def.baro_service import get_FS2023, get_FS2022, get_FS2021, get_FS2020, get_Stock_data, get_company_info_list, search_company, get_company_infoFS_list
+from services_def.baro_service import get_custom_key_mapping, get_credit_ratings, get_top3_ratings
 from services_def.baro_service import  FavoriteService, get_company_info, get_favorite_companies,  get_stockgraph1, generate_pdf, get_username_from_session
-from services_def.baro_service import get_FS2023, get_FS2022, get_FS2021, get_FS2020, get_Stock_data,  search_company, get_company_infoFS_list
 import logging
 from typing import Dict, List, Optional
 from models.baro_models import CompanyInfo
@@ -373,8 +376,43 @@ async def autocomplete(
         db.close()
 
 
+@baro.get("/baro_companyInfo3", response_class=HTMLResponse)
+async def read_company_info(request: Request, jurir_no: str = Query(...), db: Session = Depends(get_db)):
+    username = request.session.get("username")
+    
+    company_info = get_company_info(db, jurir_no)
+    FS2023 = get_FS2023(db, jurir_no)
+    logger.info(f"FS2023: {FS2023}")
+    # FS2022 = get_FS2022(db, jurir_no)
+    # FS2021 = get_FS2021(db, jurir_no)
+    # FS2020 = get_FS2020(db, jurir_no)
+    # stock_data = get_Stock_data(db, company_info.corp_code)
+    # stockgraph = await get_stockgraph1(company_info.stock_code)  # await 사용
+    
+    # adres = company_info.adres
+    # kakao_map_api_key = os.getenv("KAKAO_MAP_API_KEY")
+    
+    # custom_key_mapping = get_custom_key_mapping()
+    # ratings = get_credit_ratings(db, jurir_no, custom_key_mapping)
+    # top3_rate = get_top3_ratings(ratings)
 
-## ####################################################################################################################################
+    return templates.TemplateResponse("baro_service/baro_Test.html", {
+        "request": request,
+        "username": username,
+        "company_info": company_info,
+        "fs2023": FS2023,
+        # "fs2022": FS2022,
+        # "fs2021": FS2021,
+        # "fs2020": FS2020,
+        # "stock_data": stock_data,
+        # "stockgraph": stockgraph,
+        # "kakao_map_api_key": kakao_map_api_key,
+        # "adres": adres,
+        # "top3_rate": top3_rate
+    })
+    
+    
+   
 
 def get_base64_image(image_path):
     with open(image_path, "rb") as img_file:
@@ -531,3 +569,4 @@ async def read_favorites(request: Request, db: Session = Depends(get_db)):
         return companies  # 빈 리스트를 반환해도 예외를 던지지 않습니다.
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
