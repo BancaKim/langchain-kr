@@ -3,13 +3,14 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, JSONResponse
 from sqlalchemy.orm import Session
 from database import SessionLocal
-from services_def.ML_service import train_model, insert_predictions_into_db, generate_predictions, generate_predictions_dictionary, get_db_predictions
+from services_def.ML_service import train_model, insert_predictions_into_db, generate_predictions, generate_predictions_dictionary, get_db_predictions, save_model_info_to_db
 import logging
 import json
 import asyncio
 import time
 from datetime import datetime
 
+logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 machineLearning = APIRouter()
@@ -35,22 +36,29 @@ def get_db():
     finally:
         db.close()
 
+
+
 @machineLearning.get("/train/", response_class=HTMLResponse)
 async def train(request: Request):
     username = request.session.get("username")
-    model, scaler, accuracy, class_report, conf_matrix, model_info = train_model()
-    
+    model, scaler, accuracy, class_report, conf_matrix, model_info, df_origin, feature_columns = train_model()
+
     # Define the credit ratings corresponding to each class
     credit_ratings = ['A', 'A+', 'A-', 'AA', 'AA+', 'AA-', 'AAA', 'B', 'B+', 'B-', 'BB', 'BB+', 'BB-', 'BBB', 'BBB+', 'BBB-']
 
-    
     # Store the model and related information
-    model_store["model"] = model
-    model_store["scaler"] = scaler
-    model_store["accuracy"] = accuracy
-    model_store["class_report"] = class_report
-    model_store["conf_matrix"] = conf_matrix
-    model_store["model_info"] = {**model_info, "feature_importances": dict(zip(model.feature_names_in_, model_info['feature_importances']))}
+    model_store = {
+        "model": model,
+        "scaler": scaler,
+        "accuracy": accuracy,
+        "class_report": class_report,
+        "conf_matrix": conf_matrix,
+        "model_info": {**model_info, "feature_importances": dict(zip(model.feature_names_in_, model_info['feature_importances']))}
+    }
+
+    # Save model info to DB
+    logger.info('Save model info to DB start')
+    save_model_info_to_db(model_store["model_info"], accuracy, model, feature_columns)
 
     return templates.TemplateResponse("ML_template/ML_view.html", {
         "request": request,
@@ -62,6 +70,40 @@ async def train(request: Request):
         "show_predict_button": True,
         "username": username
     })
+
+#  train 백업
+# @machineLearning.get("/train/", response_class=HTMLResponse)
+# async def train(request: Request, db: Session = Depends(get_db)):
+#     username = request.session.get("username")
+#     model, scaler, accuracy, class_report, conf_matrix, model_info, df_origin, feature_columns = train_model()
+    
+#     # Define the credit ratings corresponding to each class
+#     credit_ratings = ['A', 'A+', 'A-', 'AA', 'AA+', 'AA-', 'AAA', 'B', 'B+', 'B-', 'BB', 'BB+', 'BB-', 'BBB', 'BBB+', 'BBB-']
+
+#     # Store the model and related information
+#     model_store["model"] = model
+#     model_store["scaler"] = scaler
+#     model_store["accuracy"] = accuracy
+#     model_store["class_report"] = class_report
+#     model_store["conf_matrix"] = conf_matrix
+#     model_store["model_info"] = {**model_info, "feature_importances": dict(zip(model.feature_names_in_, model_info['feature_importances']))}
+
+#     # Save model info to DB
+#     logger.info('Save model info to DB start')
+#     model_info_db = save_model_info_to_db(db, model_store["model_info"], accuracy, model, feature_columns)
+
+#     return templates.TemplateResponse("ML_template/ML_view.html", {
+#         "request": request,
+#         "accuracy": round(accuracy, 2),
+#         "class_report": class_report,
+#         "conf_matrix": conf_matrix,
+#         "model_info": model_store["model_info"],
+#         "credit_ratings": credit_ratings,
+#         "show_predict_button": True,
+#         "username": username
+#     })
+    
+
 
 
 @machineLearning.get("/predict_all/", response_class=HTMLResponse)
@@ -161,7 +203,7 @@ async def view_DB_predict(request: Request, db: Session = Depends(get_db)):
     # logger.info(predictions_dict)
     return templates.TemplateResponse("ML_template/ML_DBcreditView.html", {
         "request": request,
-        "predictions": predictions_dict,
+       
         "username": username
     })
     

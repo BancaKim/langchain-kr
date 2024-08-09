@@ -9,6 +9,12 @@ from database import SessionLocal
 from sqlalchemy import func, cast, Integer
 from sqlalchemy.orm import Session
 from sqlalchemy import text
+
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 from models.baro_models import CompanyInfo, FS2023, FS2022, FS2021, FS2020, Favorite, StockData
 
 import zipfile
@@ -23,6 +29,7 @@ from langchain.prompts import PromptTemplate
 from langchain.chains.llm import LLMChain
 from langchain.chains.combine_documents.stuff import StuffDocumentsChain
 from langchain.chains import MapReduceDocumentsChain, ReduceDocumentsChain
+
 
 
 
@@ -121,6 +128,7 @@ def get_FS2023_list(db: Session, jurir_no_list: List[str]) -> List[FS2023]:
     return db.query(FS2023).filter(FS2023.jurir_no.in_(jurir_no_list)).all()
 
 def get_FS2023(db: Session, jurir_no: str):
+
     # Retrieve the data from the database
     fs_data = db.query(FS2023).filter(FS2023.jurir_no == jurir_no).first()
 
@@ -244,6 +252,7 @@ def get_FS2020(db: Session, jurir_no: str):
             leverage2020=0.0,
             created_at=None
         )
+
 
 """
 def get_FS2022(db: Session, jurir_no: str):
@@ -386,6 +395,88 @@ async def get_stockgraph1(stock_code: str) -> Dict[str, List[Dict[str, Union[str
     
 
 
+def get_custom_key_mapping() -> dict:
+    return {
+        'AAA_plus': 'AAA+',
+        'AAA': 'AAA',
+        'AAA_minus': 'AAA-',
+        'AA_plus': 'AA+',
+        'AA': 'AA',
+        'AA_minus': 'AA-',
+        'A_plus': 'A+',
+        'A': 'A',
+        'A_minus': 'A-',
+        'BBB_plus': 'BBB+',
+        'BBB': 'BBB',
+        'BBB_minus': 'BBB-',
+        'BB_plus': 'BB+',
+        'BB': 'BB',
+        'BB_minus': 'BB-',
+        'B_plus': 'B+',
+        'B': 'B',
+        'B_minus': 'B-',
+        'CCC_plus': 'CCC+',
+        'CCC': 'CCC',
+        'CCC_minus': 'CCC-',
+        'C': 'C',
+        'D': 'D'
+    }
+
+def get_credit_ratings(db, jurir_no: str, custom_key_mapping: dict) -> dict:
+    query1 = text("""
+    SELECT AAA_plus, AAA, AAA_minus, AA_plus, AA, AA_minus, A_plus, A, A_minus, 
+        BBB_plus, BBB, BBB_minus, BB_plus, BB, BB_minus, B_plus, B, B_minus, 
+        CCC_plus, CCC, CCC_minus, C, D
+    FROM spoon.predict_ratings
+    WHERE base_year = '2023' AND corporate_number = :corporate_number
+    ORDER BY timestamp DESC
+    LIMIT 1;
+    """)
+
+    credit_rate = db.execute(query1, {"corporate_number": jurir_no}).fetchone()
+    
+    if not credit_rate:
+        default_ratings = {
+            'AAA+': 0,
+            'AAA': 0,
+            'AAA-': 0,
+            'AA+': 0,
+            'AA': 0,
+            'AA-': 0,
+            'A+': 0,
+            'A': 0,
+            'A-': 0,
+            'BBB+': 0,
+            'BBB': 0,
+            'BBB-': 0,
+            'BB+': 0,
+            'BB': 0,
+            'BB-': 0,
+            'B+': 0,
+            'B': 0,
+            'B-': 0,
+            'CCC+': 0,
+            'CCC': 0,
+            'CCC-': 0,
+            'C': 0,
+            'D': 0
+        }
+        return default_ratings
+    else:
+        return {custom_key_mapping.get(k, k): v for k, v in credit_rate._mapping.items() if v is not None}
+
+      
+def get_top3_ratings(ratings: dict) -> list:
+    # Sort and select top 3 ratings
+    top3_ratings = sorted(ratings.items(), key=lambda item: item[1], reverse=True)[:3]
+    
+    # Ensure at least 3 entries in top3_rate with default values if less than 3 available
+    top3_rate = [{"key": column, "value": value} for column, value in top3_ratings]
+    while len(top3_rate) < 3:
+        top3_rate.append({"key": "N/A", "value": 0})  # Use "N/A" or other default key
+    
+    return top3_rate
+
 
 import pdfkit
 import logging
@@ -489,3 +580,4 @@ def get_favorite_companies(db: Session, username: str):
                 "netIncome2023": financial_info.netIncome2023 if financial_info else None
             })
     return favorite_companies
+
