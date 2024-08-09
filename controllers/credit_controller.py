@@ -26,6 +26,7 @@ from langgraph.graph import END, StateGraph
 from langgraph.checkpoint.memory import MemorySaver
 from langchain_core.runnables import RunnableConfig
 from langchain_community.tools.tavily_search import TavilySearchResults
+import logging
 
 credit = APIRouter(prefix="/credit")
 templates = Jinja2Templates(directory="templates")
@@ -33,6 +34,8 @@ templates = Jinja2Templates(directory="templates")
 # .env 파일에서 환경 변수를 로드합니다
 load_dotenv()
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # @credit.get("/createReview/")
 # async def create_review(db: Session = Depends(get_db)):
@@ -285,17 +288,46 @@ async def autocomplete(
     finally:
         db.close()
 
+
 @credit.get("/chatMessage")
-async def getMessage(    
+async def getMessage(
     request: Request,
     corp_code: str = None,
     user_input: str = None,
-    db: Session = Depends(get_db)):
-    
-    reportContent = db.query(ReportContent).filter(ReportContent.corp_code == corp_code).first()
-    content = reportContent.report_content
-    chatbot_app = setup_chatbot(content)
-    
-    answer = generate_response(chatbot_app, user_input)
-    
-    return JSONResponse(content={"answer": answer})
+    db: Session = Depends(get_db),
+):
+
+    try:
+        logger.info(
+            f"Received request for corp_code: {corp_code}, user_input: {user_input}"
+        )
+
+        if not corp_code or not user_input:
+            raise HTTPException(
+                status_code=400, detail="Missing corp_code or user_input"
+            )
+
+        reportContent = (
+            db.query(ReportContent).filter(ReportContent.corp_code == corp_code).first()
+        )
+        if not reportContent:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Report content not found for corp_code: {corp_code}",
+            )
+
+        content = reportContent.report_content
+        logger.info(f"Retrieved content for corp_code: {corp_code}")
+        chatbot_app = setup_chatbot(content)
+        logger.info("Chatbot setup completed")
+        answer = generate_response(chatbot_app, user_input)
+        logger.info("Generated response")
+        return JSONResponse(content={"answer": answer})
+    except HTTPException as he:
+        logger.error(f"HTTP Exception: {str(he)}")
+        raise he
+    except Exception as e:
+        logger.error(f"Unexpected error in getMessage: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred: {str(e)}"
+        )
