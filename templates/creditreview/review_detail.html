@@ -11,7 +11,7 @@
             await Swal.fire({
                 title: 'AI 심사보고서 생성중',
                 html: '잠시만 기다려주세요...',
-                timer: 5000,
+                timer: 3000,
                 timerProgressBar: true,
                 allowOutsideClick: false,
                 showConfirmButton: false,
@@ -80,68 +80,51 @@
     .chat-container {
         display: flex;
         flex-direction: column;
-        height: 500px;
+        height: 400px;
         border: 1px solid #ccc;
-        border-radius: 8px;
-        overflow: hidden;
+        border-radius: 5px;
     }
-
     .chat-messages {
-        flex: 1;
-        padding: 16px;
+        flex-grow: 1;
         overflow-y: auto;
-        background-color: #f9f9f9;
+        padding: 10px;
     }
-
     .chat-message {
-        margin-bottom: 16px;
-    }
-
-    .chat-message.user {
-        text-align: right;
-    }
-
-    .chat-message p {
-        display: inline-block;
-        padding: 12px;
-        border-radius: 8px;
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 10px;
         max-width: 70%;
     }
-
-    .chat-message.user p {
-        background-color: #7f56d9;
-        color: #fff;
+    .bot {
+        background-color: #f0f0f0;
+        border: 1px solid #d0d0d0;
+        align-self: flex-start;
     }
-
-    .chat-message.bot p {
-        background-color: #e5e7eb;
-        color: #000;
+    .user {
+        background-color: #e7f3fe;
+        border: 1px solid #c0d9f0;
+        align-self: flex-end;
+        margin-left: auto;
     }
-
     .chat-input {
         display: flex;
+        padding: 10px;
         border-top: 1px solid #ccc;
-        background-color: #fff;
     }
-
-    .chat-input input {
-        flex: 1;
-        padding: 12px;
-        border: none;
-        border-radius: 0;
-        outline: none;
+    #userInput {
+        flex-grow: 1;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
     }
-
-    .chat-input button {
-        padding: 12px 20px;
+    #sendButton {
+        margin-left: 10px;
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
         border: none;
-        background-color: #7f56d9;
-        color: #fff;
+        border-radius: 5px;
         cursor: pointer;
-    }
-
-    .chat-input button:hover {
-        background-color: #6a46b0;
     }
 </style>
 <meta charset="UTF-8">
@@ -228,24 +211,6 @@
                         <li>
                             <p class="text-lg font-semibold mb-4">설립일: {{ company_info.est_dt }}</p>
                         </li>
-
-                        <!-- 채팅창 추가-->
-                        <li>
-                            <p class="text-lg font-semibold mb-4">AI 챗봇</p>
-                        </li>
-                            <div class="chat-container" style="height: 600px;">
-                                <div class="chat-messages"  id="chatMessages">
-                                    <div class="chat-message bot">
-                                        <p>안녕하세요! <br> AI 기업금융 전문가Spoon 입니다. 
-                                        <br> {{company_info.corp_name}}에 대해 궁금한 점이 있으신가요?</p>
-                                    </div>
-                                </div>
-                                <div class="chatchat-container" id="chatContainer"></div>
-                                <div class="chat-input">
-                                    <input type="text" id="userInput" placeholder="질문을 입력하세요...">
-                                    <button id="sendButton">전송</button>
-                                </div>
-                            </div>
                     </ul>
                     {% else %}
                     <p class="text-gray-600">해당 기업은 금융감독원(Dart API)에서 정보를 제공받을 수 없습니다.</p>
@@ -254,50 +219,7 @@
             </div>
         </div>
 
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const chatContainer = document.getElementById('chatContainer');
-                const userInput = document.getElementById('userInput');
-                const sendButton = document.getElementById('sendButton');
-        
-                sendButton.addEventListener('click', sendMessage);
-                userInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        sendMessage();
-                    }
-                });
-        
-                function sendMessage() {
-                    const message = userInput.value.trim();
-                    console.log(message)
-                    if (message) {
-                        addMessage('user', message);
-                        fetchBotResponse(message);
-                        userInput.value = '';
-                    }
-                }
-        
-                function addMessage(sender, content) {
-                    console.log("addMessage:")
-                    const messageDiv = document.createElement('div');
-                    messageDiv.className = `chat-message ${sender}-message`;
-                    messageDiv.textContent = content;
-                    chatContainer.appendChild(messageDiv);
-                    chatContainer.scrollTop = chatContainer.scrollHeight;
-                }
-        
-                async function fetchBotResponse(message) {
-                    try {
-                        const response = await fetch(`/credit/chatMessage?corp_code={{ company_info.corp_code }}&user_input=${encodeURIComponent(message)}`);
-                        const data = await response.json();
-                        addMessage('bot', data.answer);
-                    } catch (error) {
-                        console.error('Error:', error);
-                        addMessage('bot', '죄송합니다. 오류가 발생했습니다.');
-                    }
-                }
-            });
-        </script>
+
 
         <div id="streamContent" class="col-span-2 flex flex-col">
             <!-- 스트리밍된 콘텐츠가 이곳에 삽입됩니다 -->
@@ -305,17 +227,89 @@
     </div>
 
     <br>
-
+    <!-- 챗봇 시작-->
     <div class="flex-1 bg-white rounded-lg shadow-lg">
         <div class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg">
-            <h2 class="text-xl font-semibold text-gray-800">관심 뉴스</h2>
+            <h2 class="text-xl text-center font-semibold text-gray-800">AI 챗봇</h2>
         </div>
-        <div class="p-6">
-        뉴스 스크래핑 추가 예정
+        <div class="chat-container">
+            <div id="chatMessages" class="chat-messages">
+                <div class="chat-message bot">
+                    안녕하세요!<br>
+                    AI 기업금융 전문가Spoon 입니다.<br>
+                    {{company_info.corp_name}}에 대해 궁금한 점이 있으신가요?
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="userInput" placeholder="메시지를 입력하세요...">
+                <button id="sendButton">전송</button>
+            </div>
+        </div>
+    </div>
+        <!-- 챗봇 끝 -->
+
         </div>
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+    
+        function addMessage(message, isUser) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('chat-message');
+            messageDiv.classList.add(isUser ? 'user' : 'bot');
+            if (!isUser) {
+                message = message.replace(/\(출처: Document\)/g, "(출처: AI심사보고서)");
+            }
 
+
+            messageDiv.textContent = message;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (message) {
+                addMessage(message, true);
+                userInput.value = '';
+    
+                // Show loading alert
+                Swal.fire({
+                    title: 'AI 응답이 생성중입니다.',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    willOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Send message to server and get response
+                fetch(`/credit/chatMessage?corp_code={{company_info.corp_code}}&user_input=${encodeURIComponent(message)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        Swal.close();
+                        addMessage(data.answer, false);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.close();
+                        addMessage('죄송합니다. 오류가 발생했습니다.', false);
+                    });
+            }
+        }
+    
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    });
+    </script>
 <style>
     .container {
         max-width: 80%;

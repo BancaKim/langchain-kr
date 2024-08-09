@@ -187,3 +187,10 @@ class FS2020(Base):
     turnover2020 = Column(Numeric(20, 3))
     leverage2020 = Column(Numeric(20, 3))
     created_at = Column(TIMESTAMP)
+
+
+class Favorite(Base):
+    __tablename__ = 'favorites'
+    id = Column(Integer, primary_key=True, autoincrement=True)   
+    username = Column(String(100))
+    corp_code = Column(String(8))

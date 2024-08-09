@@ -2,18 +2,36 @@ import yfinance as yf
 from datetime import datetime, timedelta
 from typing import Dict, List, Union
 from bs4 import BeautifulSoup
-from fastapi import requests
+from fastapi import HTTPException, Request, requests ,status
 import httpx
 from jinja2 import Template
 from database import SessionLocal
 from sqlalchemy import func, cast, Integer
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from models.baro_models import CompanyInfo, FS2023, FS2022, FS2021, FS2020, StockData
+
 import logging
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+from models.baro_models import CompanyInfo, FS2023, FS2022, FS2021, FS2020, Favorite, StockData
+
+import zipfile
+import io
+from lxml import etree
+import pandas as pd
+import tempfile
+from langchain_community.document_loaders import BSHTMLLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_openai import ChatOpenAI
+from langchain.prompts import PromptTemplate
+from langchain.chains.llm import LLMChain
+from langchain.chains.combine_documents.stuff import StuffDocumentsChain
+from langchain.chains import MapReduceDocumentsChain, ReduceDocumentsChain
+
+
+
 
 def search_company(db: Session, keyword: str) -> List[str]:
 
@@ -110,24 +128,133 @@ def get_FS2023_list(db: Session, jurir_no_list: List[str]) -> List[FS2023]:
     return db.query(FS2023).filter(FS2023.jurir_no.in_(jurir_no_list)).all()
 
 def get_FS2023(db: Session, jurir_no: str):
-    FS2023_Info = db.query(FS2023).filter(FS2023.jurir_no == jurir_no).first()
-        
-    if FS2023_Info:
-        logger.info(
-            f"FS2023_Info: id={FS2023_Info.id}, baseDate={FS2023_Info.baseDate}, "
-            f"bizYear={FS2023_Info.bizYear}, jurir_no={FS2023_Info.jurir_no}, currency={FS2023_Info.currency}, "
-            f"fsCode={FS2023_Info.fsCode}, fsName={FS2023_Info.fsName}, totalAsset2023={FS2023_Info.totalAsset2023}, "
-            f"totalDebt2023={FS2023_Info.totalDebt2023}, totalEquity2023={FS2023_Info.totalEquity2023}, "
-            f"capital2023={FS2023_Info.capital2023}, revenue2023={FS2023_Info.revenue2023}, "
-            f"operatingIncome2023={FS2023_Info.operatingIncome2023}, earningBeforeTax2023={FS2023_Info.earningBeforeTax2023}, "
-            f"netIncome2023={FS2023_Info.netIncome2023}, debtRatio2023={FS2023_Info.debtRatio2023}, "
-            f"margin2023={FS2023_Info.margin2023}, turnover2023={FS2023_Info.turnover2023}, "
-            f"leverage2023={FS2023_Info.leverage2023}, created_at={FS2023_Info.created_at}"
-            )
-    else:
-        logger.info("FS2023_Info: None")
-    return FS2023_Info
 
+    # Retrieve the data from the database
+    fs_data = db.query(FS2023).filter(FS2023.jurir_no == jurir_no).first()
+
+    if fs_data and fs_data.totalAsset2023 > 0:
+        # If totalAsset2023 is greater than 0, return the actual data
+        return fs_data
+    else:
+        # Return a new FS2023 object with default values
+        return FS2023(
+            baseDate=None,
+            bizYear=None,
+            jurir_no=jurir_no,
+            currency=None,
+            fsCode=None,
+            fsName=None,
+            totalAsset2023=0,
+            totalDebt2023=0,
+            totalEquity2023=0,
+            capital2023=0,
+            revenue2023=0,
+            operatingIncome2023=0,
+            earningBeforeTax2023=0,
+            netIncome2023=0,
+            debtRatio2023=0.0,
+            margin2023=0.0,
+            turnover2023=0.0,
+            leverage2023=0.0,
+            created_at=None
+        )
+
+def get_FS2022(db: Session, jurir_no: str):
+    # Retrieve the data from the database
+    fs_data = db.query(FS2022).filter(FS2022.jurir_no == jurir_no).first()
+
+    if fs_data and fs_data.totalAsset2022 > 0:
+        # If totalAsset2023 is greater than 0, return the actual data
+        return fs_data
+    else:
+        # Return a new FS2023 object with default values
+        return FS2022(
+            baseDate=None,
+            bizYear=None,
+            jurir_no=jurir_no,
+            currency=None,
+            fsCode=None,
+            fsName=None,
+            totalAsset2022=0,
+            totalDebt2022=0,
+            totalEquity2022=0,
+            capital2022=0,
+            revenue2022=0,
+            operatingIncome2022=0,
+            earningBeforeTax2022=0,
+            netIncome2022=0,
+            debtRatio2022=0.0,
+            margin2022=0.0,
+            turnover2022=0.0,
+            leverage2022=0.0,
+            created_at=None
+        )
+
+def get_FS2021(db: Session, jurir_no: str):
+    # Retrieve the data from the database
+    fs_data = db.query(FS2021).filter(FS2021.jurir_no == jurir_no).first()
+
+    if fs_data and fs_data.totalAsset2021 > 0:
+        # If totalAsset2023 is greater than 0, return the actual data
+        return fs_data
+    else:
+        # Return a new FS2023 object with default values
+        return FS2021(
+            baseDate=None,
+            bizYear=None,
+            jurir_no=jurir_no,
+            currency=None,
+            fsCode=None,
+            fsName=None,
+            totalAsset2021=0,
+            totalDebt2021=0,
+            totalEquity2021=0,
+            capital2021=0,
+            revenue2021=0,
+            operatingIncome2021=0,
+            earningBeforeTax2021=0,
+            netIncome2021=0,
+            debtRatio2021=0.0,
+            margin2021=0.0,
+            turnover2021=0.0,
+            leverage2021=0.0,
+            created_at=None
+
+        )
+
+def get_FS2020(db: Session, jurir_no: str):
+    # Retrieve the data from the database
+    fs_data = db.query(FS2020).filter(FS2020.jurir_no == jurir_no).first()
+
+    if fs_data and fs_data.totalAsset2020 > 0:
+        # If totalAsset2023 is greater than 0, return the actual data
+        return fs_data
+    else:
+        # Return a new FS2023 object with default values
+        return FS2020(
+            baseDate=None,
+            bizYear=None,
+            jurir_no=jurir_no,
+            currency=None,
+            fsCode=None,
+            fsName=None,
+            totalAsset2020=0,
+            totalDebt2020=0,
+            totalEquity2020=0,
+            capital2020=0,
+            revenue2020=0,
+            operatingIncome2020=0,
+            earningBeforeTax2020=0,
+            netIncome2020=0,
+            debtRatio2020=0.0,
+            margin2020=0.0,
+            turnover2020=0.0,
+            leverage2020=0.0,
+            created_at=None
+        )
+
+
+"""
 def get_FS2022(db: Session, jurir_no: str):
     return db.query(FS2022).filter(FS2022.jurir_no == jurir_no).first()
 
@@ -136,7 +263,7 @@ def get_FS2021(db: Session, jurir_no: str):
 
 def get_FS2020(db: Session, jurir_no: str):
     return db.query(FS2020).filter(FS2020.jurir_no == jurir_no).first()
-    
+"""    
 
 def get_corp_info_code(corp_code: str):
     db: Session = SessionLocal()
@@ -232,7 +359,7 @@ async def get_stockgraph(stock_code: str) -> Dict[str, List[Dict[str, Union[str,
 
 
 
-
+# get_stockgraph1 함수
 async def get_stockgraph1(stock_code: str) -> Dict[str, List[Dict[str, Union[str, float]]]]:
     # 주식 코드에 올바른 접미사 추가
     stock_code = stock_code if '.' in stock_code else f'{stock_code}.KS'  # 예: 한국 주식의 경우 ".KS" 또는 ".KQ"
@@ -240,25 +367,33 @@ async def get_stockgraph1(stock_code: str) -> Dict[str, List[Dict[str, Union[str
     end_date = datetime.now()
     start_date = end_date - timedelta(days=90)
 
-    # yfinance를 사용하여 데이터 가져오기
-    ticker = yf.Ticker(stock_code)
-    hist = ticker.history(start=start_date.strftime('%Y-%m-%d'), end=end_date.strftime('%Y-%m-%d'))
+    try:
+        # yfinance를 사용하여 데이터 가져오기
+        ticker = yf.Ticker(stock_code)
+        hist = ticker.history(start=start_date.strftime('%Y-%m-%d'), end=end_date.strftime('%Y-%m-%d'))
 
-    # 데이터가 없는 경우 처리
-    if hist.empty:
-        raise ValueError(f"No data found for stock code: {stock_code}")
+        # 데이터가 없는 경우 처리
+        if hist.empty:
+            raise ValueError(f"No data found for stock code: {stock_code}")
 
-    stock_data = []
-    for date, row in hist.iterrows():
-        stock_data.append({
-            "t": date.strftime('%Y-%m-%d'),
-            "o": row['Open'],
-            "h": row['High'],
-            "l": row['Low'],
-            "c": row['Close']
-        })
+        stock_data = []
+        for date, row in hist.iterrows():
+            stock_data.append({
+                "t": date.strftime('%Y-%m-%d'),
+                "o": row['Open'],
+                "h": row['High'],
+                "l": row['Low'],
+                "c": row['Close']
+            })
 
-    return {"stock_data": stock_data}
+        return {"stock_data": stock_data}
+    
+    except Exception as e:
+        # 기타 예외 처리
+        print(f"오류가 발생했습니다: {e}")
+        raise ValueError(f"An unexpected error occurred while retrieving data for stock code: {stock_code}") from e
+    
+
 
 def get_custom_key_mapping() -> dict:
     return {
@@ -330,6 +465,7 @@ def get_credit_ratings(db, jurir_no: str, custom_key_mapping: dict) -> dict:
     else:
         return {custom_key_mapping.get(k, k): v for k, v in credit_rate._mapping.items() if v is not None}
 
+      
 def get_top3_ratings(ratings: dict) -> list:
     # Sort and select top 3 ratings
     top3_ratings = sorted(ratings.items(), key=lambda item: item[1], reverse=True)[:3]
@@ -340,3 +476,108 @@ def get_top3_ratings(ratings: dict) -> list:
         top3_rate.append({"key": "N/A", "value": 0})  # Use "N/A" or other default key
     
     return top3_rate
+
+
+import pdfkit
+import logging
+
+
+def generate_pdf(html_content):
+    path_to_wkhtmltopdf = 'C:/Program Files (x86)/wkhtmltopdf/bin/wkhtmltopdf.exe'  # 경로를 자신의 시스템에 맞게 수정
+    config = pdfkit.configuration(wkhtmltopdf=path_to_wkhtmltopdf)
+
+    options = {
+        'page-size': 'A4',
+        'encoding': 'UTF-8',
+        'no-outline': None,
+        'no-stop-slow-scripts': None,
+        'enable-local-file-access': None,
+        'zoom': '0.9',  # 확대 비율을 약간 줄여 내용이 잘리지 않도록 조정
+        'custom-header': [
+            ('Accept-Encoding', 'gzip')
+        ],
+        'print-media-type': None,
+        'margin-top': '5mm',
+        'margin-right': '5mm',
+        'margin-bottom': '5mm',
+        'margin-left': '5mm',
+        'disable-smart-shrinking': None,  # 스마트 축소 비활성화
+    }
+
+    pdf_path = "C:/Users/BIT/Desktop/Spoon_Report.pdf"
+
+    try:
+        pdfkit.from_string(html_content, pdf_path, options=options, configuration=config)
+    except Exception as e:
+        logging.error(f'PDF generation failed: {e}')
+    return pdf_path
+
+
+from sqlalchemy.exc import IntegrityError
+
+class FavoriteService:
+    def __init__(self, db: Session):
+        self.db = db
+
+    def toggle_favorite(self, username: str, corp_code: str) -> dict:
+        # Check if the favorite already exists
+        favorite = self.db.query(Favorite).filter_by(username=username, corp_code=corp_code).first()
+        
+        try:
+            if favorite:
+                # If exists, remove it
+                self.db.delete(favorite)
+                self.db.commit()
+                return {"is_favorited": False}
+            else:
+                # If not exists, add it
+                new_favorite = Favorite(username=username, corp_code=corp_code)
+                self.db.add(new_favorite)
+                self.db.commit()
+                return {"is_favorited": True}
+        except Exception as e:  # Generic exception handling
+            # Rollback the session if an error occurs
+            self.db.rollback()
+            # Log the error (could also use a logging framework)
+            print(f"Error: {e}")
+            # Handle the specific error (optional)
+            raise
+
+    def is_favorite(self, username: str, corp_code: str) -> bool:
+        return self.db.query(Favorite).filter_by(username=username, corp_code=corp_code).first() is not None
+
+    def get_favorites_for_user(self, username: str):
+        return self.db.query(Favorite).filter_by(username=username).all()
+    
+    
+def get_username_from_session(request: Request):
+    username = request.session.get("username")
+    if not username:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )       
+    return username
+
+
+
+def get_favorite_companies(db: Session, username: str):
+    favorites = db.query(Favorite).filter(Favorite.username == username).all()
+    favorite_companies = []
+    for favorite in favorites:
+        company_info = db.query(CompanyInfo).filter(CompanyInfo.corp_code == favorite.corp_code).first()
+        if company_info:
+            financial_info = db.query(FS2023).filter(FS2023.jurir_no == company_info.jurir_no).first()
+            favorite_companies.append({
+                "corp_code": company_info.corp_code,
+                "jurir_no": company_info.jurir_no,
+                "corp_name": company_info.corp_name,
+                "ceo_nm": company_info.ceo_nm,
+                "corp_cls": company_info.corp_cls,
+                "totalAsset2023": financial_info.totalAsset2023 if financial_info else None,
+                "capital2023": financial_info.capital2023 if financial_info else None,
+                "revenue2023": financial_info.revenue2023 if financial_info else None,
+                "netIncome2023": financial_info.netIncome2023 if financial_info else None
+            })
+    return favorite_companies
+
