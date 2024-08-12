@@ -224,11 +224,11 @@ async def logout(request: Request):
     request.session.pop("username", None)
     response = templates.TemplateResponse(
         "loginjoin/home.html",
-        {"request": request, "message": "로그아웃되었습니다.",
-            "message_icon": "success", "url": "/"},
+        {"request": request, "message": "로그아웃되었습니다.", "message_icon": "success", "url": "/", "username": None},
     )
     response.delete_cookie("session")
     return response
+
 
 # 공지사항 시작
 # 공지사항 목록 조회

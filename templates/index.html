@@ -56,13 +56,15 @@
 <div data-w-id="03e4e7de-f531-4cf3-b037-5a0ea7fd7ab7" data-animation="default" data-collapse="medium"
   data-duration="400" data-easing="ease" data-easing2="ease" role="banner" class="uui-navbar08_component w-nav">
   <div class="uui-navbar08_container"><a href="/"><img height="90" alt="" src="images/logo-4.png" class="spoonlogo"></a>
+
     <nav role="navigation" class="uui-navbar08_menu w-nav-menu">
       <div class="uui-navbar08_menu-left">
         <a href="#" class="uui-navbar08_link w-nav-link"></a>
-        <a href="/baro_companyList" class="uui-navbar08_link w-nav-link text-lg">바로등급</a>
-        <a href="/credit/creditReview/" class="uui-navbar08_link w-nav-link text-lg">AI심사보고서</a>        
-        <a href="/contact55" class="uui-navbar08_link w-nav-link text-lg">섭외등록</a>        
-        <a href="/notices" class="uui-navbar08_link w-nav-link text-lg">공지사항</a>
+        <a href="/baro_companyList" class="uui-navbar08_link w-nav-link text-lg" onclick="checkLogin(event)">바로등급</a>
+        <a href="/credit/creditReview/" class="uui-navbar08_link w-nav-link text-lg"
+          onclick="checkLogin(event)">AI심사보고서</a>
+        <a href="/contact55" class="uui-navbar08_link w-nav-link text-lg" onclick="checkLogin(event)">섭외등록</a>
+        <a href="/notices" class="uui-navbar08_link w-nav-link text-lg" onclick="checkLogin(event)">공지사항</a>
         {% if username == 'admin' %}
         <a href="/view_DB_predict" class="uui-navbar08_link w-nav-link text-lg">신용등급 모델 관리</a>
         {% endif %}
@@ -77,17 +79,35 @@
               style="background:none; border:none; cursor:pointer; color: black;">Logout</button>
           </form>
           {% else %}
-          <a href="home" class="uui-button w-inline-block">Log in</a>
+          <a href="/home" class="uui-button w-inline-block">Log in</a>
           {% endif %}
-          <!-- <a href="#" class="uui-button-secondary-gray show-tablet w-inline-block">
-              <div>Log in</div>
-            </a>  
-            <a href="#" class="uui-button w-inline-block">
-              <div>Log in</div>
-            </a> -->
         </div>
       </div>
     </nav>
+
+
+    <style>
+      /* Notyf 알림을 우측 상단에서 아래쪽으로 쌓이도록 설정 */
+      .notyf {
+          right: 20px;
+          bottom: 80px;
+      }
+    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf/notyf.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/notyf/notyf.min.js"></script>
+
+    <script>
+        // Notyf 인스턴스 생성
+        const notyf = new Notyf();
+        
+        function checkLogin(event) {
+            {% if not username %}
+            event.preventDefault();
+            notyf.error('로그인 후, 이용 부탁드립니다');
+            {% endif %}
+        }
+    </script>
+
     <div class="uui-navbar08_menu-button w-nav-button">
       <div class="menu-icon_component">
         <div class="menu-icon_line-top"></div>
@@ -169,7 +189,7 @@
 </header>
 
 
-        <!-- <a href="#" class="uui-layout31_lightbox w-inline-block w-lightbox">
+<!-- <a href="#" class="uui-layout31_lightbox w-inline-block w-lightbox">
             <div class="lightbox_video-overlay-layer">
                 <img src="images/play-icon.svg" loading="lazy" alt="Play video icon" class="uui-lightbox_play-icon">
             </div>
@@ -205,7 +225,7 @@
           <div class="uui-layout31_content-left">
             <div class="uui-heading-subheading text-3xl leading-relaxed ">우리의 서비스</div>
             <h2 class="uui-heading-medium text-4xl leading-relaxed">당신을 위한 AI 기업금융 전문가,</h2>
-            <h2 class="uui-heading-medium text-5xl leading-snug">Spoon</h2> 
+            <h2 class="uui-heading-medium text-5xl leading-snug">Spoon</h2>
           </div>
           <div class="uui-layout31_content-right">
             <div class="uui-text-size-large text-2xl text-black">✔️ 최적의 기업금융 결정을 위한 스마트 도우미 플랫폼</div>
@@ -289,7 +309,7 @@
             </div>
             <div class="uui-button-row is-reverse-mobile-landscape">
               <div class="uui-button-wrapper max-width-full-mobile-landscape">
-                <a href="/baro_companyList/" class="uui-button-secondary-gray w-inline-block">
+                <a href="/baro_companyList/" class="uui-button-secondary-gray w-inline-block" onclick="checkLogin(event)">
                   <div>바로가기</div>
                 </a>
               </div>
@@ -373,7 +393,7 @@
             </div>
             <div class="uui-button-row is-reverse-mobile-landscape">
               <div class="uui-button-wrapper max-width-full-mobile-landscape">
-                <a href="/credit/creditReview/" class="uui-button-secondary-gray w-inline-block">
+                <a href="/credit/creditReview/" class="uui-button-secondary-gray w-inline-block" onclick="checkLogin(event)">
                   <div>바로가기</div>
                 </a>
               </div>
@@ -464,7 +484,7 @@
     </div>
   </div>
 </section>
- 
+
 
 <section class="uui-section_layout56">
   <div class="uui-page-padding">
@@ -533,7 +553,7 @@
             </div>
             <div class="uui-button-row is-reverse-mobile-landscape">
               <div class="uui-button-wrapper max-width-full-mobile-landscape">
-                <a href="/contact55/" class="uui-button-secondary-gray w-inline-block">
+                <a href="/contact55/" class="uui-button-secondary-gray w-inline-block" onclick="checkLogin(event)">
                   <div>바로가기</div>
                 </a>
               </div>
@@ -542,7 +562,7 @@
         </div>
 
         <br><br><br><br><br><br><br><br>
-        
+
         <section class="uui-section_team01">
           <div class="uui-page-padding-2">
             <div class="uui-container-large-2">
@@ -557,7 +577,7 @@
                 <div class="uui-team01_component">
                   <div class="uui-team01_list-wrapper">
                     <div class="w-layout-grid uui-team01_list">
-                      <div class="uui-team01_item"> 
+                      <div class="uui-team01_item">
                         <div class="uui-team01_image-wrapper"><img src="images/pokemon1.png" loading="lazy" alt=""
                             class="uui-team01_image" style="margin: 0 auto;"></div>
                         <div class="uui-heading-tiny">한일섭</div>
@@ -574,8 +594,8 @@
                         <div class="uui-text-size-medium">AI 기술 총괄</div>
                       </div>
                       <div class="uui-team01_item">
-                        <div class="uui-team01_image-wrapper" ><img src="images/pokemon3.png" loading="lazy" alt=""
-                            class="uui-team01_image" style="margin: 0 auto;" ></div>
+                        <div class="uui-team01_image-wrapper"><img src="images/pokemon3.png" loading="lazy" alt=""
+                            class="uui-team01_image" style="margin: 0 auto;"></div>
                         <div class="uui-heading-tiny">신정</div>
                         <div class="uui-text-size-medium text-color-primary700">BackEnd Manager</div>
                         <div class="uui-space-xxsmall"></div>
@@ -596,7 +616,7 @@
             </div>
           </div>
         </section>
-        
+
       </div>
     </div>
   </div>

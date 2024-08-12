@@ -88,7 +88,8 @@
 
     .sticky-note {
         width: 48%;
-        height: 200px; /* Set a specific height */
+        height: 200px;
+        /* Set a specific height */
         background-color: #f2f2f7 !important;
         padding: 20px;
         border-radius: 5px;
@@ -142,19 +143,24 @@
         max-height: 960px;
         /* Set a max height to enable scrolling */
     }
+
     .swal2-popup {
         font-size: 1rem !important;
     }
+
     .swal2-styled {
         font-size: 1rem !important;
         padding: 0.5em 1em !important;
     }
+
     .swal2-styled.swal2-confirm {
         background-color: #7F56D9 !important;
     }
+
     .swal2-styled.swal2-cancel {
         background-color: #333333 !important;
     }
+
     .swal2-popup .swal2-styled:focus {
         box-shadow: none !important;
     }
@@ -187,8 +193,14 @@
 </div>
 <br>
 <div class="container mx-auto my-8 px-6 min-h-screen flex flex-col">
-    <div class="flex items-center mb-10">
-        <h2 class="text-4xl font-bold flex-1">{{ company_info.corp_name }}</h2>
+    <div class="flex items-center mb-5 justify-between">
+        <h2 class="text-4xl font-bold">{{ company_info.corp_name }}</h2>
+
+        <div class="text-xl p-0">업체의 자세한 정보가 궁금하다면?
+            <a href="/baro_companyInfo?jurir_no={{ company_info.jurir_no }}" class="px-2 py-2 text-purple-700 hover:underline">
+                바로등급
+            </a>
+        </div>
     </div>
     <div class="flex-grow grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Left Column: Basic Info and Business Cards -->
@@ -243,64 +255,70 @@
                 class="flex-shrink-0 bg-white rounded-lg shadow-lg flex-grow overflow-hidden flex flex-col business-card-section">
                 <div class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg flex justify-between items-center">
                     <h2 class="text-xl font-semibold text-gray-800">주요 임직원 명함집</h2>
-                    <a href="/card?corporation_name={{ company_info.corp_name }}" class="px-4 py-2 text-white bg-purple-700 rounded-md hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300">
+                    <a href="/card?corporation_name={{ company_info.corp_name }}"
+                        class="px-2 py-1 text-white bg-purple-700 rounded-md hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300">
                         바로가기
                     </a>
                 </div>
-                
                 <div class="p-6 space-y-4 overflow-y-auto flex-grow business-cards-container">
                     <div class="grid grid-cols-1 gap-4">
+                        {% if card %}
                         {% for card in business_cards %}
                         <div class="relative overflow-hidden transform transition duration-500 hover:scale-110">
                             <a href="/card?corporation_name={{ company_info.corp_name }}">
-                                <img src="/static/business_cards/{{ card.filename }}" alt="Business Card" class="w-full h-auto object-cover rounded-lg shadow-md">
-                            </a>                            
+                                <img src="/static/business_cards/{{ card.filename }}" alt="Business Card"
+                                    class="w-full h-auto object-cover rounded-lg shadow-md">
+                            </a>
                         </div>
                         {% endfor %}
+                        {% else %}
+                        <p class="text-gray-600">등록된 명함이 없습니다.</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
 
-<!-- Memo Section -->
-<div class="col-span-2 flex flex-col bg-white rounded-lg shadow-lg overflow-hidden memo-section">
-    <div class="bg-gray-100 border-b border-gray-300 p-3 flex justify-between items-center">
-        <h2 class="text-xl font-semibold text-gray-800">섭외 내역</h2>
-        <!-- Create a button to trigger the modal -->
-        <button onclick="openCreateModal()" class="px-4 py-2 text-white bg-purple-700 rounded-md hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300">
-            등록하기
-        </button>
-    </div>
-    <div class="flex-grow p-6 overflow-y-auto sticky-notes-container">
-        {% if posts %}
-            {% for post in posts|batch(2) %}
+        <!-- Memo Section -->
+        <div class="col-span-2 flex flex-col bg-white rounded-lg shadow-lg overflow-hidden memo-section">
+            <div class="bg-gray-100 border-b border-gray-300 p-3 flex justify-between items-center">
+                <h2 class="text-xl font-semibold text-gray-800">섭외 내역</h2>
+                <!-- Create a button to trigger the modal -->
+                <button onclick="openCreateModal()"
+                    class="px-2 py-1 text-white bg-purple-700 rounded-md hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300">
+                    등록하기
+                </button>
+            </div>
+            <div class="flex-grow p-6 overflow-y-auto sticky-notes-container">
+                {% if posts %}
+                {% for post in posts|batch(2) %}
                 <div class="sticky-note-row flex space-x-4">
                     {% for p in post %}
-                        <div class="sticky-note flex-1 bg-purple-50 p-4 rounded-lg shadow-md relative">
-                            <p class="sticky-note-content">{{ p.content }}</p>
-                            <div class="sticky-note-info absolute bottom-4 left-4 text-base">
-                                <span>섭외유형: {{ p.contact_type }}</span><br>
-                                <span>섭외방법: {{ p.contact_method }}</span>
-                            </div>
-                            <div class="sticky-note-info absolute bottom-4 right-4 text-base text-right">
-                                <span>{{ p.username }}</span><br>
-                                <span>{{ p.created_at.strftime('%Y-%m-%d') }}</span>
-                            </div>
+                    <div class="sticky-note flex-1 bg-purple-50 p-4 rounded-lg shadow-md relative">
+                        <p class="sticky-note-content">{{ p.content }}</p>
+                        <div class="sticky-note-info absolute bottom-4 left-4 text-base">
+                            <span>섭외유형: {{ p.contact_type }}</span><br>
+                            <span>섭외방법: {{ p.contact_method }}</span>
                         </div>
+                        <div class="sticky-note-info absolute bottom-4 right-4 text-base text-right">
+                            <span>{{ p.username }}</span><br>
+                            <span>{{ p.created_at.strftime('%Y-%m-%d') }}</span>
+                        </div>
+                    </div>
                     {% endfor %}
                 </div>
-            {% endfor %}
-        {% else %}
-            <p class="text-gray-600">포스트가 없습니다.</p>
-        {% endif %}
+                {% endfor %}
+                {% else %}
+                <p class="text-gray-600">포스트가 없습니다.</p>
+                {% endif %}
+            </div>
+        </div>
+
+
+
+
+
     </div>
-</div>
-
-
-
-
-
-</div>
 
 
     <br>
@@ -407,17 +425,8 @@
 
     <div class="btn-group my-8 flex justify-center">
         <button onclick="history.back()"
-            class="px-4 py-2 text-white rounded-md hover:bg-[#6a46b0] focus:ring-4 focus:ring-[#9a7ce0] focus:outline-none"
-            style="background-color: #7F56D9;">
+            class="px-4 py-2 text-white bg-purple-700 rounded-md hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300">
             뒤로가기
-        </button>
-
-        &nbsp; &nbsp; &nbsp; &nbsp;
-
-        <button onclick="window.location.href='/baro_companyList';"
-            class="px-4 py-2 text-white rounded-md hover:bg-[#6a46b0] focus:ring-4 focus:ring-[#9a7ce0] focus:outline-none"
-            style="background-color: #7F56D9;">
-            바로등급
         </button>
     </div>
 
@@ -480,7 +489,7 @@
                 }
             });
         }
-    
+
         function handleSubmit(formData) {
             Swal.fire({
                 title: '섭외등록이 완료되었어요. 본부장님께 등록내역 송부도 진행할까요?',
@@ -496,52 +505,52 @@
                 form.append('corporation_name', formData.corporation_name);
                 form.append('contact_type', formData.contact_type);
                 form.append('contact_method', formData.contact_method);
-        
+
                 // '예' 버튼을 눌렀을 때만 send_email_flag를 true로 설정
                 if (result.isConfirmed) {
                     form.append('send_email_flag', 'true');
                 } else {
                     form.append('send_email_flag', 'false');
                 }
-        
+
                 // 게시글 등록
                 fetch('/contact/create', {
                     method: 'POST',
                     body: form
                 })
-                .then(response => {
-                    if (response.ok) {
+                    .then(response => {
+                        if (response.ok) {
+                            Swal.fire({
+                                title: '등록 성공',
+                                icon: 'success',
+                                text: '섭외등록이 완료되었습니다.',
+                                confirmButtonText: '확인',
+                                confirmButtonColor: '#7F56D9'
+                            }).then(() => {
+                                location.reload(); // Reload the page to show the new post
+                            });
+                        } else {
+                            throw new Error('등록 실패');
+                        }
+                    })
+                    .catch(error => {
                         Swal.fire({
-                            title: '등록 성공',
-                            icon: 'success',
-                            text: '섭외등록이 완료되었습니다.',
+                            title: '오류 발생',
+                            icon: 'error',
+                            text: error.message,
                             confirmButtonText: '확인',
                             confirmButtonColor: '#7F56D9'
-                        }).then(() => {
-                            location.reload(); // Reload the page to show the new post
                         });
-                    } else {
-                        throw new Error('등록 실패');
-                    }
-                })
-                .catch(error => {
-                    Swal.fire({
-                        title: '오류 발생',
-                        icon: 'error',
-                        text: error.message,
-                        confirmButtonText: '확인',
-                        confirmButtonColor: '#7F56D9'
                     });
-                });
             });
         }
-        
+
     </script>
-    
-    
+
+
     {% if login_required %}
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             Swal.fire({
                 title: '로그인이 필요합니다.',
                 icon: 'warning',
