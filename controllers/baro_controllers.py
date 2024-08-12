@@ -9,6 +9,7 @@ from database import SessionLocal
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import distinct, text, func
+from models.common_models import Post
 from schemas.baro_schemas import CompanyInfoSchema
 from services_def.baro_service import  FavoriteService, add_recent_view, get_company_info, get_favorite_companies, get_recent_views,  get_stockgraph1, generate_pdf, get_username_from_session
 from services_def.baro_service import get_FS2023, get_FS2022, get_FS2021, get_FS2020, get_Stock_data,  search_company, get_company_infoFS_list
@@ -123,6 +124,10 @@ async def read_company_info(request: Request, jurir_no: str = Query(...), db: Se
                             top3_rate.append({"key": "N/A", "value": 0})  # Use "N/A" or other default key
 
     add_recent_view(db, username, company_info.corp_code)
+    
+    # 포스트 데이터를 회사 이름으로 필터링하여 가져오기
+    posts = db.query(Post).filter(Post.corporation_name == company_info.corp_name).all()
+    
 
     return templates.TemplateResponse("baro_service/baro_companyInfo.html", {
         "request": request,
@@ -136,7 +141,8 @@ async def read_company_info(request: Request, jurir_no: str = Query(...), db: Se
         "stockgraph": stockgraph,
         "kakao_map_api_key": kakao_map_api_key,
         "adres": adres,
-        "top3_rate": top3_rate
+        "top3_rate": top3_rate,
+        "posts": posts
     })
     
     
@@ -248,6 +254,9 @@ async def read_company_info(
             raise HTTPException(status_code=404, detail="Company not found")
 
         add_recent_view(db, username, company_info.corp_code)
+
+        # 포스트 데이터를 회사 이름으로 필터링하여 가져오기
+        posts = db.query(Post).filter(Post.corporation_name == company_info.corp_name).all()
         
         return templates.TemplateResponse(
             "baro_service/baro_companyInfo.html",
@@ -263,7 +272,8 @@ async def read_company_info(
                 "kakao_map_api_key": kakao_map_api_key, 
                 "adres": adres,
                 "top3_rate": top3_rate,
-                "username": username
+                "username": username,
+                "posts": posts
             }
         )
     except Exception as e:
@@ -449,6 +459,10 @@ async def generate_pdf_endpoint(jurir_no: str, request: Request, db: Session = D
         
         while len(top3_rate) < 3:
             top3_rate.append({"key": "N/A", "value": 0})
+            
+            
+    # 포스트 데이터를 회사 이름으로 필터링하여 가져오기
+    posts = db.query(Post).filter(Post.corporation_name == company_info.corp_name).all()
 
     # 템플릿을 문자열로 렌더링
     html_content = templates.get_template("baro_service/spoon_report.html").render({
@@ -465,7 +479,8 @@ async def generate_pdf_endpoint(jurir_no: str, request: Request, db: Session = D
         "top3_rate": top3_rate,
         "financialbarchart_base64": f"data:image/png;base64,{financialbarchart}",
         "stockchart_base64": f"data:image/png;base64,{stockchart}",
-        "username": username
+        "username": username,
+        "posts": posts
     })
     
     pdf_path = generate_pdf(html_content)
