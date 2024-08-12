@@ -1,0 +1,119 @@
+{% include 'header.html' %}
+
+{% block head %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/font.css">
+
+<style>
+    .content-wrapper {
+        max-width: 1530px;  /* 최대 너비 증가 */
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+    .table {
+        width: 100%;
+        min-width: 1200px;  /* 최소 너비 증가 */
+        text-align: left;
+        direction: ltr;
+        color: #4a5568;
+        background-color: #f8fafc;
+        border-collapse: collapse;
+    }
+    .table th, .table td {
+        padding: 0.75rem 1rem;
+        white-space: nowrap;
+    }
+    .table tr:first-of-type {
+        background-color: #f1f5f9;
+        font-weight: bold;
+        color: #2d3748;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    .table tbody tr {
+        background-color: #fff;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .table tbody tr:nth-of-type(even) {
+        background-color: #f9fafb;
+    }
+    .table tbody tr:hover {
+        background-color: #edf2f7;
+    }
+    /* 법인명(채무자) 컬럼 너비 조정 */
+    .table th:first-child,
+    .table td:first-child {
+        max-width: 300px;  /* 너비 증가 */
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    /* 마지막 4개 컬럼 숨기기 */
+    .table th:nth-last-child(-n+4),
+    .table td:nth-last-child(-n+4) {
+        display: none;
+    }
+    /* 각 컬럼의 너비 조정 */
+    .table th, .table td {
+        width: auto;  /* 자동 너비 조정 */
+    }
+    .table th:nth-child(2), .table td:nth-child(2) { width: 10%; }  /* 관계 */
+    .table th:nth-child(3), .table td:nth-child(3) { width: 12%; }  /* 채권자 */
+    .table th:nth-child(4), .table td:nth-child(4) { width: 10%; }  /* 내용 */
+    .table th:nth-child(5), .table td:nth-child(5) { width: 10%; }  /* 목적 */
+    .table th:nth-child(6), .table td:nth-child(6) { width: 12%; }  /* 보증시작일 */
+    .table th:nth-child(7), .table td:nth-child(7) { width: 12%; }  /* 보증종료일 */
+    .table th:nth-child(8), .table td:nth-child(8) { width: 14%; }  /* 채무보증한도_기초 */
+</style>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+<div class="w-full" style="background-image: url('/static/images/home3.png'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 40vh;">
+    <div class="p-8 w-full max-w-screen-xl mx-auto" >
+
+        <span class="block text-left text-xl mb-2">
+            <a href="/" class="mr-2 text-white">홈 &nbsp; | </a> 
+            <a href="/marketing/globalList/" class="ml-2 text-white">AI 마케팅 명세 &nbsp; |</a>
+            <span class="text-white"> &nbsp; 마케팅기회</span>
+        </span>
+
+        <br><br><br>
+        <div class="text-center mb-4">
+            <h1 class="text-5xl font-bold text-white">해외채무보증내역</h1>
+            <h2></h2>
+        </div>
+        <br><br><br>
+    </div>
+</div>
+<br>
+
+
+<div class="container mx-auto my-8 px-6">
+    <div class="flex-1 bg-white rounded-lg shadow-lg">
+        <div class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg">
+            <h2 class="text-xl font-semibold text-gray-800">마케팅 기회 Guide</h2>
+        </div>
+        <div class="p-6">
+            문구 추가 예정
+        </div>
+    </div>
+</div>
+
+<div class="content-wrapper ">
+    <div class="table-container rounded-lg shadow-lg">
+        {{ table | safe }}
+    </div>
+</div>
+
+{% endblock %}
+
+{% include 'footer.html' %}

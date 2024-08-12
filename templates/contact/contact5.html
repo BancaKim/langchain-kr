@@ -1,0 +1,560 @@
+{% include 'header.html' %}
+
+{% block head %}
+<style>
+    #streamContent {
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    .equal-height {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .equal-height>div {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .container {
+        max-width: 80%;
+        margin: 0 auto;
+    }
+
+    .min-h-600 {
+        min-height: 600px;
+    }
+
+    .news-list {
+        margin-top: 20px;
+        width: 100%;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+    }
+
+    .news-item {
+        margin-bottom: 20px;
+        padding: 15px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .news-title {
+        font-size: 20px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 8px;
+    }
+
+    .news-description {
+        margin-top: 5px;
+        font-size: 16px;
+        color: #555;
+    }
+
+    .news-link {
+        color: #007bff;
+        text-decoration: none;
+    }
+
+    .map-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 5px;
+    }
+
+    #map {
+        width: 100%;
+        height: 400px;
+    }
+
+    .sticky-notes-container {
+        overflow-y: auto;
+        padding: 20px;
+        background-color: #fafafa;
+        border-radius: 8px;
+        height: 100%;
+    }
+
+    .sticky-note-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+
+    .sticky-note {
+        width: 48%;
+        height: 200px; /* Set a specific height */
+        background-color: #f2f2f7 !important;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+
+    .sticky-note-content {
+        font-size: 1.1em;
+        line-height: 1.4;
+        flex-grow: 1;
+        overflow-y: auto;
+    }
+
+    .sticky-note-info {
+        font-size: 0.9em;
+        color: #555;
+        margin-top: 10px;
+    }
+
+    .flex-grow {
+        flex-grow: 1;
+    }
+
+    .col-span-1,
+    .col-span-2 {
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Container for scrolling */
+    .business-cards-container,
+    .sticky-notes-container {
+        height: 100%;
+        /* Ensure they take the full available height */
+        overflow-y: auto;
+        /* Enable vertical scrolling */
+    }
+
+    .business-card-section {
+        max-height: 400px;
+        /* Set a max height to enable scrolling */
+    }
+
+    .memo-section {
+        max-height: 960px;
+        /* Set a max height to enable scrolling */
+    }
+    .swal2-popup {
+        font-size: 1rem !important;
+    }
+    .swal2-styled {
+        font-size: 1rem !important;
+        padding: 0.5em 1em !important;
+    }
+    .swal2-styled.swal2-confirm {
+        background-color: #7F56D9 !important;
+    }
+    .swal2-styled.swal2-cancel {
+        background-color: #333333 !important;
+    }
+    .swal2-popup .swal2-styled:focus {
+        box-shadow: none !important;
+    }
+</style>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/font.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% endblock %}
+
+{% block content %}
+<div class="w-full"
+    style="background-image: url('/static/images/home7.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 40vh;">
+    <div class="p-8 w-full max-w-screen-xl mx-auto">
+        <span class="block text-left text-xl mb-2">
+            <a href="/" class="mr-2 text-white ">홈 &nbsp; |</a>
+            <a href="/credit/creditReview" class="ml-2 text-white">섭외등록 &nbsp; |</a>
+            <span class="text-white"> &nbsp; 등록조회</span>
+        </span>
+        <br><br><br><br>
+        <div class="text-center mb-4">
+            <h1 class="text-5xl font-bold text-white">섭외등록</h1>
+            <h2></h2>
+        </div>
+        <br><br><br>
+    </div>
+</div>
+<br>
+<div class="container mx-auto my-8 px-6 min-h-screen flex flex-col">
+    <div class="flex items-center mb-10">
+        <h2 class="text-4xl font-bold flex-1">{{ company_info.corp_name }}</h2>
+    </div>
+    <div class="flex-grow grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Left Column: Basic Info and Business Cards -->
+        <div class="col-span-1 flex flex-col space-y-6">
+            <!-- Company Info -->
+            <div class="flex-shrink-0 bg-white rounded-lg shadow-lg">
+                <div class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg">
+                    <h2 class="text-xl font-semibold text-gray-800">기본 정보</h2>
+                </div>
+                <div class="p-6">
+                    {% if company_info %}
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li>
+                            <p class="text-lg font-semibold mb-4">기업명: {{ company_info.corp_name }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">대표: {{ company_info.ceo_nm }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">법인구분: {{ company_info.corp_cls }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">주소: {{ company_info.adres }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">홈페이지: {{ company_info.hm_url }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">H.P: {{ company_info.phn_no }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">Fax: {{ company_info.fax_no }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">산업코드: {{ company_info.induty_code }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">법인번호: {{ company_info.jurir_no }}</p>
+                        </li>
+                        <li>
+                            <p class="text-lg font-semibold mb-4">설립일: {{ company_info.est_dt }}</p>
+                        </li>
+                    </ul>
+                    {% else %}
+                    <p class="text-gray-600">해당 기업은 금융감독원(Dart API)에서 정보를 제공받을 수 없습니다.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Business Card Section -->
+            <div
+                class="flex-shrink-0 bg-white rounded-lg shadow-lg flex-grow overflow-hidden flex flex-col business-card-section">
+                <div class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg">
+                    <h2 class="text-xl font-semibold text-gray-800">주요 임직원 명함집</h2>
+                </div>
+                <div class="p-6 space-y-4 overflow-y-auto flex-grow business-cards-container">
+                    <div class="grid grid-cols-1 gap-4">
+                        {% for card in business_cards %}
+                        <div class="relative overflow-hidden transform transition duration-500 hover:scale-110">
+                            <a href="/card">
+                                <img src="/static/business_cards/{{ card.filename }}" alt="Business Card"
+                                    class="w-full h-auto object-cover rounded-lg shadow-md">
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+<!-- Memo Section -->
+<div class="col-span-2 flex flex-col bg-white rounded-lg shadow-lg overflow-hidden memo-section">
+    <div class="bg-gray-100 border-b border-gray-300 p-3 flex justify-between items-center">
+        <h2 class="text-xl font-semibold text-gray-800">섭외 내역</h2>
+        <!-- Create a button to trigger the modal -->
+        <button onclick="openCreateModal()" class="px-4 py-2 text-white bg-purple-700 rounded-md hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300">
+            등록하기
+        </button>
+    </div>
+    <div class="flex-grow p-6 overflow-y-auto sticky-notes-container">
+        {% if posts %}
+            {% for post in posts|batch(2) %}
+                <div class="sticky-note-row flex space-x-4">
+                    {% for p in post %}
+                        <div class="sticky-note flex-1 bg-purple-50 p-4 rounded-lg shadow-md relative">
+                            <p class="sticky-note-content">{{ p.content }}</p>
+                            <div class="sticky-note-info absolute bottom-4 left-4 text-base">
+                                <span>섭외유형: {{ p.contact_type }}</span><br>
+                                <span>섭외방법: {{ p.contact_method }}</span>
+                            </div>
+                            <div class="sticky-note-info absolute bottom-4 right-4 text-base text-right">
+                                <span>{{ p.username }}</span><br>
+                                <span>{{ p.created_at.strftime('%Y-%m-%d') }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-gray-600">포스트가 없습니다.</p>
+        {% endif %}
+    </div>
+</div>
+
+
+
+
+
+</div>
+
+
+    <br>
+
+    <!-- 뉴스 섹션 -->
+    <div class="flex-1 bg-white rounded-lg shadow-lg mb-6">
+        <div class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg">
+            <h2 class="text-xl font-semibold text-gray-800">{{ corporation_name }} 관련 뉴스</h2>
+        </div>
+        <div class="p-6">
+            <div class="news-list">
+                {% if error %}
+                <p style="color: red;">{{ error }}</p>
+                {% elif news %}
+                {% for article in news %}
+                <div class="news-item">
+                    <a href="{{ article.link }}" class="news-link" target="_blank">
+                        <p class="news-title">{{ article.title | safe }}</p>
+                    </a>
+                    <p class="news-description">{{ article.description | safe }}</p>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p>관련 뉴스가 없습니다.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <br>
+
+    <!-- Kakao Map Section -->
+    <div class="box bg-white p-6 rounded-lg shadow-md">
+        <section class="notice mb-6">
+            <div class="page-title">
+                <div class="container">
+                    <h3 class="text-3xl font-bold mb-4">상세 주소</h3>
+                </div>
+            </div>
+
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+        </section>
+    </div>
+
+    <script type="text/javascript"
+        src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_map_api_key }}&libraries=services"></script>
+
+    <script>
+        // 카카오 맵 초기화
+        var mapContainer = document.getElementById('map');
+        var mapOption = {
+            center: new kakao.maps.LatLng(37.520877, 126.927907), // 초기 중심 좌표
+            level: 5 // 초기 확대 수준
+        };
+        var map = new kakao.maps.Map(mapContainer, mapOption);
+
+        // 주소-좌표 변환 객체를 생성
+        var geocoder = new kakao.maps.services.Geocoder();
+
+        // 주소 검색 함수
+        function searchAddress(address) {
+            geocoder.addressSearch(address, function (result, status) {
+                if (status === kakao.maps.services.Status.OK) {
+                    var bounds = new kakao.maps.LatLngBounds();
+                    for (var i = 0; i < result.length; i++) {
+                        displayMarker(result[i]);
+                        bounds.extend(new kakao.maps.LatLng(result[i].y, result[i].x));
+                    }
+                    map.setBounds(bounds);
+                } else {
+                    alert('주소 검색 결과가 없습니다.');
+                }
+            });
+        }
+
+        // 지도에 마커를 표시하는 함수
+        function displayMarker(place) {
+            var marker = new kakao.maps.Marker({
+                map: map,
+                position: new kakao.maps.LatLng(place.y, place.x)
+            });
+
+            // 마커에 클릭 이벤트를 등록
+            kakao.maps.event.addListener(marker, 'click', function () {
+                var infowindow = new kakao.maps.InfoWindow({
+                    zIndex: 1
+                });
+                infowindow.setContent('<div style="padding:5px;font-size:12px;">' + place.address_name + '</div>');
+                infowindow.open(map, marker);
+            });
+        }
+
+        // 페이지 로드 시 주소 검색 수행
+        document.addEventListener('DOMContentLoaded', function () {
+            const address = "{{ adres }}"; // 주소를 템플릿 변수로 받아옴
+            console.log(address);
+            searchAddress(address);
+        });
+    </script>
+
+    <br><br>
+
+    <div class="btn-group my-8 flex justify-center">
+        <button onclick="history.back()"
+            class="px-4 py-2 text-white rounded-md hover:bg-[#6a46b0] focus:ring-4 focus:ring-[#9a7ce0] focus:outline-none"
+            style="background-color: #7F56D9;">
+            뒤로가기
+        </button>
+
+        &nbsp; &nbsp; &nbsp; &nbsp;
+
+        <button onclick="window.location.href='/baro_companyList';"
+            class="px-4 py-2 text-white rounded-md hover:bg-[#6a46b0] focus:ring-4 focus:ring-[#9a7ce0] focus:outline-none"
+            style="background-color: #7F56D9;">
+            바로등급
+        </button>
+    </div>
+
+    <script>
+        function openCreateModal() {
+            Swal.fire({
+                title: '섭외 등록',
+                html: `
+                    <form id="contactForm" class="mt-4">
+                        <div class="form-group mb-4">
+                            <label for="username" class="block text-gray-800 text-lg font-semibold mb-2">작성자</label>
+                            <input type="text" id="username" name="username" class="form-control bg-white text-gray-700 border border-gray-300 rounded-md p-2 w-full" value="{{ username }}" readonly>
+                        </div>
+                        <div class="form-group mb-4">
+                            <label for="content" class="block text-gray-800 text-lg font-semibold mb-2">내용</label>
+                            <textarea id="content" name="content" rows="3" class="form-control bg-white text-gray-700 border border-gray-300 rounded-md p-2 w-full" required></textarea>
+                        </div>
+                        <div class="form-group mb-4">
+                            <label for="corporation_name" class="block text-gray-800 text-lg font-semibold mb-2">법인명</label>
+                            <input type="text" id="corporation_name" name="corporation_name" class="form-control bg-white text-gray-700 border border-gray-300 rounded-md p-2 w-full" value="{{ company_info.corp_name }}" readonly>
+                        </div>
+                        <div class="form-group mb-4">
+                            <label for="contact_type" class="block text-gray-800 text-lg font-semibold mb-2">섭외유형</label>
+                            <select id="contact_type" name="contact_type" class="form-control bg-white text-gray-700 border border-gray-300 rounded-md p-2 w-full">
+                                <option value="사전분석">사전분석</option>
+                                <option value="상품제안">상품제안</option>
+                                <option value="고객관리">고객관리</option>
+                            </select>
+                        </div>
+                        <div class="form-group mb-4">
+                            <label for="contact_method" class="block text-gray-800 text-lg font-semibold mb-2">섭외방법</label>
+                            <select id="contact_method" name="contact_method" class="form-control bg-white text-gray-700 border border-gray-300 rounded-md p-2 w-full">
+                                <option value="내점">내점</option>
+                                <option value="전화">전화</option>
+                                <option value="방문">방문</option>
+                            </select>
+                        </div>
+                    </form>
+                `,
+                width: '700px',  // 팝업창의 너비를 700px로 설정
+                height: '700px', // 팝업창의 높이를 700px로 설정
+                showCancelButton: true,
+                confirmButtonText: '등록',
+                confirmButtonColor: '#7F56D9',
+                preConfirm: () => {
+                    const content = document.getElementById('content').value;
+                    if (!content) {
+                        Swal.showValidationMessage('내용을 입력해주세요');
+                    }
+                    return {
+                        content: content,
+                        corporation_name: document.getElementById('corporation_name').value,
+                        contact_type: document.getElementById('contact_type').value,
+                        contact_method: document.getElementById('contact_method').value
+                    };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    handleSubmit(result.value);
+                }
+            });
+        }
+    
+        function handleSubmit(formData) {
+            Swal.fire({
+                title: '섭외등록이 완료되었어요. 본부장님께 등록내역 송부도 진행할까요?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: '예',
+                confirmButtonColor: '#7F56D9',
+                cancelButtonText: '아니오',
+                cancelButtonColor: '#333333',
+            }).then((result) => {
+                const form = new FormData();
+                form.append('content', formData.content);
+                form.append('corporation_name', formData.corporation_name);
+                form.append('contact_type', formData.contact_type);
+                form.append('contact_method', formData.contact_method);
+        
+                // '예' 버튼을 눌렀을 때만 send_email_flag를 true로 설정
+                if (result.isConfirmed) {
+                    form.append('send_email_flag', 'true');
+                } else {
+                    form.append('send_email_flag', 'false');
+                }
+        
+                // 게시글 등록
+                fetch('/contact/create', {
+                    method: 'POST',
+                    body: form
+                })
+                .then(response => {
+                    if (response.ok) {
+                        Swal.fire({
+                            title: '등록 성공',
+                            icon: 'success',
+                            text: '섭외등록이 완료되었습니다.',
+                            confirmButtonText: '확인',
+                            confirmButtonColor: '#7F56D9'
+                        }).then(() => {
+                            location.reload(); // Reload the page to show the new post
+                        });
+                    } else {
+                        throw new Error('등록 실패');
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        title: '오류 발생',
+                        icon: 'error',
+                        text: error.message,
+                        confirmButtonText: '확인',
+                        confirmButtonColor: '#7F56D9'
+                    });
+                });
+            });
+        }
+        
+    </script>
+    
+    
+    {% if login_required %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            Swal.fire({
+                title: '로그인이 필요합니다.',
+                icon: 'warning',
+                confirmButtonText: '확인',
+                confirmButtonColor: '#7F56D9'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "/login"; // 로그인 페이지로 리디렉션
+                }
+            });
+        });
+    </script>
+    {% endif %}
+
+    <br><br>
+
+    {% endblock %}
+
+    {% include 'footer.html' %}

@@ -1,0 +1,310 @@
+{% include 'header.html' %}
+
+{% block head %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/font.css">
+<script src="/static/js/AI_search.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .chart-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    .chart-item {
+        width: 48%;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="w-full"
+    style="background-image: url('/static/images/home8.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 50vh;">
+    <div class="p-8 w-full max-w-screen-xl mx-auto">
+        <span class="block text-left text-xl mb-2">
+            <a href="/" class="mr-2 text-white">홈 &nbsp; |</a>
+            <a href="/contact" class="ml-2 text-white">섭외등록</a>
+        </span>
+        <br><br><br>
+
+        <div class="text-center mb-4">
+            <h1 class="text-5xl font-bold text-white">섭외 등록</h1>
+        </div>
+        <br><br><br>
+
+        <!-- 검색란 -->
+        <div class="w-full max-w-4xl mx-auto">
+            <div class="relative flex">
+                <!-- 검색 타입 선택 -->
+                <div class="relative w-48">
+                    <select id="search_type"
+                        class="block w-full py-2.5 px-4 text-base font-medium text-gray-900 bg-gray-50 border-gray-300 rounded-s-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600">
+                        <option value="company_name">회사명</option>
+                        <option value="company_code">회사코드</option>
+                    </select>
+                </div>
+                <!-- 검색 입력 필드 -->
+                <div class="relative w-full">
+                    <input type="search" id="company_name" name="company_name"
+                        class="block p-2.5 w-full text-base text-gray-900 bg-gray-50 rounded-e-lg border-s-gray-50 border-s-2 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-s-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
+                        placeholder="정보를 입력하세요..." required />
+                    <!-- 자동완성 결과 표시 -->
+                    <div id="autocomplete-results"
+                        class="absolute top-full left-0 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-10 hidden">
+                        <!-- JavaScript로 동적으로 결과 항목을 추가합니다. -->
+                    </div>
+                </div>
+                <!-- 검색 버튼 -->
+                <button type="submit" id="search_button"
+                    class="absolute top-0 end-0 p-2.5 text-sm font-medium h-full text-white bg-purple-700 rounded-e-lg border border-blue-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 20 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <br><br><br>
+    </div>
+</div>
+
+
+<!-- /qnas로 이동하는 버튼 추가 -->
+<div class="flex justify-end mb-16 pr-8"> <!-- 오른쪽 정렬 및 아래쪽 여백 -->
+    <a href="/qnas"
+        class="px-4 py-2 text-sm font-medium text-white bg-purple-700 rounded-md hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
+        기업금융 Q&A 이동하기
+    </a>
+</div>
+
+
+<div class="w-full max-w-screen-xl mx-auto p-8">
+    <h2 class="text-5xl font-bold mb-6">섭외 통계</h2>
+
+    <div class="chart-container">
+        <div class="chart-item bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+            <h3 class="text-xl font-semibold mb-4">법인별 섭외내역 통계</h3>
+            <div style="height: 400px;">
+                <canvas id="corporationChart"></canvas>
+            </div>
+        </div>
+    
+        <div class="chart-item bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+            <h3 class="text-xl font-semibold mb-4">직급별 섭외내역 통계</h3>
+            <p id="totalContactsText" class="text-right text-sm text-gray-600">총 섭외 건수: 41</p> <!-- 총 섭외 건수 표시 -->
+            <div style="height: 300px;"> 
+                <canvas id="positionChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+        <h3 class="text-xl font-semibold mb-4">지역본부별 섭외내역 통계</h3>
+        <div style="height: 400px;">
+            <canvas id="regionChart"></canvas>
+        </div>
+    </div>
+
+    <div class="w-full max-w-screen-xl mx-auto p-8 mt-12">
+        <h2 class="text-3xl font-bold mb-6">섭외 전체 내역(PG예정)</h2>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            {% if posts %}
+                <ul class="divide-y divide-gray-200">
+                    {% for post in posts %}
+                        <li class="py-4">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="text-lg font-semibold text-gray-800">{{ post.corporation_name }}</p>
+                                    <p class="text-gray-600">{{ post.content }}</p>
+                                    <p class="text-sm text-gray-500">{{ post.username }} | {{ post.created_at.strftime('%Y-%m-%d') }}</p>
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-gray-600">현재 등록된 섭외 내역이 없습니다.</p>
+            {% endif %}
+        </div>
+    </div>
+    
+</div>
+
+<script>
+    // 법인별 섭외내역 통계 (세로 막대 차트)
+    const corporationCtx = document.getElementById('corporationChart').getContext('2d');
+    new Chart(corporationCtx, {
+        type: 'bar',
+        data: {
+            labels: ['삼성전자(주)', 'LG전자(주)', 'SK텔레콤(주)', '현대자동차(주)', '(주)셀트리온'],
+            datasets: [{
+                label: '섭외 건수',
+                data: [65, 59, 80, 81, 56],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            }
+        }
+    });
+
+    // 직급별 섭외내역 통계 (도넛 차트)
+    const positionCtx = document.getElementById('positionChart').getContext('2d');
+    const totalContacts = 41; // 총 섭외 건수
+    document.getElementById('totalContactsText').textContent = '총 섭외 건수: ' + totalContacts;
+
+    new Chart(positionCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['계장', '대리', '과장', '차장', '부지점장'],
+            datasets: [{
+                label: '섭외 건수',
+                data: [12, 19, 3, 5, 2],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '40%', // 도넛 차트의 크기를 조정하는 옵션
+            plugins: {
+                legend: {
+                    position: 'right',
+                }
+            }
+        }
+    });
+
+    // 지역본부별 섭외내역 통계 (다중 선 그래프)
+    const regionCtx = document.getElementById('regionChart').getContext('2d');
+    new Chart(regionCtx, {
+        type: 'line',
+        data: {
+            labels: ['1월', '2월', '3월', '4월', '5월', '6월'],
+            datasets: [
+                {
+                    label: '강남1(방배중앙)',
+                    data: [70, 35, 40, 38, 63, 45],
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    tension: 0.1
+                },
+                {
+                    label: '강남2(신사동)',
+                    data: [50, 57, 52, 55, 76, 58],
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    tension: 0.1
+                },
+                {
+                    label: '경인1(용현남)',
+                    data: [45, 58, 43, 48, 50, 52],
+                    borderColor: 'rgba(255, 206, 86, 1)',
+                    backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                    tension: 0.1
+                },
+                {
+                    label: '경인2(가좌공단)',
+                    data: [60, 58, 37, 65, 63, 68],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+
+<script>
+    async function searchCompanies(event) {
+        event.preventDefault(); // 기본 폼 제출 방지
+
+        const name = document.getElementById('company_name').value;
+        const searchType = document.getElementById('search_type').value;
+
+        // 동적으로 폼 생성
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/contact5';  // contact5.html로 연결
+
+        // 폼에 필요한 입력 필드 추가
+        const nameField = document.createElement('input');
+        nameField.type = 'hidden';
+        nameField.name = 'name';
+        nameField.value = name;
+        form.appendChild(nameField);
+
+        const searchTypeField = document.createElement('input');
+        searchTypeField.type = 'hidden';
+        searchTypeField.name = 'search_type';
+        searchTypeField.value = searchType;
+        form.appendChild(searchTypeField);
+
+        // 폼을 문서에 추가하고 제출
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    document.getElementById('search_button').addEventListener('click', searchCompanies);
+</script>
+
+{% endblock %}
+{% include 'footer.html' %}
+

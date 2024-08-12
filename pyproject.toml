@@ -46,8 +46,6 @@ pdfminer-six = "^20231228"
 pymupdf4llm = "^0.0"
 
 # 시각화 및 사용자 인터페이스 관련 패키지
-matplotlib = "^3.8.4"
-streamlit = "^1.32.2"
 jupyter = "^1.0.0"
 notebook = "^7.1.2"
 
@@ -74,13 +72,20 @@ langchain-milvus = "^0.1.1"
 langchain-google-genai = "^1.0.7"
 langchain-huggingface = "^0.0.3"
 google-search-results = "^2.4.2"
-gpt4all = "^2.7.0"
 protobuf = "3.20.3"
 sqlalchemy = "^2.0.31"
 itsdangerous = "^2.2.0"
 pymysql = "^1.1.1"
 passlib = "^1.7.4"
 dart-fss = "^0.4.10"
+imbalanced-learn = "^0.12.3"
+pdfkit = "^1.0.0"
+weasyprint = "^62.3"
+selenium = "^4.23.1"
+webdriver-manager = "^4.0.2"
+reportlab = "^4.2.2"
+yfinance = "^0.2.41"
+uvicorn = "^0.30.5"
 
 
 [build-system]

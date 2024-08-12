@@ -1,0 +1,91 @@
+{% include 'header.html' %}
+
+{% block head %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/font.css">
+<title>Business Cards</title>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto my-8 px-6">
+    <h1 class="text-3xl font-bold mb-4">명함 목록</h1>
+
+
+    <!-- 명함 업로드 모달 트리거 -->
+    <button class="bg-blue-500 text-white py-2 px-4 rounded" data-modal-target="uploadModal">명함 업로드</button>
+
+    <!-- 명함 업로드 모달 -->
+    <div id="uploadModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <form action="/upload-business-card" method="post" enctype="multipart/form-data">
+                <!-- 사용자 이름을 쿼리 파라미터로 전달 -->
+                <input type="hidden" name="username" value="{{ username }}">
+
+                <!-- 파일 업로드 필드 -->
+                <div class="mb-4">
+                    <label for="businessCard" class="block text-lg font-semibold text-gray-800">명함 파일 첨부</label>
+                    <input type="file" id="businessCard" name="file" class="mt-2 p-2 border rounded-md w-full" required>
+                </div>
+
+                <!-- 등록 버튼 -->
+                <button type="submit"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md">명함 저장</button>
+            </form>
+
+            <button class="mt-4 text-red-500" data-modal-close>닫기</button>
+        </div>
+    </div>
+
+    <!-- 명함 목록 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+        {% for card in cards %}
+        <div class="bg-white rounded-lg shadow-lg p-4">
+            <img src="/static/business_cards/{{ card.filename }}" alt="Business Card" class="w-full h-48 object-cover">
+            <div class="mt-2">
+                <p class="text-lg font-bold">작성자: {{ card.username }}</p>
+                <p class="text-sm text-gray-500">등록일: {{ card.created_at.strftime('%Y-%m-%d') }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const openModalButtons = document.querySelectorAll('[data-modal-target]');
+        const closeModalButtons = document.querySelectorAll('[data-modal-close]');
+        const overlay = document.getElementById('overlay');
+
+        openModalButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const modal = document.getElementById(button.dataset.modalTarget);
+                openModal(modal);
+            });
+        });
+
+        closeModalButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const modal = button.closest('.modal');
+                closeModal(modal);
+            });
+        });
+
+        function openModal(modal) {
+            if (modal == null) return;
+            modal.classList.add('flex');
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal(modal) {
+            if (modal == null) return;
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    });
+</script>
+{% endblock %}
+
+{% include 'footer.html' %}

@@ -1,5 +1,4 @@
 {% include 'header.html' %}
-
 {% block head %}
 <link rel="stylesheet" href="/static/css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -28,8 +27,29 @@
         padding: 1rem;
         margin-bottom: 1rem;
     }
-    .chat-log p {
-        margin: 0.5rem 0;
+    .message {
+        max-width: 70%;
+        padding: 10px;
+        margin: 5px 0;
+        border-radius: 10px;
+        clear: both;
+    }
+    .message-content {
+        padding: 5px 10px;
+        border-radius: 10px;
+        display: inline-block;
+    }
+    .message.self {
+        float: right;
+    }
+    .message.self .message-content {
+        background-color: #DCF8C6;
+    }
+    .message.other {
+        float: left;
+    }
+    .message.other .message-content {
+        background-color: #E5E5EA;
     }
     .chat-input {
         display: flex;
@@ -97,7 +117,9 @@
             console.log('Sending password verification request');
             const response = await fetch('/verify_password2', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify({ password: password })
             });
             console.log('Received response:', response);
@@ -146,6 +168,7 @@
     function initWebSocket() {
         console.log('Initializing WebSocket');
         ws = new WebSocket(`ws://${location.host}/ws/chat/${username}`);
+        
         ws.onopen = function(event) {
             console.log('WebSocket connection opened');
             Swal.fire({
@@ -155,13 +178,17 @@
                 confirmButtonText: '확인'
             });
         };
+    
         ws.onmessage = function(event) {
             console.log('Received message:', event.data);
-            const message = document.createElement('p');
-            message.textContent = event.data;
-            chatLog.appendChild(message);
-            chatLog.scrollTop = chatLog.scrollHeight;
+            try {
+                const messageData = JSON.parse(event.data);
+                displayMessage(messageData.sender, messageData.content, messageData.type);
+            } catch (error) {
+                console.error('Error parsing message:', error);
+            }
         };
+    
         ws.onerror = function(event) {
             console.error('WebSocket error:', event);
             Swal.fire({
@@ -171,6 +198,7 @@
                 confirmButtonText: '확인'
             });
         };
+    
         ws.onclose = function(event) {
             console.log('WebSocket connection closed:', event);
             Swal.fire({
@@ -181,12 +209,42 @@
             });
         };
     }
-
+    
+    function displayMessage(sender, content, type) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender === username ? 'self' : 'other'}`;
+        
+        const contentSpan = document.createElement('span');
+        contentSpan.className = 'message-content';
+        
+        if (type === 'whisper') {
+            contentSpan.textContent = `귓속말 ${sender}: ${content}`;
+            contentSpan.style.fontStyle = 'italic';
+        } else {
+            contentSpan.textContent = `${sender}: ${content}`;
+        }
+        
+        messageDiv.appendChild(contentSpan);
+        chatLog.appendChild(messageDiv);
+        chatLog.scrollTop = chatLog.scrollHeight;
+    }
+    
     function sendMessage() {
-        const message = chatInput.value;
+        const message = chatInput.value.trim();
         if (message && ws && ws.readyState === WebSocket.OPEN) {
             console.log('Sending message:', message);
-            ws.send(message);
+            if (message.startsWith('/w ')) {
+                const [_, target, ...content] = message.split(' ');
+                ws.send(JSON.stringify({
+                    type: 'whisper',
+                    target: target,
+                    content: content.join(' ')
+                }));
+            } else {
+                ws.send(JSON.stringify({
+                    content: message
+                }));
+            }
             chatInput.value = '';
             chatInput.focus();
         } else {

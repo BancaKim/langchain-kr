@@ -1,51 +1,178 @@
 {% include 'header.html' %}
 
-
-
 {% block head %}
 <link rel="stylesheet" href="/static/css/style.css">
+<link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/font.css">
+<style>
+    .qna-detail {
+        margin: 20px 0;
+        background-color: #fff;
+    }
+
+    .qna-page-title {
+        margin-bottom: 20px;
+    }
+
+    .qna-container {
+        overflow: hidden;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .qna-question {
+        padding: 20px;
+        border-radius: 5px;
+        width: 45%;
+        max-width: 45%;
+        float: left;
+        text-align: left;
+        margin-right: 5%;
+        border: 1px solid #ccc;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .qna-replies {
+        margin-bottom: 20px;
+        clear: both;
+        /*border-top: 1px solid #ddd;*/
+        padding-top: 20px;
+    }
+
+    .qna-reply-item {
+        margin-bottom: 20px;
+        padding: 15px;
+        border-radius: 5px;
+        width: 55%;
+        max-width: 60%;
+        float: right;
+        text-align: left;
+        clear: both;
+        background-color: #e9f7fe;
+        border: 1px solid #ccc;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+    }
+
+    .qna-form-group {
+        margin-top: 20px;
+        clear: both;
+        float: right;
+        width: 55%;
+    }
+
+    .qna-form-group label {
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .qna-form-group textarea {
+        width: 100%;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        resize: vertical;
+    }
+
+    .qna-form-actions {
+        text-align: right;
+        width: 70%;
+        float: right;
+        margin-top: 10px;
+    }
+
+    .qna-form-actions button, .qna-form-actions a {
+        margin-left: 10px;
+    }
+    .qna-page-title {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .qna-title-right {
+        text-align: right;
+        margin-bottom: 20px;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<section class="detail">
-    <div class="page-title">
-        <div class="container">
-            <h3>Q&A 상세</h3>
-        </div>
-    </div>
 
-    <div class="container detail-content">
-        <h1>{{ qna.title }}</h1>
-        <p>{{ qna.content }}</p>
-        <p><strong>작성자:</strong> {{ qna.username }}</p>
-        <p><strong>등록일:</strong> {{ qna.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
-        <hr>
-        <h5>답글</h5>
-        <ul>
+
+<div class="w-full" style="background-image: url('/static/images/home9.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 40vh;">
+    
+    <div class="p-8 w-full max-w-screen-xl mx-auto" >
+        <span class="block text-left text-xl mb-2">
+            <a href="/" class="mr-2 text-white">홈 &nbsp; |</a> 
+            <a href="/qnas" class="ml-2 text-white">Q&A &nbsp; |</a>
+            <span class="ml-2 text-white" >상세</span>
+        </span>
+        <br><br>
+
+        <div class="text-center mb-4">
+            <h1 class="text-5xl font-bold text-white">문의 상세</h1>
+        </div>
+        <br><br>
+    </div>
+</div>
+
+
+<section class="qna-detail w-full">
+    <br><br>
+
+    <div class="container qna-container max-w-5xl">
+        <h3 class="text-4xl"> {{ qna.title }}</h3>
+        <br><Br>
+        <div class="qna-question bg-red-50 rounded-lg">
+            <p><strong>작성자:</strong> {{ qna.username }}</p>
+            <p><strong>등록일:</strong> {{ qna.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+            <br>
+            <h4>{{ qna.content }}</h4> <br/>
+        </div>
+
+
+        <div class="qna-replies">
+            <br>
+            <!--<h2 style="text-align: right; margin-bottom: 20px;">[답글]</h2>-->
             {% for reply in replies %}
-            <li>
-                <p>{{ reply.content }}</p>
+            <div class="qna-reply-item">
                 <p><strong>작성자:</strong> {{ reply.username }}</p>
                 <p><strong>등록일:</strong> {{ reply.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
-            </li>
+                <Br>
+                <h4>{{ reply.content }}</h4> <br/>
+            </div>
             {% endfor %}
-        </ul>
+        </div>
         <form action="/qnas/{{ qna.id }}/reply" method="post">
-            <div class="form-group">
+            <div class="qna-form-group">
                 <label for="content">답글 내용</label>
                 <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
             </div>
-            <button type="submit" class="btn btn-dark">답글 달기</button>
-            <br/><br/><br/><br/>
+            
+            <div class="qna-form-actions">
+
+                <form action="/qnas/{{ qna.id }}/reply" method="post">
+                    <button type="submit" class="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 inline-block">답글 등록</button>
+                </form>
+
+                {% if username == qna.username %}
+                    <a href="/qnas/update/{{ qna.id }}" class="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 inline-block">수정</a>
+                    <form action="/qnas/delete/{{ qna.id }}" method="post" style="display: inline;">
+                        <button type="submit" class="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 inline-block">삭제</button>
+                    </form>
+                {% endif %}
+
+            </div>
+
         </form>
-        {% if username == qna.username %}
-        <a href="/qnas/update/{{ qna.id }}" class="btn btn-dark">수정</a>
-        <form action="/qnas/delete/{{ qna.id }}" method="post" style="display: inline;">
-            <button type="submit" class="btn btn-danger">삭제</button>
-        </form>
-        {% endif %}
-        <button onclick="location.href='/qnas'" class="btn btn-dark">목록으로</button>
     </div>
 </section>
+<div class="container mx-auto mt-6 text-center px-4 sm:px-6 lg:px-8 max-w-3xl">
+<button onclick="location.href='/qnas'" class="px-6 py-3 bg-gray-800 text-white rounded hover:bg-gray-900 inline-block">뒤로가기</button>
+</div>
+<br><br>
 {% endblock %}
 {% include 'footer.html' %}

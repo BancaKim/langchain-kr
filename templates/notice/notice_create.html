@@ -1,25 +1,7 @@
 {% include 'header.html' %}
 
-
 {% block head %}
 <link rel="stylesheet" href="/static/css/style.css">
-<style>
-    .spinner {
-        display: none;
-        margin: 100px auto;
-        width: 50px;
-        height: 50px;
-        border: 5px solid lightgray;
-        border-top-color: rgb(217, 255, 0);
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
-</style>
 {% endblock %}
 
 {% block content %}
@@ -41,18 +23,13 @@
                 <label for="content">내용</label>
                 <textarea class="form-control" id="content" name="content" rows="5" required></textarea>
             </div>
-            <button type="submit" class="btn btn-dark">등록</button>
+            <div class="btn-wrap">
+                <button type="submit" class="btn btn-dark">등록</button>
+                <button type="button" onclick="location.href='/contact'" class="btn btn-dark">목록으로</button>
+            </div>
         </form>
-        <div class="spinner" id="loadingSpinner"></div>
-        <button onclick="location.href='/notices'" class="btn btn-dark">목록으로</button>
     </div>
 </section>
-
-<script>
-    document.getElementById('noticeForm').addEventListener('submit', function() {
-        document.getElementById('loadingSpinner').style.display = 'block';
-    });
-</script>
 {% endblock %}
 
 {% include 'footer.html' %}

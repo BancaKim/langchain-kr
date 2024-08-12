@@ -725,7 +725,6 @@
 .uui-footer07_bottom-wrapper {
   border-top: 1px solid var(--untitled-ui--gray200);
   justify-content: space-between;
-  margin-top: 4rem;
   padding-top: 2rem;
   display: flex;
 }
@@ -770,7 +769,6 @@
 }
 
 .uui-padding-vertical-xlarge {
-  padding-top: 4rem;
   padding-bottom: 4rem;
 }
 
@@ -1019,8 +1017,9 @@
 }
 
 .spoonlogo {
-  position: relative;
+  position: relative !important;
   width: 73.39px !important;
+  height: 89.95px !important;
 }
 
 @media screen and (min-width: 1920px) {
@@ -1593,12 +1592,3 @@
     order: -9999;
   }
 }
-
-/* 
-@font-face {
-  font-family: 'Npsfont';
-  src: url('../fonts/NPSfont_bold.otf') format('opentype');
-  font-weight: 700;
-  font-style: normal;
-  font-display: auto;
-} */
