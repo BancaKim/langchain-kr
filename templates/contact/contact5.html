@@ -170,7 +170,7 @@
 
 {% block content %}
 <div class="w-full"
-    style="background-image: url('/static/images/home7.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 40vh;">
+    style="background-image: url('/static/images/home8.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 40vh;">
     <div class="p-8 w-full max-w-screen-xl mx-auto">
         <span class="block text-left text-xl mb-2">
             <a href="/" class="mr-2 text-white ">홈 &nbsp; |</a>
@@ -241,17 +241,20 @@
             <!-- Business Card Section -->
             <div
                 class="flex-shrink-0 bg-white rounded-lg shadow-lg flex-grow overflow-hidden flex flex-col business-card-section">
-                <div class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg">
+                <div class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg flex justify-between items-center">
                     <h2 class="text-xl font-semibold text-gray-800">주요 임직원 명함집</h2>
+                    <a href="/card?corporation_name={{ company_info.corp_name }}" class="px-4 py-2 text-white bg-purple-700 rounded-md hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300">
+                        바로가기
+                    </a>
                 </div>
+                
                 <div class="p-6 space-y-4 overflow-y-auto flex-grow business-cards-container">
                     <div class="grid grid-cols-1 gap-4">
                         {% for card in business_cards %}
                         <div class="relative overflow-hidden transform transition duration-500 hover:scale-110">
-                            <a href="/card">
-                                <img src="/static/business_cards/{{ card.filename }}" alt="Business Card"
-                                    class="w-full h-auto object-cover rounded-lg shadow-md">
-                            </a>
+                            <a href="/card?corporation_name={{ company_info.corp_name }}">
+                                <img src="/static/business_cards/{{ card.filename }}" alt="Business Card" class="w-full h-auto object-cover rounded-lg shadow-md">
+                            </a>                            
                         </div>
                         {% endfor %}
                     </div>
