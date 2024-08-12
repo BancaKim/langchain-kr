@@ -179,10 +179,10 @@
                             ${getCorpClsDisplay(company.corp_cls)}
                         </td>
                         <td class="px-6 py-4 border-b whitespace-nowrap">${company.jurir_no}</td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">${formatNumber(Math.floor(company.totalAsset2023 / 100000000))} 억원</td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">${formatNumber(Math.floor(company.capital2023 / 100000000))} 억원</td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">${formatNumber(Math.floor(company.revenue2023 / 100000000))} 억원</td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">${formatNumber(Math.floor(company.netIncome2023 / 100000000))} 억원</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">${formatNumber(Math.floor(company.totalAsset2023 ))} 억원</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">${formatNumber(Math.floor(company.capital2023 ))} 억원</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">${formatNumber(Math.floor(company.revenue2023 ))} 억원</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">${formatNumber(Math.floor(company.netIncome2023))} 억원</td>
                         <td class="px-6 py-4 border-b whitespace-nowrap">
                             <a href="/baro_companyInfo?jurir_no=${company.jurir_no}" class="text-purple-500 hover:underline">확인</a>
                         </td>
@@ -219,12 +219,10 @@
         <br><br>
 
 
-
-        <!-- 최근 조회한 업체 현황 -->
         <section>
             <h1 class="text-3xl font-bold text-gray-800 mb-4">최근 조회 목록</h1>
 
-            {% if recent_view_list %}
+            {% if recent_views_companies %}
             <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
                 <thead class="bg-gray-100 text-gray-600 uppercase text-base">
                     <tr class="text-center">
@@ -241,7 +239,7 @@
                     </tr>
                 </thead>
                 <tbody class="text-gray-700 text-base text-center">
-                    {% for company in recent_view_list %}
+                    {% for company in recent_views_companies %}
                     <tr>
                         <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.corp_name }}</td>
                         <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.ceo_nm }}</td>
@@ -258,40 +256,32 @@
                             {{ company.corp_cls }}
                             {% endif %}
                         </td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.company_jurir_no }}</td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ '{:,}'.format(company.totalAsset2023) }} 억원
+                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.jurir_no }}</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ '{:,}'.format(company.totalAsset2023 or 0) }} 억원</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ '{:,}'.format(company.capital2023 or 0) }} 억원</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ '{:,}'.format(company.revenue2023 or 0) }} 억원</td>
+                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ '{:,}'.format(company.netIncome2023 or 0) }} 억원</td>
                         </td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ '{:,}'.format(company.totalEquity2023) }} 억원
-                        </td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ '{:,}'.format(company.revenue2023) }} 억원
-                        </td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ '{:,}'.format(company.earningBeforeTax2023)
-                            }} 억원</td>
-
                         <td class="px-6 py-4 border-b whitespace-nowrap">
-                            <a href="/baro_companyInfo?jurir_no={{ company.company_jurir_no }}"
-                                class="text-purple-500 hover:underline">확인</a>
-                            <!--
-                                <a href="/baro_companyInfo?jurir_no={{ company.company_jurir_no }}" class="text-purple-500 hover:underline company-info-link" data-url="/baro_companyInfo?jurir_no={{ company.company_jurir_no }}">확인2</a>
-                            -->
-
+                            <a href="/baro_companyInfo?jurir_no={{company.jurir_no}}" class="text-purple-500 hover:underline">확인</a>
                         </td>
-
 
                         <td class="px-6 py-4 border-b whitespace-nowrap">
                             <form method="GET" action="/contact5">
-                                <input type="hidden" name="jurir_no" value="{{ company.company_jurir_no }}">
+                                <input type="hidden" name="jurir_no" value="{{company.jurir_no}}">
                                 <button type="submit" class="text-purple-500 hover:underline">등록</button>
                             </form>
-                        </td>                   
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
             {% else %}
-            <p class="text-gray-600">No companies found.</p>
+            <p class="text-gray-600">최근 조회한 업체가 없습니다.</p>
             {% endif %}
         </section>
+
+
     </div>
 </div>
 

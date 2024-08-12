@@ -574,10 +574,10 @@ def get_favorite_companies(db: Session, username: str):
                 "corp_name": company_info.corp_name,
                 "ceo_nm": company_info.ceo_nm,
                 "corp_cls": company_info.corp_cls,
-                "totalAsset2023": financial_info.totalAsset2023 if financial_info else None,
-                "capital2023": financial_info.capital2023 if financial_info else None,
-                "revenue2023": financial_info.revenue2023 if financial_info else None,
-                "netIncome2023": financial_info.netIncome2023 if financial_info else None
+                "totalAsset2023": financial_info.totalAsset2023 // 100000000 if financial_info else None,
+                "capital2023": financial_info.capital2023 // 100000000 if financial_info else None,
+                "revenue2023": financial_info.revenue2023 // 100000000 if financial_info else None,
+                "netIncome2023": financial_info.netIncome2023 // 100000000 if financial_info else None,
+
             })
     return favorite_companies
-
