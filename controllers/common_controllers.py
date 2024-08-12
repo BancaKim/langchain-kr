@@ -890,7 +890,7 @@ async def read_contact(request: Request):
 @router.get("/contact55")
 async def read_contact(request: Request, db: Session = Depends(get_db)):
     username = request.session.get("username")
-    posts = db.query(Post.corporation_name, Post.content, Post.username, Post.created_at).all()
+    posts = db.query(Post.corporation_name, Post.content, Post.username, Post.created_at, Post.contact_type, Post.contact_method).all()
 
     return templates.TemplateResponse(
         "contact/contact55.html",
