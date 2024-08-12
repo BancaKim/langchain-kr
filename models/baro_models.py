@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, Numeric, String, Float, Date, BigInteger, TIMESTAMP
+from datetime import datetime
+from sqlalchemy import Column, DateTime, Integer, Numeric, String, Float, Date, BigInteger, TIMESTAMP
 
 from database import Base
 
@@ -194,3 +195,13 @@ class Favorite(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)   
     username = Column(String(100))
     corp_code = Column(String(8))
+    
+    
+class RecentView(Base):
+    __tablename__ = 'recent_views'
+    
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String(100))
+    corp_code = Column(String(8))
+    created_at = Column(DateTime, default=datetime.utcnow)
+
