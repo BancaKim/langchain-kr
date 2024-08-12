@@ -36,7 +36,8 @@
         border-radius: 5px;
         background-color: #F7FAFC;
         margin-bottom: 10px;
-        border: 2px solid #E2E8F0; /* 경계선 추가 */
+        border: 2px solid #E2E8F0;
+        /* 경계선 추가 */
         transition: background-color 0.3s ease;
     }
 
@@ -45,10 +46,7 @@
     }
 
     .stats-container {
-        border: 2px solid #E2E8F0; /* 영역을 표시하는 경계선 */
         border-radius: 5px;
-        padding: 20px;
-        background-color: #FFFFFF;
     }
 </style>
 {% endblock %}
@@ -108,19 +106,13 @@
 </div>
 
 
-<!-- /qnas로 이동하는 버튼 추가 -->
-<div class="flex justify-end mb-16 pr-8"> <!-- 오른쪽 정렬 및 아래쪽 여백 -->
-    <a href="/qnas"
-        class="px-4 py-2 text-sm font-medium text-white bg-purple-700 rounded-md hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
-        기업금융 Q&A 이동하기
-    </a>
-</div>
+
 
 
 <div class="w-full max-w-screen-xl mx-auto p-8">
-    <div class="stats-container">
-        <div class="toggle-header" onclick="toggleContent('allStatsContent')">
-            <h2 class="text-3xl font-bold">섭외 통계 보기</h2>
+    <div class="flex-shrink-0 bg-white rounded-lg shadow-lg">
+        <div class="bg-gray-100 p-3 rounded-t-lg flex cursor-pointer" onclick="toggleContent('allStatsContent')">
+            <h3 id="toggleText" class="text-2xl font-bold text-gray-800">섭외 통계 펼치기 ▼</h3>
         </div>
 
         <div id="allStatsContent" class="toggle-content">
@@ -131,16 +123,16 @@
                         <canvas id="corporationChart"></canvas>
                     </div>
                 </div>
-            
+
                 <div class="chart-item bg-white p-6 rounded-lg shadow-lg border border-gray-200">
                     <h3 class="text-xl font-semibold mb-4">직급별 섭외내역 통계</h3>
                     <p id="totalContactsText" class="text-right text-sm text-gray-600">총 섭외 건수: 41</p>
-                    <div style="height: 300px;"> 
+                    <div style="height: 300px;">
                         <canvas id="positionChart"></canvas>
                     </div>
                 </div>
             </div>
-            
+
             <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
                 <h3 class="text-xl font-semibold mb-4">지역본부별 섭외내역 통계</h3>
                 <div style="height: 400px;">
@@ -151,60 +143,102 @@
     </div>
 
     <div class="stats-container mt-12">
-        <h2 class="text-3xl font-bold mb-6">섭외 전체 내역(PG예정)</h2>
-        <!-- 검색 기능 추가 -->
-        <form action="/contact55/search" method="get">
-            <div class="mb-6">
-                <div class="relative flex">
-                    <input type="search" id="contact_search" name="search_query"
-                        class="block p-2.5 w-full text-base text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
-                        placeholder="정보를 입력하세요..." required />
+        <div class="bg-gray-100 p-3 rounded-t-lg">
+            <div class="flex justify-between items-center"> <!-- Flex 컨테이너를 사용하여 같은 줄에 배치 -->
+                <h2 class="text-2xl font-bold text-gray-800">섭외 전체 내역</h2>
+                <!-- /qnas로 이동하는 버튼 추가 -->
+                <div class="flex justify-end">
+                    <a href="/qnas"
+                        class="px-4 py-2 text-sm font-medium text-white bg-purple-700 rounded-md hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
+                        기업금융 Q&A 이동하기
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+
+
+        <!-- 검색 기능과 결과 리스트를 하나의 화면에 통합 -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <!-- 검색 기능 추가 -->
+            <form action="/contact55/search" method="get">
+                <div class="relative flex mb-6"> <!-- mb-6으로 검색 필드와 목록 사이에 여백을 둠 -->
+                    <!-- 검색 타입 선택 -->
+                    <div class="relative w-48">
+                        <select id="search_type" name="search_type"
+                            class="block w-full py-2.5 px-4 text-base font-medium text-gray-900 bg-gray-50 border-gray-300 rounded-s-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600">
+                            <option value="corporation_name">법인명</option>
+                            <option value="username">작성자</option>
+                            <option value="content">내용</option>
+                        </select>
+                    </div>
+                    <!-- 검색 입력 필드 -->
+                    <div class="relative w-full">
+                        <input type="search" id="contact_search" name="search_query"
+                            class="block p-2.5 w-full text-base text-gray-900 bg-gray-50 rounded-e-lg border-s-gray-50 border-s-2 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-s-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
+                            placeholder="검색내용을 입력하세요..." required />
+                    </div>
+                    <!-- 검색 버튼 -->
                     <button type="submit"
                         class="absolute top-0 end-0 p-2.5 text-sm font-medium h-full text-white bg-purple-700 rounded-e-lg border border-purple-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-800">
-                        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 20 20">
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
                         </svg>
                     </button>
                 </div>
-            </div>
-        </form>
+            </form>
 
-
-
-        <div class="bg-white p-6 rounded-lg shadow-md">
+            <!-- 검색 결과 또는 전체 목록 표시 -->
             {% if posts %}
-                <ul id="postsList" class="divide-y divide-gray-200">
-                    {% for post in posts %}
-                        <li class="py-4">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <p class="text-lg font-semibold text-gray-800">{{ post.corporation_name }}</p>
-                                    <p class="text-gray-600">{{ post.content }}</p>
-                                    <p class="text-sm text-gray-500">{{ post.username }} | {{ post.created_at.strftime('%Y-%m-%d') }}</p>
-                                </div>
-                            </div>
-                        </li>
-                    {% endfor %}
-                </ul>
-                <div class="mt-6 flex justify-center">
-                    <nav aria-label="Page navigation">
-                        <ul id="pagination" class="inline-flex -space-x-px text-sm">
-                            <!-- Pagination buttons will be inserted here by JavaScript -->
-                        </ul>
-                    </nav>
-                </div>
+            <ul id="postsList" class="divide-y divide-gray-200">
+                {% for post in posts %}
+                <li class="py-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-lg font-semibold text-gray-800">{{ post.corporation_name }}</p>
+                            <p class="text-gray-600">{{ post.content }}</p>
+                            <p class="text-sm text-gray-500">{{ post.contact_type }} | {{ post.contact_method }} | {{
+                                post.username }} | {{ post.created_at.strftime('%Y-%m-%d') }}</p>
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            <div class="mt-6 flex justify-center">
+                <nav aria-label="Page navigation">
+                    <ul id="pagination" class="inline-flex -space-x-px text-sm">
+                        <!-- Pagination buttons will be inserted here by JavaScript -->
+                    </ul>
+                </nav>
+            </div>
             {% else %}
-                <p class="text-gray-600">현재 등록된 섭외 내역이 없습니다.</p>
+            <p class="text-gray-600">현재 등록된 섭외 내역이 없습니다.</p>
             {% endif %}
         </div>
     </div>
+
 </div>
+
+
 
 <script>
     function toggleContent(id) {
         const content = document.getElementById(id);
+        const toggleText = document.getElementById('toggleText');
+        
+        // 토글하여 콘텐츠 표시/숨기기
         content.classList.toggle('show');
+
+        // 토글 상태에 따라 텍스트 변경
+        if (content.classList.contains('show')) {
+            toggleText.textContent = '섭외 통계 접기 ▲';
+        } else {
+            toggleText.textContent = '섭외 통계 펼치기 ▼';
+        }
     }
 
     // 법인별 섭외내역 통계 (세로 막대 차트)
@@ -342,7 +376,7 @@
 
 <script>
     async function searchCompanies(event) {
-        event.preventDefault(); 
+        event.preventDefault();
 
         const name = document.getElementById('company_name').value;
         const searchType = document.getElementById('search_type').value;
