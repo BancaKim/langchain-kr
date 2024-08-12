@@ -1,6 +1,6 @@
 import asyncio
 from math import ceil
-from typing import List, Optional, TypedDict
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy import text
@@ -12,20 +12,6 @@ from models.credit_models import ReportContent
 from dotenv import load_dotenv
 from services_def.chatbot_logic import generate_response, setup_chatbot
 from services_def.dependencies import get_db
-from langchain_upstage import UpstageGroundednessCheck
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_openai import OpenAIEmbeddings
-from langchain_community.vectorstores import FAISS
-from services_def.rag.utils import format_docs, format_searched_docs
-from langchain import hub
-from langchain_openai import ChatOpenAI
-from langchain_core.output_parsers import StrOutputParser
-from operator import itemgetter
-from langchain_core.prompts import ChatPromptTemplate
-from langgraph.graph import END, StateGraph
-from langgraph.checkpoint.memory import MemorySaver
-from langchain_core.runnables import RunnableConfig
-from langchain_community.tools.tavily_search import TavilySearchResults
 import logging
 
 credit = APIRouter(prefix="/credit")
@@ -36,30 +22,6 @@ load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# @credit.get("/createReview/")
-# async def create_review(db: Session = Depends(get_db)):
-#     # finanical_summary_v1의 회사코드 리스트 가져오기
-#     # corp_code = "00164779"  # 에스케이하이닉스(주)
-#     # corp_code = "00126380"  # 삼성전자
-#     # corp_code = "00102618"  # 계양전기
-
-#     corp_codes = []
-
-#     corp_codes.append("00155355")  # 풀무원
-#     # corp_codes.append("00105961")  # LG이노텍
-#     # corp_codes.append("00231707")  # 비트컴퓨터
-#     # corp_codes.append("00545929")  # 제넥신
-#     # corp_codes.append("01133217")  # 카카오뱅크
-#     # corp_codes.append("00117212")  # 두산
-#     # corp_codes.append("01105153")  # 두산로보틱스
-#     # corp_codes.append("00164742")  # 현대자동차
-#     # corp_codes.append("00164788")  # 현대모비스
-
-#     # 받아온 회사 코드로 최신 정기 공시보고서 번호 dart api로부터 받아오기
-#     for corp_code in corp_codes:
-#         summary = run_credit_evaluation(corp_code)
-#     return {"result": "DB success"}
 
 
 @credit.get("/api/companies")
