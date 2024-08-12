@@ -119,6 +119,7 @@ class BusinessCard(Base):
     filename = Column(String(255), nullable=False)  # 길이를 255로 지정
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     username = Column(String(100), nullable=False)  # 길이 지정
+    corporation_name = Column(String(255), nullable=True)  # 회사명 필드 추가
 
     # Optional: you can add more fields based on requirements, e.g., company name, phone number, etc.
 

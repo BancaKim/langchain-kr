@@ -19,6 +19,37 @@
         width: 48%;
         margin-bottom: 20px;
     }
+
+    .toggle-content {
+        display: none;
+    }
+
+    .toggle-content.show {
+        display: block;
+    }
+
+    .toggle-header {
+        cursor: pointer;
+        color: #333;
+        font-weight: bold;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: #F7FAFC;
+        margin-bottom: 10px;
+        border: 2px solid #E2E8F0; /* 경계선 추가 */
+        transition: background-color 0.3s ease;
+    }
+
+    .toggle-header:hover {
+        background-color: #EDF2F7;
+    }
+
+    .stats-container {
+        border: 2px solid #E2E8F0; /* 영역을 표시하는 경계선 */
+        border-radius: 5px;
+        padding: 20px;
+        background-color: #FFFFFF;
+    }
 </style>
 {% endblock %}
 
@@ -29,7 +60,7 @@
     <div class="p-8 w-full max-w-screen-xl mx-auto">
         <span class="block text-left text-xl mb-2">
             <a href="/" class="mr-2 text-white">홈 &nbsp; |</a>
-            <a href="/contact" class="ml-2 text-white">섭외등록</a>
+            <a href="/contact55" class="ml-2 text-white">섭외등록</a>
         </span>
         <br><br><br>
 
@@ -87,37 +118,63 @@
 
 
 <div class="w-full max-w-screen-xl mx-auto p-8">
-    <h2 class="text-5xl font-bold mb-6">섭외 통계</h2>
-
-    <div class="chart-container">
-        <div class="chart-item bg-white p-6 rounded-lg shadow-lg border border-gray-200">
-            <h3 class="text-xl font-semibold mb-4">법인별 섭외내역 통계</h3>
-            <div style="height: 400px;">
-                <canvas id="corporationChart"></canvas>
-            </div>
+    <div class="stats-container">
+        <div class="toggle-header" onclick="toggleContent('allStatsContent')">
+            <h2 class="text-3xl font-bold">섭외 통계 보기</h2>
         </div>
-    
-        <div class="chart-item bg-white p-6 rounded-lg shadow-lg border border-gray-200">
-            <h3 class="text-xl font-semibold mb-4">직급별 섭외내역 통계</h3>
-            <p id="totalContactsText" class="text-right text-sm text-gray-600">총 섭외 건수: 41</p> <!-- 총 섭외 건수 표시 -->
-            <div style="height: 300px;"> 
-                <canvas id="positionChart"></canvas>
+
+        <div id="allStatsContent" class="toggle-content">
+            <div class="chart-container">
+                <div class="chart-item bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+                    <h3 class="text-xl font-semibold mb-4">법인별 섭외내역 통계</h3>
+                    <div style="height: 400px;">
+                        <canvas id="corporationChart"></canvas>
+                    </div>
+                </div>
+            
+                <div class="chart-item bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+                    <h3 class="text-xl font-semibold mb-4">직급별 섭외내역 통계</h3>
+                    <p id="totalContactsText" class="text-right text-sm text-gray-600">총 섭외 건수: 41</p>
+                    <div style="height: 300px;"> 
+                        <canvas id="positionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+                <h3 class="text-xl font-semibold mb-4">지역본부별 섭외내역 통계</h3>
+                <div style="height: 400px;">
+                    <canvas id="regionChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
-    
-    <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
-        <h3 class="text-xl font-semibold mb-4">지역본부별 섭외내역 통계</h3>
-        <div style="height: 400px;">
-            <canvas id="regionChart"></canvas>
-        </div>
-    </div>
 
-    <div class="w-full max-w-screen-xl mx-auto p-8 mt-12">
+    <div class="stats-container mt-12">
         <h2 class="text-3xl font-bold mb-6">섭외 전체 내역(PG예정)</h2>
+        <!-- 검색 기능 추가 -->
+        <form action="/contact55/search" method="get">
+            <div class="mb-6">
+                <div class="relative flex">
+                    <input type="search" id="contact_search" name="search_query"
+                        class="block p-2.5 w-full text-base text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
+                        placeholder="정보를 입력하세요..." required />
+                    <button type="submit"
+                        class="absolute top-0 end-0 p-2.5 text-sm font-medium h-full text-white bg-purple-700 rounded-e-lg border border-purple-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-800">
+                        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </form>
+
+
+
         <div class="bg-white p-6 rounded-lg shadow-md">
             {% if posts %}
-                <ul class="divide-y divide-gray-200">
+                <ul id="postsList" class="divide-y divide-gray-200">
                     {% for post in posts %}
                         <li class="py-4">
                             <div class="flex justify-between items-center">
@@ -130,15 +187,26 @@
                         </li>
                     {% endfor %}
                 </ul>
+                <div class="mt-6 flex justify-center">
+                    <nav aria-label="Page navigation">
+                        <ul id="pagination" class="inline-flex -space-x-px text-sm">
+                            <!-- Pagination buttons will be inserted here by JavaScript -->
+                        </ul>
+                    </nav>
+                </div>
             {% else %}
                 <p class="text-gray-600">현재 등록된 섭외 내역이 없습니다.</p>
             {% endif %}
         </div>
     </div>
-    
 </div>
 
 <script>
+    function toggleContent(id) {
+        const content = document.getElementById(id);
+        content.classList.toggle('show');
+    }
+
     // 법인별 섭외내역 통계 (세로 막대 차트)
     const corporationCtx = document.getElementById('corporationChart').getContext('2d');
     new Chart(corporationCtx, {
@@ -214,7 +282,7 @@
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            cutout: '40%', // 도넛 차트의 크기를 조정하는 옵션
+            cutout: '40%',
             plugins: {
                 legend: {
                     position: 'right',
@@ -274,17 +342,15 @@
 
 <script>
     async function searchCompanies(event) {
-        event.preventDefault(); // 기본 폼 제출 방지
+        event.preventDefault(); 
 
         const name = document.getElementById('company_name').value;
         const searchType = document.getElementById('search_type').value;
 
-        // 동적으로 폼 생성
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = '/contact5';  // contact5.html로 연결
+        form.action = '/contact5';
 
-        // 폼에 필요한 입력 필드 추가
         const nameField = document.createElement('input');
         nameField.type = 'hidden';
         nameField.name = 'name';
@@ -297,14 +363,50 @@
         searchTypeField.value = searchType;
         form.appendChild(searchTypeField);
 
-        // 폼을 문서에 추가하고 제출
         document.body.appendChild(form);
         form.submit();
     }
 
     document.getElementById('search_button').addEventListener('click', searchCompanies);
 </script>
+<script>
+    // 기존 JavaScript 코드...
+
+    // 페이지네이션 관련 JavaScript 코드
+    const itemsPerPage = 5; // 페이지당 표시할 항목 수
+    let currentPage = 1;
+    const posts = Array.from(document.querySelectorAll('#postsList li'));
+    const totalPages = Math.ceil(posts.length / itemsPerPage);
+
+    function showPage(page) {
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        posts.forEach((post, index) => {
+            post.style.display = (index >= startIndex && index < endIndex) ? '' : 'none';
+        });
+    }
+
+    function setupPagination() {
+        const paginationElement = document.getElementById('pagination');
+        paginationElement.innerHTML = '';
+
+        for (let i = 1; i <= totalPages; i++) {
+            const li = document.createElement('li');
+            li.innerHTML = `<a href="#" class="flex items-center justify-center px-3 h-8 leading-tight ${i === currentPage ? 'text-blue-600 bg-blue-50' : 'text-gray-500 bg-white'} border border-gray-300 hover:bg-gray-100 hover:text-gray-700">${i}</a>`;
+            li.addEventListener('click', (e) => {
+                e.preventDefault();
+                currentPage = i;
+                showPage(currentPage);
+                setupPagination();
+            });
+            paginationElement.appendChild(li);
+        }
+    }
+
+    // 초기 페이지 설정
+    showPage(currentPage);
+    setupPagination();
+</script>
 
 {% endblock %}
 {% include 'footer.html' %}
-
