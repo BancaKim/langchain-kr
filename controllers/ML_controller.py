@@ -1,14 +1,25 @@
+import os
+import shutil
 from fastapi import APIRouter, HTTPException, Request, Depends, WebSocket, WebSocketDisconnect
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import UploadFile, File
 from sqlalchemy.orm import Session
 from database import SessionLocal
-from services_def.ML_service import train_model, insert_predictions_into_db, generate_predictions, generate_predictions_dictionary, get_db_predictions, save_model_info_to_db
+from services_def.ML_service import train_model, insert_predictions_into_db, generate_predictions, generate_predictions_dictionary, get_db_predictions
+from services_def.ML_service import save_model_info_to_db, get_all_model_info, get_model_info_by_id, custmomized_train_model, set_default_model
 import logging
-import json
-import asyncio
+
 import time
 from datetime import datetime
+import os
+import joblib
+import pickle
+import json
+
+from typing import Dict, List
+from io import BytesIO
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -35,30 +46,76 @@ def get_db():
         yield db
     finally:
         db.close()
+        
+        
 
 
+# @machineLearning.get("/train/", response_class=HTMLResponse)
+# async def train(request: Request, db: Session = Depends(get_db)):
+#     username = request.session.get("username")
+#     model, scaler, accuracy, class_report, conf_matrix, model_info, df_origin, feature_columns = train_model()
 
-@machineLearning.get("/train/", response_class=HTMLResponse)
-async def train(request: Request):
+
+#     # Define the credit ratings corresponding to each class
+#     credit_ratings = ['A', 'A+', 'A-', 'AA', 'AA+', 'AA-', 'AAA', 'B', 'B+', 'B-', 'BB', 'BB+', 'BB-', 'BBB', 'BBB+', 'BBB-']
+
+#     # Store the model and related information
+#     model_store = {
+#         "model": model,
+#         "scaler": scaler,
+#         "accuracy": accuracy,
+#         "class_report": class_report,
+#         "conf_matrix": conf_matrix,
+#         "model_info": {**model_info, "feature_importances": dict(zip(model.feature_names_in_, model_info['feature_importances']))}
+#     }
+
+#    # Save model info to DB
+#     logger.info('Save model info to DB start')
+#     save_model_info_to_db(
+#         model_info=model_info,
+#         accuracy=accuracy,
+#         model=model,
+#         scaler=scaler,
+#         class_report=class_report,
+#         conf_matrix=conf_matrix,
+#         feature_columns=feature_columns,
+#         db=db
+#     )
+
+#     return templates.TemplateResponse("ML_template/ML_view.html", {
+#         "request": request,
+#         "accuracy": round(accuracy, 2),
+#         "class_report": class_report,
+#         "conf_matrix": conf_matrix,
+#         "model_info": model_info,
+#         "credit_ratings": credit_ratings,
+#         "show_predict_button": True,
+#         "username": username
+#     })
+    
+    
+@machineLearning.get("/model_detail/{model_id}", response_class=HTMLResponse)
+async def view_model_detail(request: Request, model_id: str, db: Session = Depends(get_db)):
     username = request.session.get("username")
-    model, scaler, accuracy, class_report, conf_matrix, model_info, df_origin, feature_columns = train_model()
+    model_info = get_model_info_by_id(db, model_id)
 
-    # Define the credit ratings corresponding to each class
+    if not model_info:
+        return HTMLResponse(content="Model not found", status_code=404)
+
+    # Parse JSON fields from the database
+    accuracy = model_info['accuracy']
+    class_report = json.loads(model_info['class_report'])
+    conf_matrix = json.loads(model_info['conf_matrix'])
     credit_ratings = ['A', 'A+', 'A-', 'AA', 'AA+', 'AA-', 'AAA', 'B', 'B+', 'B-', 'BB', 'BB+', 'BB-', 'BBB', 'BBB+', 'BBB-']
 
-    # Store the model and related information
-    model_store = {
-        "model": model,
-        "scaler": scaler,
-        "accuracy": accuracy,
-        "class_report": class_report,
-        "conf_matrix": conf_matrix,
-        "model_info": {**model_info, "feature_importances": dict(zip(model.feature_names_in_, model_info['feature_importances']))}
-    }
-
-    # Save model info to DB
-    logger.info('Save model info to DB start')
-    save_model_info_to_db(model_store["model_info"], accuracy, model, feature_columns)
+    # Load the model and scaler if necessary
+    model_filepath = model_info['model_filepath']
+    model_store["model"] = joblib.load(model_filepath)
+    model_store["scaler"] = pickle.loads(model_info['scaler'])
+    model_store["accuracy"] = accuracy
+    model_store["class_report"] = class_report
+    model_store["conf_matrix"] = conf_matrix
+    model_store["model_info"] = {**model_info, "feature_importances": model_info['feature_importances']}
 
     return templates.TemplateResponse("ML_template/ML_view.html", {
         "request": request,
@@ -68,41 +125,12 @@ async def train(request: Request):
         "model_info": model_store["model_info"],
         "credit_ratings": credit_ratings,
         "show_predict_button": True,
-        "username": username
+        "username": username,
+        "model_id": model_id
     })
-
-#  train 백업
-# @machineLearning.get("/train/", response_class=HTMLResponse)
-# async def train(request: Request, db: Session = Depends(get_db)):
-#     username = request.session.get("username")
-#     model, scaler, accuracy, class_report, conf_matrix, model_info, df_origin, feature_columns = train_model()
     
-#     # Define the credit ratings corresponding to each class
-#     credit_ratings = ['A', 'A+', 'A-', 'AA', 'AA+', 'AA-', 'AAA', 'B', 'B+', 'B-', 'BB', 'BB+', 'BB-', 'BBB', 'BBB+', 'BBB-']
-
-#     # Store the model and related information
-#     model_store["model"] = model
-#     model_store["scaler"] = scaler
-#     model_store["accuracy"] = accuracy
-#     model_store["class_report"] = class_report
-#     model_store["conf_matrix"] = conf_matrix
-#     model_store["model_info"] = {**model_info, "feature_importances": dict(zip(model.feature_names_in_, model_info['feature_importances']))}
-
-#     # Save model info to DB
-#     logger.info('Save model info to DB start')
-#     model_info_db = save_model_info_to_db(db, model_store["model_info"], accuracy, model, feature_columns)
-
-#     return templates.TemplateResponse("ML_template/ML_view.html", {
-#         "request": request,
-#         "accuracy": round(accuracy, 2),
-#         "class_report": class_report,
-#         "conf_matrix": conf_matrix,
-#         "model_info": model_store["model_info"],
-#         "credit_ratings": credit_ratings,
-#         "show_predict_button": True,
-#         "username": username
-#     })
     
+
 
 
 
@@ -126,7 +154,7 @@ async def predict_all(request: Request, db: Session = Depends(get_db)):
         "max_features": model_store["model_info"]["max_features"],
         "n_samples": model_store["model_info"]["n_samples"]
     }
-    logger.info(predictions)
+    # logger.info(predictions)
     return templates.TemplateResponse("ML_template/ML_creditViewHTML.html", {
         "request": request,
         "predictions": predictions,
@@ -196,15 +224,122 @@ async def insert_predictions(request: Request, db: Session = Depends(get_db)):
 
 
 
-@machineLearning.get("/view_DB_predict/", response_class=HTMLResponse)
+@machineLearning.get("/modelControl/", response_class=HTMLResponse)
 async def view_DB_predict(request: Request, db: Session = Depends(get_db)):
     username = request.session.get("username")
-    predictions_dict = get_db_predictions(db)
+    all_model_info = get_all_model_info(db)
     # logger.info(predictions_dict)
-    return templates.TemplateResponse("ML_template/ML_DBcreditView.html", {
+    return templates.TemplateResponse("ML_template/ML_ModelControl.html", {
         "request": request,
-       
+        "all_model_info" : all_model_info,
         "username": username
     })
     
+
+@machineLearning.get("/ML_pretrain/", response_class=HTMLResponse)
+async def ML_pretrain(request: Request, db: Session = Depends(get_db)):
+    # username = request.session.get("username")
+    # all_model_info = get_all_model_info(db)
+    # # logger.info(predictions_dict)
+    return templates.TemplateResponse("ML_template/ML_pretrain.html", {
+        "request": request,
+        # "all_model_info" : all_model_info,
+        # "username": username
+    })
     
+
+
+@machineLearning.post("/customized_train/", response_class=HTMLResponse)
+async def train(request: Request, file_upload: UploadFile = File(...), db: Session = Depends(get_db)):
+    # 폴더 경로 설정
+    save_directory = "saved_dataset"
+    
+    # 디렉토리가 없으면 생성
+    if not os.path.exists(save_directory):
+        os.makedirs(save_directory)
+
+    # 파일 저장 경로 설정
+    file_path = os.path.join(save_directory, file_upload.filename)
+
+    # 파일 저장
+    try:
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file_upload.file, buffer)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="File could not be saved.")
+
+    # 비동기 방식으로 폼 데이터 가져오기
+    form = await request.form()
+    selected_features = form.getlist("selectedFeatures")  # 여러 선택 항목을 리스트로 가져오기
+    label_column = form.get("selectedLabel")
+    model_type = form.get("selectedModel")
+    n_estimators = int(form.get("numTrees", 150))
+    test_size = float(form.get("testSize", 0.2))
+    random_state = int(form.get("randomState", 42))
+    use_automl = form.get("useAutoML") == "True"
+
+    # 신용 등급 정의
+    credit_ratings = ['A', 'A+', 'A-', 'AA', 'AA+', 'AA-', 'AAA', 'B', 'B+', 'B-', 'BB', 'BB+', 'BB-', 'BBB', 'BBB+', 'BBB-']
+
+    # 커스텀 학습 모델 호출
+    model, scaler, accuracy, class_report, conf_matrix, model_info, df_origin, selected_features = custmomized_train_model(
+        file_path=file_path,
+        selected_features=selected_features,
+        label_column=label_column,
+        model_type=model_type,
+        n_estimators=n_estimators,
+        test_size=test_size,
+        random_state=random_state,
+        use_automl=use_automl
+    )
+
+    # feature_importances를 지원하는 모델인지 확인
+    if hasattr(model, "feature_importances_"):
+        model_info["feature_importances"] = dict(zip(model.feature_names_in_, model.feature_importances_))
+    else:
+        model_info["feature_importances"] = None
+        
+
+    # Store the model and related information in the global model_store
+    model_store["model"] = model
+    model_store["scaler"] = scaler
+    model_store["accuracy"] = accuracy
+    model_store["class_report"] = class_report
+    model_store["conf_matrix"] = conf_matrix
+    model_store["model_info"] = {**model_info, "feature_importances": dict(zip(model.feature_names_in_, model_info['feature_importances']))}
+
+        
+    # Save model info to DB
+    logger.info('Save model info to DB start')
+    save_model_info_to_db(
+        model_info=model_info,
+        accuracy=accuracy,
+        model=model,
+        scaler=scaler,
+        class_report=class_report,
+        conf_matrix=conf_matrix,
+        feature_columns=selected_features,
+        db=db
+    )
+
+    # 결과 반환
+    return templates.TemplateResponse("ML_template/ML_view.html", {
+        "request": request,
+        "accuracy": round(accuracy, 2),
+        "class_report": class_report,
+        "conf_matrix": conf_matrix,
+        "model_info": model_info,
+        "credit_ratings": credit_ratings,
+        "show_predict_button": True,
+        "username": request.session.get("username")
+    })
+    
+    
+@machineLearning.post("/default_model_pick/{model_id}")
+async def default_model_pick(model_id: str, db: Session = Depends(get_db)):
+    logger.info(model_id)
+    success = set_default_model(db, model_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Model not found or could not be set as default.")
+    
+    return {"success": True, "message": f"Model {model_id}이 디폴트 모델로 설정되었습니다."}

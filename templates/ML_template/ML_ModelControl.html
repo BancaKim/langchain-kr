@@ -149,6 +149,12 @@
             max-width: 1200px;
             width: 100%;
         }
+
+                /* 테이블 행에 마우스를 올렸을 때 커서를 포인터로 변경 */
+                
+        tr.clickable-row {
+            cursor: pointer;
+        }
     </style>
     <!-- DataTables CSS -->
      
@@ -161,9 +167,10 @@
     <script>
         function startMachineLearning() {
             document.getElementById('modal').style.display = 'block';
-            setTimeout(function() {
-                window.location.href = "/train/";
-            }, 1000);  // 연산이 시작된 후 1초 후에 페이지 이동 (테스트용, 실제 연산 시간에 맞게 조정 필요)
+           
+                window.location.href = "/ML_pretrain/";
+                // window.location.href = "/train/";
+           
         }
         
         $(document).ready(function() {
@@ -196,6 +203,22 @@
                 });
             });
         });
+
+        // 각 행에 클릭 이벤트를 추가하는 함수
+        function addRowClickEvent() {
+            const rows = document.querySelectorAll('tr.clickable-row');
+            rows.forEach(row => {
+                row.addEventListener('click', function() {
+                    const modelId = this.dataset.modelId;
+                    // /model_detail/로 요청을 보냄
+                    window.location.href = `/model_detail/${modelId}`;
+                });
+            });
+        }
+
+        // 페이지 로드 후 이벤트 추가
+        window.onload = addRowClickEvent;
+
     </script>
 </head>
 <body>
@@ -254,6 +277,39 @@
                 <button class="bu">재무정보 업데이트</button>
             </div>
             <br><br>
+
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Model ID</th>
+                        <th>Model Name</th>
+                        <th>Creation Date</th>
+                        <th>Number of Estimators</th>
+                        <th>Max Features</th>
+                        <th>Accuracy</th>
+                        <th>Number of Samples</th>
+                        <th>Model Filepath</th>
+                        <th>Default Model</th> <!-- 디폴트 모델 여부 컬럼 -->
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for model in all_model_info %}
+                    <tr class="clickable-row" data-model-id="{{ model.model_id }}">
+                        <td>{{ model.model_id }}</td>
+                        <td>{{ model.model_name }}</td>
+                        <td>{{ model.creation_date }}</td>
+                        <td>{{ model.n_estimators }}</td>
+                        <td>{{ model.max_features }}</td>
+                        <td>{{ model.accuracy }}</td>
+                        <td>{{ model.n_samples }}</td>
+                        <td>{{ model.model_filepath }}</td>
+                        <td>{{ "Yes" if model.is_default}}</td> <!-- 디폴트 여부 표시 -->
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+
             <!-- <h1>바로등급 상세 현황</h1>
             <table id="resultsTable" class="display">
                 <thead>

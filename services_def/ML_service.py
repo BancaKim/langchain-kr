@@ -1,8 +1,13 @@
 import pandas as pd
 from sqlalchemy.orm import Session
-from sqlalchemy import text, bindparam
+from sqlalchemy import text, desc
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sqlalchemy.exc import SQLAlchemyError
 from imblearn.over_sampling import SMOTE
 from collections import Counter
 from sklearn.model_selection import train_test_split
@@ -17,9 +22,14 @@ import json
 from io import BytesIO
 import pandas as pd
 from typing import Dict, List
-from models.ML_model import ModelInfo
-from mysqlConnector import create_connection, close_connection, Error
+import numpy as np  # numpy를 import 해야 합니다
+
 import logging
+import os
+import joblib
+import uuid
+from models.ML_model import ModelStorage
+
 
 logger = logging.getLogger(__name__)
 logger = logging.getLogger('uvicorn.error')
@@ -76,66 +86,142 @@ def train_model():
         # Confusion Matrix 생성
     conf_matrix = confusion_matrix(y_test, y_pred, labels=['AAA', 'AA+', 'AA', 'AA-', 'A+', 'A', 'A-', 'BBB+', 'BBB', 'BBB-', 'BB+', 'BB', 'BB-', 'B+', 'B', 'B-'])
 
+    # model_info = {
+    #     "model_name": "RandomForestClassifier",
+    #     "creation_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    #     "n_estimators": model.n_estimators,
+    #     "max_features": model.max_features,
+    #     "feature_importances": model.feature_importances_.tolist(),
+    #     "feature_names": model.feature_names_in_.tolist(),  # feature_names 추가
+    #     "n_samples": len(df)
+    # }
+    
     model_info = {
-        "model_name": "RandomForestClassifier",
-        "creation_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "n_estimators": model.n_estimators,
-        "max_features": model.max_features,
-        "feature_importances": model.feature_importances_.tolist(),
-        "feature_names": model.feature_names_in_.tolist(),  # feature_names 추가
-        "n_samples": len(df)
+    "model_name": "RandomForestClassifier",
+    "creation_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    "n_estimators": model.n_estimators,
+    "max_features": model.max_features,
+    "feature_importances": dict(zip(model.feature_names_in_, model.feature_importances_)),  # 수정된 부분
+    "feature_names": model.feature_names_in_.tolist(),
+    "n_samples": len(df)
     }
 
     return model, scaler, accuracy, class_report, conf_matrix, model_info, df_origin, feature_columns
 
 
 
-def save_model_info_to_db(model_info: Dict, accuracy: float, model, feature_columns: List[str]):
+def get_model_info_by_id(db: Session, model_id: str):
+    model_info = db.query(ModelStorage).filter(ModelStorage.model_id == model_id).first()
+
+    if model_info:
+        return {
+            "model_id": model_info.model_id,
+            "model_name": model_info.model_name,
+            "creation_date": model_info.creation_date.strftime("%Y-%m-%d %H:%M:%S"),
+            "n_estimators": model_info.n_estimators,
+            "max_features": model_info.max_features,
+            "accuracy": model_info.accuracy,
+            "feature_importances": model_info.feature_importances,
+            "n_samples": model_info.n_samples,
+            "model_filepath": model_info.model_filepath,
+            "feature_columns": model_info.feature_columns,
+            "scaler": model_info.scaler,
+            "class_report": model_info.class_report,
+            "conf_matrix": model_info.conf_matrix
+        }
+    else:
+        return None
+
+
+
+
+
+
+def save_model_info_to_db(model_info: Dict, accuracy: float, model, scaler, class_report: Dict, conf_matrix: np.ndarray, feature_columns: List[str], db: Session):
     try:
-        # 모델 객체를 직렬화
-        logger.debug('모델 객체를 직렬화 시작')
-        model_binary = pickle.dumps(model, protocol=pickle.HIGHEST_PROTOCOL)
-        model_binary_size = len(model_binary)
-        logger.debug(f'모델 객체를 직렬화 완료, 크기: {model_binary_size} 바이트')
+        # 모델 저장 폴더 생성
+        model_dir = 'saved_models'
+        os.makedirs(model_dir, exist_ok=True)
+
+        # 고유한 모델 ID 생성
+        model_id = str(uuid.uuid4())
+
+        # 모델 파일 경로 설정
+        model_filename = f"{model_id}_{model_info['model_name']}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.joblib"
+        model_filepath = os.path.join(model_dir, model_filename)
+
+        # 모델 파일로 저장
+        logger.debug('모델을 파일로 저장 시작')
+        joblib.dump(model, model_filepath)
+        logger.debug(f'모델을 파일로 저장 완료: {model_filepath}')
 
         # 피처 컬럼 이름을 JSON으로 직렬화
         logger.debug('피처 컬럼 이름을 JSON으로 직렬화 시작')
         feature_columns_json = json.dumps(feature_columns)
         logger.debug('피처 컬럼 이름을 JSON으로 직렬화 완료')
 
-        connection = create_connection()
-        if connection:
-            try:
-                cursor = connection.cursor()
-                logger.debug("데이터베이스에 연결됨")
-                query = """
-                INSERT INTO model_storage (model_name, creation_date, n_estimators, max_features, accuracy, feature_importances, n_samples, model_binary, feature_columns)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                """
-                data = (
-                    model_info["model_name"],
-                    model_info["creation_date"],
-                    model_info["n_estimators"],
-                    model_info["max_features"],
-                    accuracy,
-                    json.dumps(dict(zip(model_info["feature_names"], model_info["feature_importances"]))),
-                    model_info["n_samples"],
-                    model_binary,
-                    feature_columns_json
-                )
-                cursor.execute(query, data)
-                connection.commit()
-                logger.info("모델이 저장되었습니다")
-            except Error as e:
-                logger.error(f"DB 삽입 중 오류 발생: {e}")
-                connection.rollback()
-            finally:
-                close_connection(connection)
+        # 기타 정보 직렬화
+        class_report_json = json.dumps(class_report)
+        conf_matrix_json = json.dumps(conf_matrix.tolist())  # ndarray를 리스트로 변환
+
+        # SQLAlchemy를 사용하여 데이터베이스에 모델 정보 저장
+        model_storage = ModelStorage(
+            model_id=model_id,
+            model_name=model_info["model_name"],
+            creation_date=datetime.now(),
+            n_estimators=model_info["n_estimators"],
+            max_features=model_info["max_features"],
+            accuracy=accuracy,
+            feature_importances=model_info['feature_importances'],  # dict 형태 그대로 저장
+            n_samples=model_info["n_samples"],
+            model_filepath=model_filepath,
+            feature_columns=feature_columns_json,
+            scaler=pickle.dumps(scaler),  # Scaler 객체를 바이너리로 저장
+            class_report=class_report_json,
+            conf_matrix=conf_matrix_json  # 변환된 conf_matrix를 사용
+        )
+
+        db.add(model_storage)
+        db.commit()
+        logger.info(f"모델 정보가 데이터베이스에 저장되었습니다. 모델 ID: {model_id}")
+    
     except Exception as e:
-        logger.error(f"모델 직렬화 중 오류 발생: {e}")
+        db.rollback()
+        logger.error(f"모델 파일 저장 중 오류 발생: {e}")
         raise e
+    
+    
+    
+    
+def get_all_model_info(db: Session):
+    try:
+        # creation_date 기준으로 내림차순 정렬
+        model_info_list = db.query(ModelStorage).order_by(desc(ModelStorage.creation_date)).all()
 
+        result = []
+        for model_info in model_info_list:
+            result.append({
+                "model_id": model_info.model_id,
+                "model_name": model_info.model_name,
+                "creation_date": model_info.creation_date.strftime("%Y-%m-%d %H:%M:%S"),
+                "n_estimators": model_info.n_estimators,
+                "max_features": model_info.max_features,
+                "accuracy": model_info.accuracy,
+                "feature_importances": model_info.feature_importances,
+                "n_samples": model_info.n_samples,
+                "model_filepath": model_info.model_filepath,
+                "feature_columns": model_info.feature_columns,  # JSON 파싱하지 않음
+                "scaler": model_info.scaler,
+                "class_report": model_info.class_report,  # JSON 파싱하지 않음
+                "conf_matrix": model_info.conf_matrix,  # JSON 파싱하지 않음
+                "is_default": model_info.is_default,  # 디폴트 여부 포함
+            })
 
+        return result
+
+    except Exception as e:
+        logger.error(f"모델 정보를 가져오는 중 오류 발생: {e}")
+        raise e
 
 # sql alchemy 방식
 # def save_model_info_to_db(db: Session, model_info: Dict, accuracy: float, model, feature_columns: List[str]):
@@ -185,19 +271,19 @@ def save_model_info_to_db(model_info: Dict, accuracy: float, model, feature_colu
 
 
     
-def load_model_info_from_db(db: Session, model_id: int):
-    model_record = db.query(ModelInfo).filter(ModelInfo.id == model_id).first()
-    if model_record:
-        model = pickle.loads(model_record.model_binary)  # 직렬화된 모델 객체를 역직렬화
-        feature_columns = json.loads(model_record.feature_columns)  # 피처 컬럼 이름을 JSON에서 복원
+# def load_model_info_from_db(db: Session, model_id: int):
+#     model_record = db.query(ModelInfo).filter(ModelInfo.id == model_id).first()
+#     if model_record:
+#         model = pickle.loads(model_record.model_binary)  # 직렬화된 모델 객체를 역직렬화
+#         feature_columns = json.loads(model_record.feature_columns)  # 피처 컬럼 이름을 JSON에서 복원
 
-        # df_origin을 CSV에서 복원
-        df_origin_csv = BytesIO(model_record.df_origin)
-        df_origin = pd.read_csv(df_origin_csv)
+#         # df_origin을 CSV에서 복원
+#         df_origin_csv = BytesIO(model_record.df_origin)
+#         df_origin = pd.read_csv(df_origin_csv)
 
-        return model, feature_columns, df_origin
-    else:
-        return None, None, None
+#         return model, feature_columns, df_origin
+#     else:
+#         return None, None, None
 
 
 
@@ -248,15 +334,15 @@ def preprocess_and_predict_proba(new_data, model, scaler):
 def get_new_data_from_db(db: Session, jurir_no_list: list):
     query = text(
         "SELECT a.corp_name, a.jurir_no,"
-        "b.totalAsset2023 AS asset2023, b.totalDebt2023 AS debt2023, b.totalEquity2023 AS equity2023, "
-        "b.revenue2023 AS revenue2023, b.operatingIncome2023 AS operatingincome2023, b.earningBeforeTax2023 AS EBT2023, "
-        "b.margin2023 AS margin2023, b.turnover2023 AS turnover2023, b.leverage2023 AS leverage2023, "
-        "c.totalAsset2022 AS asset2022, c.totalDebt2022 AS debt2022, c.totalEquity2022 AS equity2022, "
-        "c.revenue2022 AS revenue2022, c.operatingIncome2022 AS operatingincome2022, c.earningBeforeTax2022 AS EBT2022, "
-        "c.margin2022 AS margin2022, c.turnover2022 AS turnover2022, c.leverage2022 AS leverage2022, "
-        "d.totalAsset2021 AS asset2021, d.totalDebt2021 AS debt2021, d.totalEquity2021 AS equity2021, "
-        "d.revenue2021 AS revenue2021, d.operatingIncome2021 AS operatingincome2021, d.earningBeforeTax2021 AS EBT2021, "
-        "d.margin2021 AS margin2021, d.turnover2021 AS turnover2021, d.leverage2021 AS leverage2021 "
+        "b.totalAsset2023, b.totalDebt2023, b.totalEquity2023, "
+        "b.revenue2023, b.operatingIncome2023, b.earningBeforeTax2023, "
+        "b.margin2023, b.turnover2023, b.leverage2023, "
+        "c.totalAsset2022, c.totalDebt2022, c.totalEquity2022, "
+        "c.revenue2022, c.operatingIncome2022, c.earningBeforeTax2022, "
+        "c.margin2022, c.turnover2022, c.leverage2022, "
+        "d.totalAsset2021, d.totalDebt2021, d.totalEquity2021, "
+        "d.revenue2021, d.operatingIncome2021, d.earningBeforeTax2021, "
+        "d.margin2021, d.turnover2021, d.leverage2021 "
         "FROM FS2023 b "
         "LEFT OUTER JOIN companyInfo a ON a.jurir_no = b.jurir_no "
         "LEFT OUTER JOIN FS2022 c ON a.jurir_no = c.jurir_no "
@@ -434,3 +520,100 @@ def get_db_predictions(db: Session):
     predictions_dict = [dict(zip(columns, row)) for row in predictions]
     
     return predictions_dict
+
+
+
+def custmomized_train_model(file_path, selected_features, label_column, model_type, n_estimators=150, test_size=0.2, random_state=42, use_automl=False):
+    # CSV 파일을 읽어오기
+    df_origin = pd.read_csv(file_path)
+    df = df_origin.dropna()
+
+    # 입력 변수와 출력 변수 선택
+    X = df[selected_features]
+    y = df[label_column]
+
+    # 데이터 스케일링 (선택사항)
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+    X_scaled = pd.DataFrame(X_scaled, columns=selected_features)
+    
+        # 데이터 불균형 확인
+    logger.debug(file_path)
+    logger.debug("Original dataset shape %s" % Counter(y))
+    logger.debug("X %s" % X)
+    logger.debug("y %s" % y)
+
+    
+    # 데이터 불균형 처리 (SMOTE 사용)
+    # if not use_automl:
+    #     smote = SMOTE(random_state=random_state)
+    #     X_res, y_res = smote.fit_resample(X_scaled, y)
+    # else:
+    #     X_res, y_res = X_scaled, y
+
+    smote = SMOTE(random_state=42)
+    X_res, y_res = smote.fit_resample(X_scaled, y)
+
+    # 데이터 분할
+    X_train, X_test, y_train, y_test = train_test_split(X_res, y_res, test_size=test_size, random_state=random_state)
+
+    # AutoML 사용 여부에 따른 모델 학습
+    # if use_automl:
+    #     model = TPOTClassifier(generations=5, population_size=50, verbosity=2, random_state=random_state, n_jobs=-1)
+    # else:
+        # 모델 선택 및 초기화
+    if model_type == "randomforest":
+        model = RandomForestClassifier(n_estimators=n_estimators, random_state=random_state)
+    elif model_type == "svm":
+        model = SVC(random_state=random_state)
+    elif model_type == "logistic":
+        model = LogisticRegression(random_state=random_state)
+    elif model_type == "knn":
+        model = KNeighborsClassifier()
+    else:
+        raise ValueError("Unsupported model type.")
+
+    # 모델 훈련
+    logger.debug("Model training start")
+    start_time = time.time()
+    model.fit(X_train, y_train)
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    logger.debug(f"Model training completed in {elapsed_time:.2f} seconds")
+
+    # 모델 평가
+    y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    class_report = classification_report(y_test, y_pred, zero_division=1, output_dict=True)
+    conf_matrix = confusion_matrix(y_test, y_pred, labels=['AAA', 'AA+', 'AA', 'AA-', 'A+', 'A', 'A-', 'BBB+', 'BBB', 'BBB-', 'BB+', 'BB', 'BB-', 'B+', 'B', 'B-'])
+
+    # 모델 정보 저장
+    model_info = {
+        "model_name": model.__class__.__name__,
+        "creation_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "n_estimators": n_estimators if hasattr(model, 'n_estimators') else None,
+        "max_features": getattr(model, 'max_features', None),
+        "feature_importances": dict(zip(selected_features, model.feature_importances_)) if hasattr(model, 'feature_importances_') else None,
+        "feature_names": selected_features,
+        "n_samples": len(df)
+    }
+
+    return model, scaler, accuracy, class_report, conf_matrix, model_info, df_origin, selected_features
+
+def set_default_model(db: Session, model_id: str):
+    try:
+        # 모든 모델의 is_default를 False로 초기화
+        db.query(ModelStorage).update({ModelStorage.is_default: False})
+        db.commit()
+
+        # 선택한 model_id의 is_default를 True로 변경
+        model = db.query(ModelStorage).filter(ModelStorage.model_id == model_id).first()
+        if model:
+            model.is_default = True
+            db.commit()
+            return True
+        else:
+            return False
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise e
