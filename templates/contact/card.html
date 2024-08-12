@@ -14,30 +14,33 @@
     <h1 class="text-3xl font-bold mb-4">명함 목록</h1>
 
 
-    <!-- 명함 업로드 모달 트리거 -->
-    <button class="bg-blue-500 text-white py-2 px-4 rounded" data-modal-target="uploadModal">명함 업로드</button>
+<!-- 명함 업로드 모달 트리거 -->
+<button class="bg-blue-500 text-white py-2 px-4 rounded" data-modal-target="uploadModal">명함 업로드</button>
 
-    <!-- 명함 업로드 모달 -->
-    <div id="uploadModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-        <div class="bg-white p-6 rounded-lg shadow-lg">
-            <form action="/upload-business-card" method="post" enctype="multipart/form-data">
-                <!-- 사용자 이름을 쿼리 파라미터로 전달 -->
-                <input type="hidden" name="username" value="{{ username }}">
+<!-- 명함 업로드 모달 -->
+<div id="uploadModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
+    <div class="bg-white p-6 rounded-lg shadow-lg">
+        <form action="/upload-business-card" method="post" enctype="multipart/form-data">
+            <!-- 사용자 이름을 쿼리 파라미터로 전달 -->
+            <input type="hidden" name="username" value="{{ username }}">
+            <input type="hidden" name="corporation_name" value="{{ corporation_name }}"> <!-- 회사명 필드 추가 -->
 
-                <!-- 파일 업로드 필드 -->
-                <div class="mb-4">
-                    <label for="businessCard" class="block text-lg font-semibold text-gray-800">명함 파일 첨부</label>
-                    <input type="file" id="businessCard" name="file" class="mt-2 p-2 border rounded-md w-full" required>
-                </div>
+            <!-- 파일 업로드 필드 -->
+            <div class="mb-4">
+                <label for="businessCard" class="block text-lg font-semibold text-gray-800">명함 파일 첨부</label>
+                <input type="file" id="businessCard" name="file" class="mt-2 p-2 border rounded-md w-full" required>
+            </div>
 
-                <!-- 등록 버튼 -->
-                <button type="submit"
-                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md">명함 저장</button>
-            </form>
+            <!-- 등록 버튼 -->
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md">명함 저장</button>
+        </form>
 
-            <button class="mt-4 text-red-500" data-modal-close>닫기</button>
-        </div>
+        <!-- 모달 닫기 버튼 -->
+        <button class="mt-4 text-red-500" data-modal-close>닫기</button>
     </div>
+</div>
+
+
 
     <!-- 명함 목록 -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
@@ -57,18 +60,17 @@
     document.addEventListener('DOMContentLoaded', function () {
         const openModalButtons = document.querySelectorAll('[data-modal-target]');
         const closeModalButtons = document.querySelectorAll('[data-modal-close]');
-        const overlay = document.getElementById('overlay');
 
         openModalButtons.forEach(button => {
             button.addEventListener('click', () => {
-                const modal = document.getElementById(button.dataset.modalTarget);
+                const modal = document.getElementById(button.getAttribute('data-modal-target'));
                 openModal(modal);
             });
         });
 
         closeModalButtons.forEach(button => {
             button.addEventListener('click', () => {
-                const modal = button.closest('.modal');
+                const modal = button.closest('.fixed');
                 closeModal(modal);
             });
         });
