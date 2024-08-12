@@ -392,7 +392,7 @@ import logging
 
 
 def generate_pdf(html_content):
-    path_to_wkhtmltopdf = 'C:/Program Files (x86)/wkhtmltopdf/bin/wkhtmltopdf.exe'  # 경로를 자신의 시스템에 맞게 수정
+    path_to_wkhtmltopdf = '/usr/bin/wkhtmltox/bin/wkhtmltopdf'  # 경로를 자신의 시스템에 맞게 수정
     config = pdfkit.configuration(wkhtmltopdf=path_to_wkhtmltopdf)
 
     options = {
