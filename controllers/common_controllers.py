@@ -224,11 +224,11 @@ async def logout(request: Request):
     request.session.pop("username", None)
     response = templates.TemplateResponse(
         "loginjoin/home.html",
-        {"request": request, "message": "로그아웃되었습니다.",
-            "message_icon": "success", "url": "/"},
+        {"request": request, "message": "로그아웃되었습니다.", "message_icon": "success", "url": "/", "username": None},
     )
     response.delete_cookie("session")
     return response
+
 
 # 공지사항 시작
 # 공지사항 목록 조회
@@ -604,10 +604,14 @@ async def create_post(
     send_email_flag: str = Form(None),
     db: Session = Depends(get_db)
 ):
-    username = request.session.get("username")
+    username = request.session.get("username")    
+    if not username:
+        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+    
     user = db.query(User).filter(User.username == username).first()
     if not user:
-        raise HTTPException(status_code=400, detail="사용자를 찾을 수 없습니다.")
+        raise HTTPException(status_code=401, detail="사용자를 찾을 수 없습니다.")
+
 
     # Create the new post
     new_post = Post(
@@ -886,11 +890,46 @@ async def read_contact(request: Request):
 @router.get("/contact55")
 async def read_contact(request: Request, db: Session = Depends(get_db)):
     username = request.session.get("username")
-    posts = db.query(Post.corporation_name, Post.content, Post.username, Post.created_at).all()
+    posts = db.query(Post.corporation_name, Post.content, Post.username, Post.created_at, Post.contact_type, Post.contact_method).all()
 
     return templates.TemplateResponse(
         "contact/contact55.html",
         {"request": request, "username": username, "posts": posts}
+    )
+    
+@router.get("/contact55/search")
+async def search_contacts(
+    request: Request,
+    search_query: str = Query(None),
+    page: int = Query(1, ge=1),
+    db: Session = Depends(get_db),
+):
+    per_page = 10
+    query = db.query(Post)
+    
+    if search_query:
+        query = query.filter(
+            or_(
+                Post.content.contains(search_query),
+                Post.username.contains(search_query),
+                Post.corporation_name.contains(search_query)
+            )
+        )
+    
+    total_posts = query.count()
+    total_pages = (total_posts - 1) // per_page + 1
+    
+    posts = query.offset((page - 1) * per_page).limit(per_page).all()
+    
+    return templates.TemplateResponse(
+        "contact/contact55.html",
+        {
+            "request": request,
+            "posts": posts,
+            "page": page,
+            "total_pages": total_pages,
+            "search_query": search_query
+        }
     )
 
     
@@ -906,11 +945,23 @@ async def read_contact(request: Request, jurir_no: str = Query(...), db: Session
     if not kakao_map_api_key:
         raise HTTPException(status_code=500, detail="Kakao Map API key is not set")
     
-    # 명함 데이터를 가져오기
-    business_cards = db.query(BusinessCard).all()
+    # 명함 데이터를 회사 이름으로 필터링하여 가져오기
+    business_cards = db.query(BusinessCard).filter(BusinessCard.corporation_name == company_info.corp_name).all()
+    
+    # # 명함 데이터를 가져오기
+    # business_cards = db.query(BusinessCard).all()
     
     # 포스트 데이터를 가져오기
-    posts = db.query(Post).all()
+    # posts = db.query(Post).all()
+    
+    # 포스트 데이터를 회사 이름으로 필터링하여 가져오기
+    posts = db.query(Post).filter(Post.corporation_name == company_info.corp_name).all()
+        
+    # 뉴스 기사 가져오기
+    try:
+        news_articles = fetch_naver_news(company_info.corp_name)
+    except HTTPException as e:
+        news_error = str(e)
     
     # logging.info(f"Address: {company_info.adres}")  # 디버깅을 위해 주소 출력
     # logging.info(f"API Key: {kakao_map_api_key}")  # API 키 확인
@@ -923,9 +974,10 @@ async def read_contact(request: Request, jurir_no: str = Query(...), db: Session
             "username": username, 
             "company_info": company_info,
             "kakao_map_api_key": kakao_map_api_key,
+            "news": news_articles,
             "adres": company_info.adres,
-            "business_cards": business_cards,  # 명함 데이터를 템플릿으로 전달
-            "posts": posts  # 포스트 데이터를 템플릿으로 전달
+            "business_cards": business_cards,  #(필터링된) 명함 데이터를 템플릿으로 전달
+            "posts": posts  # (필터링된) 포스트 데이터를 템플릿으로 전달
         }
     )
 
@@ -952,6 +1004,7 @@ async def show_company_details(
         if not company_info:
             raise HTTPException(status_code=404, detail="Company not found")
         
+        
         # 뉴스 기사 가져오기
         try:
             news_articles = fetch_naver_news(company_info.corp_name)
@@ -963,10 +1016,15 @@ async def show_company_details(
             raise HTTPException(status_code=500, detail="Kakao Map API key is not set")
         
         # 명함 데이터를 가져오기
-        business_cards = db.query(BusinessCard).all()
+        # business_cards = db.query(BusinessCard).all()
+        business_cards = db.query(BusinessCard).filter(BusinessCard.corporation_name == company_info.corp_name).all()
         
         # 포스트 데이터를 가져오기
-        posts = db.query(Post).all()
+        # posts = db.query(Post).all()
+        
+        # 포스트 데이터를 회사 이름으로 필터링하여 가져오기
+        posts = db.query(Post).filter(Post.corporation_name == company_info.corp_name).all()
+        
         
         return templates.TemplateResponse(
             "contact/contact5.html",
@@ -1020,6 +1078,7 @@ async def search_news(request: Request, corporation_name: str = Form(...)):
 async def upload_business_card(
     username: str = Form(...), 
     file: UploadFile = File(...),
+    corporation_name: str = Form(...),  # 회사명 필드 추가
     db: Session = Depends(get_db)
 ):
     try:
@@ -1032,6 +1091,7 @@ async def upload_business_card(
         business_card = BusinessCard(
             filename=file.filename,
             username=username,
+            corporation_name=corporation_name,  # 회사명 필드 저장
             created_at=datetime.utcnow()  # 현재 시간을 UTC로 저장
         )
         db.add(business_card)
@@ -1039,14 +1099,16 @@ async def upload_business_card(
 
 
         # 명함 목록 페이지로 리디렉션
-        return RedirectResponse(url="/card", status_code=303)
+        return RedirectResponse(url=f"/card?corporation_name={corporation_name}", status_code=303)
     except Exception as e:
         db.rollback()  # 오류 발생 시 데이터베이스 롤백
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/card")
-async def show_cards(request: Request, db: Session = Depends(get_db)):
+async def show_cards(request: Request, corporation_name: str = Query(...), db: Session = Depends(get_db)):
     username = request.session.get("username")
-    cards = db.query(BusinessCard).all()
-    return templates.TemplateResponse("contact/card.html", {"request": request, "cards": cards, "username": username})
+    # 명함 데이터를 회사 이름으로 필터링하여 가져오기
+    cards = db.query(BusinessCard).filter(BusinessCard.corporation_name == corporation_name).all()
+    
+    return templates.TemplateResponse("contact/card.html", {"request": request, "cards": cards, "username": username, "corporation_name": corporation_name})

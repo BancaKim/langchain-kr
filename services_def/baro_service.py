@@ -9,7 +9,7 @@ from database import SessionLocal
 from sqlalchemy import func, cast, Integer
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from models.baro_models import CompanyInfo, FS2023, FS2022, FS2021, FS2020, Favorite, StockData
+from models.baro_models import CompanyInfo, FS2023, FS2022, FS2021, FS2020, Favorite, RecentView, StockData
 
 import zipfile
 import io
@@ -378,7 +378,6 @@ async def get_stockgraph1(stock_code: str) -> Dict[str, List[Dict[str, Union[str
             })
 
         return {"stock_data": stock_data}
-    
     except Exception as e:
         # 기타 예외 처리
         print(f"오류가 발생했습니다: {e}")
@@ -392,7 +391,7 @@ import logging
 
 
 def generate_pdf(html_content):
-    path_to_wkhtmltopdf = 'C:/Program Files (x86)/wkhtmltopdf/bin/wkhtmltopdf.exe'  # 경로를 자신의 시스템에 맞게 수정
+    path_to_wkhtmltopdf = '/usr/bin/wkhtmltox/bin/wkhtmltopdf'  # 경로를 자신의 시스템에 맞게 수정
     config = pdfkit.configuration(wkhtmltopdf=path_to_wkhtmltopdf)
 
     options = {
@@ -413,7 +412,8 @@ def generate_pdf(html_content):
         'disable-smart-shrinking': None,  # 스마트 축소 비활성화
     }
 
-    pdf_path = "C:/Users/BIT/Desktop/Spoon_Report.pdf"
+    pdf_path = "./static/images/Spoon_Report.pdf"
+
 
     try:
         pdfkit.from_string(html_content, pdf_path, options=options, configuration=config)
@@ -483,9 +483,60 @@ def get_favorite_companies(db: Session, username: str):
                 "corp_name": company_info.corp_name,
                 "ceo_nm": company_info.ceo_nm,
                 "corp_cls": company_info.corp_cls,
-                "totalAsset2023": financial_info.totalAsset2023 if financial_info else None,
-                "capital2023": financial_info.capital2023 if financial_info else None,
-                "revenue2023": financial_info.revenue2023 if financial_info else None,
-                "netIncome2023": financial_info.netIncome2023 if financial_info else None
+                "totalAsset2023": financial_info.totalAsset2023 // 100000000 if financial_info else None,
+                "capital2023": financial_info.capital2023 // 100000000 if financial_info else None,
+                "revenue2023": financial_info.revenue2023 // 100000000 if financial_info else None,
+                "netIncome2023": financial_info.netIncome2023 // 100000000 if financial_info else None,
+
             })
     return favorite_companies
+
+
+
+
+def add_recent_view(db: Session, username: str, corp_code: str):
+    # Check if the recent view already exists
+    existing_view = db.query(RecentView).filter(RecentView.username == username, RecentView.corp_code == corp_code).first()
+    
+    if existing_view:
+        # Update the timestamp if the view exists
+        existing_view.created_at = datetime.utcnow()
+    else:
+        # Add a new view if it doesn't exist
+        new_view = RecentView(username=username, corp_code=corp_code, created_at=datetime.utcnow())
+        db.add(new_view)
+
+    # Remove the oldest view if more than 5 views are present
+    recent_views = db.query(RecentView).filter(RecentView.username == username).order_by(RecentView.created_at.desc()).all()
+    if len(recent_views) > 5:
+        oldest_view = recent_views[-1]
+        db.delete(oldest_view)
+    
+    db.commit()
+
+    return existing_view if existing_view else new_view
+
+
+
+
+def get_recent_views(db: Session, username: str):
+    recent_views = db.query(RecentView).filter(RecentView.username == username).order_by(RecentView.created_at.desc()).limit(5).all()
+    
+    recent_views_companies = []
+    for view in recent_views:
+        company_info = db.query(CompanyInfo).filter(CompanyInfo.corp_code == view.corp_code).first()
+        if company_info:
+            financial_info = db.query(FS2023).filter(FS2023.jurir_no == company_info.jurir_no).first()
+            recent_views_companies.append({
+                "corp_code": company_info.corp_code,
+                "jurir_no": company_info.jurir_no,
+                "corp_name": company_info.corp_name,
+                "corp_code": company_info.corp_code,
+                "ceo_nm": company_info.ceo_nm,
+                "corp_cls": company_info.corp_cls,
+                "totalAsset2023": financial_info.totalAsset2023 // 100000000 if financial_info else None,
+                "capital2023": financial_info.capital2023 // 100000000 if financial_info else None,
+                "revenue2023": financial_info.revenue2023 // 100000000 if financial_info else None,
+                "netIncome2023": financial_info.netIncome2023 // 100000000 if financial_info else None,
+            })
+    return recent_views_companies

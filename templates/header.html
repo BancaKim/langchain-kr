@@ -52,15 +52,15 @@
             <nav role="navigation" class="uui-navbar08_menu w-nav-menu">
                 <div class="uui-navbar08_menu-left">
                     <a href="#" class="uui-navbar08_link w-nav-link"></a>
-                    <a href="/baro_companyList" class="uui-navbar08_link w-nav-link text-lg">바로등급</a>
-                    <a href="/credit/creditReview/" class="uui-navbar08_link w-nav-link text-lg">AI심사보고서</a>                    
-                    <a href="/contact55" class="uui-navbar08_link w-nav-link text-lg">섭외등록</a>                    
-                    <a href="/notices" class="uui-navbar08_link w-nav-link text-lg">공지사항</a>
+                    <a href="/baro_companyList" class="uui-navbar08_link w-nav-link text-lg" onclick="checkLogin(event)">바로등급</a>
+                    <a href="/credit/creditReview/" class="uui-navbar08_link w-nav-link text-lg" onclick="checkLogin(event)">AI심사보고서</a>                    
+                    <a href="/contact55" class="uui-navbar08_link w-nav-link text-lg" onclick="checkLogin(event)">섭외등록</a>                    
+                    <a href="/notices" class="uui-navbar08_link w-nav-link text-lg" onclick="checkLogin(event)">공지사항</a>
                     {% if username == 'admin' %}
-                    <a href="/view_DB_predict" class="uui-navbar08_link w-nav-link text-lg">신용등급 모델 관리</a>
+                    <a href="/modelControl" class="uui-navbar08_link w-nav-link text-lg">신용등급 모델 관리</a>
                     {% endif %}
                 </div>
-
+            
                 <div class="uui-navbar08_menu-right">
                     <div class="uui-navbar08_button-wrapper">
                         {% if username %}
@@ -73,7 +73,18 @@
                         {% endif %}
                     </div>
                 </div>
-            </nav>
+            </nav>            
+
+            <script>
+                function checkLogin(event) {
+                    {% if not username %}
+                    event.preventDefault();
+                    alert("로그인 후, 이용 부탁드립니다");
+                    {% endif %}
+                }
+            </script>
+
+
             <div class="uui-navbar08_menu-button w-nav-button">
                 <div class="menu-icon_component">
                     <div class="menu-icon_line-top"></div>

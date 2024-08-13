@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
-            font-family: 'Noto Sans KR', Arial, sans-serif;
+            font-family: 'Nanum Gothic', 'Noto Sans KR', Arial, sans-serif;
             background-color: #f5f5f5;
             color: #333;
             line-height: 1.6;
@@ -335,6 +335,41 @@
                 </div>
             </div>
         </section>
+        <br><br><br><br><br><br><br><br><br>
+ 
+        <section class="section">
+            <br><br><br><br><br><br>
+            <h2 class="section-title">섭외 내역</h2>
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">섭외일자</th>
+                        <th style="width: 15%;">섭외유형</th>
+                        <th style="width: 60%;">내용</th>
+                        <th style="width: 10%;">담당</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if posts %}
+                        {% for post in posts %}
+                            <tr>
+                                <td>{{ post.created_at.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ post.contact_type }}</td>
+                                <td>{{ post.content }}</td>
+                                <td>{{ post.username }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center">섭외 내역이 없습니다.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+            <br>
+        </section>
+
+
 
     </div>
 </body>

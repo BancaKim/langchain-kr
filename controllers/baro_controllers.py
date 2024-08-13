@@ -9,8 +9,9 @@ from database import SessionLocal
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import distinct, text, func
+from models.common_models import Post
 from schemas.baro_schemas import CompanyInfoSchema
-from services_def.baro_service import  FavoriteService, get_company_info, get_favorite_companies,  get_stockgraph1, generate_pdf, get_username_from_session
+from services_def.baro_service import  FavoriteService, add_recent_view, get_company_info, get_favorite_companies, get_recent_views,  get_stockgraph1, generate_pdf, get_username_from_session
 from services_def.baro_service import get_FS2023, get_FS2022, get_FS2021, get_FS2020, get_Stock_data,  search_company, get_company_infoFS_list
 import logging
 from typing import Dict, List, Optional
@@ -37,39 +38,30 @@ def get_db():
 
 # 바로 등급 검색 페이지 / 나의업체현황/ 최근조회업체 return
 @baro.get("/baro_companyList", response_class=HTMLResponse)
-async def read_companyList(request: Request, search_value: str = "", db: Session = Depends(get_db)):
+async def read_companyList(request: Request, db: Session = Depends(get_db)):
     username = request.session.get("username")
-    
-    jurir_no = search_company(db, search_value) if search_value else []
-    my_jurir_no = ["1101110017990", "1101110019219", "1345110004412"]
-    recent_jurir_no = ["1101110032154", "1201110018368", "1101110162191"]
-    
-    search_company_list = get_company_infoFS_list(db, jurir_no) if jurir_no else []
-    
-    my_company_list = get_company_infoFS_list(db, my_jurir_no) if my_jurir_no else []
-    
-    recent_view_list = get_company_infoFS_list(db, recent_jurir_no) if recent_jurir_no else []
-    
+    recent_views_companies = get_recent_views(db,username)
+
     return templates.TemplateResponse(
         "baro_service/baro_companyList2.html", 
         {
             "request": request,
             "username": username,
-            "search_company_list": search_company_list,
-            "my_company_list": my_company_list,
-            "recent_view_list": recent_view_list
+            "recent_views_companies" : recent_views_companies
         }
     )
 
 @baro.get("/baro_companyInfo", response_class=HTMLResponse)
 async def read_company_info(request: Request, jurir_no: str = Query(...), db: Session = Depends(get_db)):
     username = request.session.get("username")
-    
+    print(jurir_no)
     company_info = get_company_info(db, jurir_no)
     FS2023 = get_FS2023(db, jurir_no)
     FS2022 = get_FS2022(db, jurir_no)
     FS2021 = get_FS2021(db, jurir_no)
     FS2020 = get_FS2020(db, jurir_no)
+    print(company_info.corp_code)
+    
     stock_data=get_Stock_data(db, company_info.corp_code)
     
     try:
@@ -131,6 +123,12 @@ async def read_company_info(request: Request, jurir_no: str = Query(...), db: Se
                         while len(top3_rate) < 3:
                             top3_rate.append({"key": "N/A", "value": 0})  # Use "N/A" or other default key
 
+    add_recent_view(db, username, company_info.corp_code)
+    
+    # 포스트 데이터를 회사 이름으로 필터링하여 가져오기
+    posts = db.query(Post).filter(Post.corporation_name == company_info.corp_name).all()
+    
+
     return templates.TemplateResponse("baro_service/baro_companyInfo.html", {
         "request": request,
         "username": username,
@@ -143,7 +141,8 @@ async def read_company_info(request: Request, jurir_no: str = Query(...), db: Se
         "stockgraph": stockgraph,
         "kakao_map_api_key": kakao_map_api_key,
         "adres": adres,
-        "top3_rate": top3_rate
+        "top3_rate": top3_rate,
+        "posts": posts
     })
     
     
@@ -254,6 +253,11 @@ async def read_company_info(
         if not company_info:
             raise HTTPException(status_code=404, detail="Company not found")
 
+        add_recent_view(db, username, company_info.corp_code)
+
+        # 포스트 데이터를 회사 이름으로 필터링하여 가져오기
+        posts = db.query(Post).filter(Post.corporation_name == company_info.corp_name).all()
+        
         return templates.TemplateResponse(
             "baro_service/baro_companyInfo.html",
             {
@@ -268,7 +272,8 @@ async def read_company_info(
                 "kakao_map_api_key": kakao_map_api_key, 
                 "adres": adres,
                 "top3_rate": top3_rate,
-                "username": username
+                "username": username,
+                "posts": posts
             }
         )
     except Exception as e:
@@ -386,8 +391,8 @@ async def generate_pdf_endpoint(jurir_no: str, request: Request, db: Session = D
     company_info = get_company_info(db, jurir_no)
     
     # 예를 들어, 이미지 경로와 함께 Base64 문자열을 가져옵니다.
-    financialbarchart = get_base64_image("static/images/financialbarchart.png")
-    stockchart = get_base64_image("static/images/stockchart.png")
+    financialbarchart = get_base64_image("./static/images/financialbarchart.png")
+    stockchart = get_base64_image("./static/images/stockchart.png")
         
     if not company_info:
         raise HTTPException(status_code=404, detail="Company not found")
@@ -454,6 +459,10 @@ async def generate_pdf_endpoint(jurir_no: str, request: Request, db: Session = D
         
         while len(top3_rate) < 3:
             top3_rate.append({"key": "N/A", "value": 0})
+            
+            
+    # 포스트 데이터를 회사 이름으로 필터링하여 가져오기
+    posts = db.query(Post).filter(Post.corporation_name == company_info.corp_name).all()
 
     # 템플릿을 문자열로 렌더링
     html_content = templates.get_template("baro_service/spoon_report.html").render({
@@ -470,7 +479,8 @@ async def generate_pdf_endpoint(jurir_no: str, request: Request, db: Session = D
         "top3_rate": top3_rate,
         "financialbarchart_base64": f"data:image/png;base64,{financialbarchart}",
         "stockchart_base64": f"data:image/png;base64,{stockchart}",
-        "username": username
+        "username": username,
+        "posts": posts
     })
     
     pdf_path = generate_pdf(html_content)
@@ -531,3 +541,5 @@ async def read_favorites(request: Request, db: Session = Depends(get_db)):
         return companies  # 빈 리스트를 반환해도 예외를 던지지 않습니다.
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal Server Error")
+    
+    
