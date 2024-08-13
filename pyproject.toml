@@ -86,6 +86,7 @@ webdriver-manager = "^4.0.2"
 reportlab = "^4.2.2"
 yfinance = "^0.2.41"
 uvicorn = "^0.30.5"
+email-validator = "^2.2.0"
 mysql = "^0.0.3"
 
 
