@@ -416,7 +416,7 @@ def generate_pdf(html_content):
         'disable-smart-shrinking': None,  # 스마트 축소 비활성화
     }
 
-    pdf_path = "./root/langchain-kr/static/images/Spoon_Report.pdf"
+    pdf_path = "./static/images/Spoon_Report.pdf"
 
     try:
         pdfkit.from_string(html_content, pdf_path, options=options, configuration=config)
