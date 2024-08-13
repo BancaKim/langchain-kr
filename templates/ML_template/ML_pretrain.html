@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customized Model Training</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin: 15px 0 5px;
+            font-weight: bold;
+        }
+        input[type="file"],
+        select,
+        input[type="number"],
+        input[type="text"],
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+        }
+        .column-select-container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .column-select-container div {
+            width: 48%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Customized Model Training</h1>
+
+        <!-- Form Start -->
+        <form action="/customized_train/" method="post" enctype="multipart/form-data" id="training-form">
+            <!-- File Upload -->
+            <label for="file_upload">Upload Data CSV:</label>
+            <input type="file" id="file_upload" name="file_upload" accept=".csv" required>
+
+            <div class="column-select-container">
+                <!-- Features Selection -->
+                <div>
+                    <label for="feature-select">Select Feature Columns (Choose to Include):</label>
+                    <select id="feature-select" name="selectedFeatures" multiple size="10" required>
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                </div>
+
+                <!-- Excluded Features Selection -->
+                <div>
+                    <label for="excluded-feature-select">Excluded Columns (Chosen to Exclude):</label>
+                    <select id="excluded-feature-select" multiple size="10">
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                <button type="button" id="add-column">Exclude Selected</button>
+                <button type="button" id="remove-column">Include Selected</button>
+            </div>
+
+            <!-- Label Selection -->
+            <label for="label-select">Select Label (y):</label>
+            <select id="label-select" name="selectedLabel" required>
+                <!-- Options will be populated dynamically -->
+            </select>
+
+            <!-- Model Selection -->
+            <label for="model-select">Select Model:</label>
+            <select id="model-select" name="selectedModel" required>
+                <option value="randomforest">Random Forest</option>
+                <!-- Other options can be added here -->
+            </select>
+
+            <!-- Hyperparameter: Number of Trees -->
+            <label for="num-trees">Number of Trees (n_estimators):</label>
+            <input type="number" id="num-trees" name="numTrees" value="150" min="1" step="1">
+
+            <!-- Hyperparameter: Test Size -->
+            <label for="test-size">Test Size (0.1 to 0.5):</label>
+            <input type="text" id="test-size" name="testSize" value="0.2">
+
+            <!-- Hyperparameter: Random State -->
+            <label for="random-state">Random State:</label>
+            <input type="number" id="random-state" name="randomState" value="42">
+
+            <!-- Submit Button -->
+            <button type="submit" id="train-model">Train Model</button>
+        </form>
+        <!-- Form End -->
+
+        <!-- Result Display -->
+        <div class="result" id="result">
+            <!-- Result will be displayed here -->
+        </div>
+    </div>
+
+    <script>
+        // Handle file upload and populate select options
+        document.getElementById('file_upload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const headers = csvToArray(text);
+                populateSelectOptions(headers);
+            };
+            
+            reader.readAsText(file);
+        });
+
+        function csvToArray(str, delimiter = ",") {
+            const headers = str.slice(0, str.indexOf("\n")).split(delimiter);
+            return headers.map(header => header.trim());
+        }
+
+        function populateSelectOptions(headers) {
+            const selectedFeatures = ["feature1", "feature2"]; // Replace with your predefined selected features
+            const featureSelect = document.getElementById('feature-select');
+            const labelSelect = document.getElementById('label-select');
+            const excludedFeatureSelect = document.getElementById('excluded-feature-select');
+
+            featureSelect.innerHTML = '';
+            labelSelect.innerHTML = '';
+            excludedFeatureSelect.innerHTML = '';
+
+            headers.forEach(header => {
+                const option = document.createElement('option');
+                option.value = header;
+                option.textContent = header;
+
+                if (selectedFeatures.includes(header)) {
+                    featureSelect.appendChild(option.cloneNode(true));
+                } else {
+                    excludedFeatureSelect.appendChild(option.cloneNode(true));
+                }
+                labelSelect.appendChild(option.cloneNode(true));
+            });
+        }
+
+        // Move selected items from feature-select to excluded-feature-select
+        document.getElementById('add-column').addEventListener('click', function() {
+            const featureSelect = document.getElementById('feature-select');
+            const excludedFeatureSelect = document.getElementById('excluded-feature-select');
+
+            moveSelectedOptions(featureSelect, excludedFeatureSelect);
+        });
+
+        // Move selected items from excluded-feature-select back to feature-select
+        document.getElementById('remove-column').addEventListener('click', function() {
+            const featureSelect = document.getElementById('feature-select');
+            const excludedFeatureSelect = document.getElementById('excluded-feature-select');
+
+            moveSelectedOptions(excludedFeatureSelect, featureSelect);
+        });
+
+        function moveSelectedOptions(sourceSelect, targetSelect) {
+            const selectedOptions = Array.from(sourceSelect.selectedOptions);
+
+            selectedOptions.forEach(option => {
+                targetSelect.appendChild(option);
+            });
+        }
+
+        // Toggle num-trees field based on model selection
+        document.getElementById('model-select').addEventListener('change', function() {
+            const numTreesField = document.getElementById('num-trees');
+            const selectedModel = this.value;
+
+            if (selectedModel === 'randomforest' || selectedModel === 'xgboost') {
+                numTreesField.disabled = false;
+            } else {
+                numTreesField.disabled = true;
+            }
+        });
+
+        // Ensure only included options in feature-select are submitted as selectedFeatures
+        document.getElementById('training-form').addEventListener('submit', function() {
+            const featureSelect = document.getElementById('feature-select');
+            const excludedFeatureSelect = document.getElementById('excluded-feature-select');
+
+            // Deselect any options that are in the excluded list
+            Array.from(excludedFeatureSelect.options).forEach(option => {
+                option.selected = false;
+            });
+
+            // Ensure all remaining options in feature-select are selected
+            for (let i = 0; i < featureSelect.options.length; i++) {
+                featureSelect.options[i].selected = true;
+            }
+        });
+    </script>
+</body>
+</html>
