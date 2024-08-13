@@ -401,7 +401,6 @@ def generate_pdf(html_content):
     options = {
         'page-size': 'A4',
         'encoding': 'UTF-8',
-        'custom-header': [('Accept-Encoding', 'gzip')],
         'no-outline': None,
         'no-stop-slow-scripts': None,
         'enable-local-file-access': None,
@@ -418,6 +417,7 @@ def generate_pdf(html_content):
     }
 
     pdf_path = "./static/images/Spoon_Report.pdf"
+
 
     try:
         pdfkit.from_string(html_content, pdf_path, options=options, configuration=config)
