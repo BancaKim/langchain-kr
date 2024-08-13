@@ -3,11 +3,12 @@ from math import ceil
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, StreamingResponse
-from sqlalchemy import text
+from sqlalchemy import desc, text
 from sqlalchemy.orm import Session
 from fastapi.templating import Jinja2Templates
 from database import SessionLocal
 from models.baro_models import CompanyInfo
+from models.common_models import Post
 from models.credit_models import ReportContent
 from dotenv import load_dotenv
 from services_def.chatbot_logic import generate_response, setup_chatbot
@@ -141,6 +142,11 @@ async def readcredit(
             company_info = (
                 db.query(CompanyInfo).filter(CompanyInfo.corp_code == corp_code).first()
             )
+            # 포스트 데이터를 회사 이름으로 필터링하여 가져오기
+            posts = db.query(Post).filter(Post.corporation_name == company_info.corp_name)\
+                                .order_by(desc(Post.created_at))\
+                                .limit(3)\
+                                .all()
             if company_info:
                 print(
                     "company_info:", company_info
@@ -155,6 +161,7 @@ async def readcredit(
                 "username": username,
                 "reportContent": reportContent,
                 "company_info": company_info,
+                "posts": posts
             },
         )
     except Exception as e:
