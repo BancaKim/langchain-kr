@@ -159,6 +159,16 @@
 
 <div class="container mx-auto my-8 px-6">
 
+    <div class="flex items-center mb-5 justify-between">
+        <h2 class="text-4xl font-bold">{{ company_info.corp_name }}</h2>
+
+        <div class="text-xl p-0">업체의 자세한 정보가 궁금하다면?
+            <a href="/baro_companyInfo?jurir_no={{ company_info.jurir_no }}" class="px-2 py-2 text-purple-700 hover:underline">
+                바로등급
+            </a>
+        </div>
+    </div>
+
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 equal-height">
         <!-- 기업정보 영역 -->
         <div class="col-span-1 flex flex-col space-y-6">
@@ -320,26 +330,7 @@
     }
 </style>
 
-<br><br>
-
-<div class="btn-group my-4 flex justify-center">
-    <button onclick="history.back()"
-        class="px-4 py-2 text-white rounded-md hover:bg-[#6a46b0] focus:ring-4 focus:ring-[#9a7ce0] focus:outline-none"
-        style="background-color: #7F56D9;">
-        뒤로가기
-    </button>
-
-    &nbsp; &nbsp; &nbsp; &nbsp;
-
-    <button onclick="window.location.href='/baro_companyList';"
-        class="px-4 py-2 text-white rounded-md hover:bg-[#6a46b0] focus:ring-4 focus:ring-[#9a7ce0] focus:outline-none"
-        style="background-color: #7F56D9;">
-        바로등급
-    </button>
-
-</div>
-
-<br><br><br><br>
+<br><br><br><br><br><br><br><br>
 
 {% endblock %}
 
