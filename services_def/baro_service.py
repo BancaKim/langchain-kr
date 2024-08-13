@@ -401,6 +401,7 @@ def generate_pdf(html_content):
     options = {
         'page-size': 'A4',
         'encoding': 'UTF-8',
+        'custom-header': [('Accept-Encoding', 'gzip')],
         'no-outline': None,
         'no-stop-slow-scripts': None,
         'enable-local-file-access': None,
