@@ -1,3 +1,4 @@
+import sqlite3
 import yfinance as yf
 from datetime import datetime, timedelta
 from typing import Dict, List, Union
@@ -378,7 +379,13 @@ async def get_stockgraph1(stock_code: str) -> Dict[str, List[Dict[str, Union[str
             })
 
         return {"stock_data": stock_data}
-    
+
+    except sqlite3.Error as e:
+        print(f"SQLite error: {e}")
+        raise ValueError(f"SQLite error occurred while retrieving data for stock code: {stock_code}") from e    
+    except yf.shared._exceptions.RemoteDataError as e:
+        print(f"yfinance data retrieval error: {e}")
+        raise ValueError(f"Data retrieval error for stock code: {stock_code}") from e
     except Exception as e:
         # 기타 예외 처리
         print(f"오류가 발생했습니다: {e}")
