@@ -160,14 +160,15 @@ async def read_company_info(
         
         jurir_no = None
         company_info = None
-        
+        print(name)
+        print(search_type)
         if name:
             if search_type == "company_name":
                 result = db.query(CompanyInfo.jurir_no).filter(func.trim(CompanyInfo.corp_name) == name).first()
                 if result:
                     jurir_no = result[0]
             elif search_type == "company_code":
-                result = db.query(CompanyInfo.jurir_no).filter(func.trim(CompanyInfo.corp_code) == name).first()
+                result = db.query(CompanyInfo.jurir_no).filter(func.trim(CompanyInfo.jurir_no) == func.trim(name)).first()
                 if result:
                     jurir_no = result[0]
 
@@ -359,7 +360,7 @@ async def autocomplete(
             column = "corp_name"
             print(column)
         elif search_type == "company_code":
-            column = "corp_code"
+            column = "jurir_no"
             print(column)
         else:
             raise ValueError("Invalid search type")
