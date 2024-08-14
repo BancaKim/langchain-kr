@@ -56,14 +56,14 @@
 <div class="w-full"
     style="background-image: url('static/images/home4.png'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 50vh;">
 
-    <div class="p-8 w-full max-w-screen-xl mx-auto">
-        <span class="block text-left text-xl mb-2">
+    <div class="w-full max-w-screen-xl p-8 mx-auto">
+        <span class="block mb-2 text-xl text-left">
             <a href="/" class="mr-2 text-white">홈 &nbsp; |</a>
             <a href="/baro_companyList" class="ml-2 text-white">바로등급</a>
         </span>
         <br><br><br>
 
-        <div class="text-center mb-4">
+        <div class="mb-4 text-center">
             <h1 class="text-5xl font-bold text-white">ML 기반 바로등급 서비스</h1>
         </div>
         <br><br><br>
@@ -76,7 +76,7 @@
                     <select id="search_type"
                         class="block w-full py-2.5 px-4 text-base font-medium text-gray-900 bg-gray-50 border-gray-300 rounded-s-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600">
                         <option value="company_name">회사명</option>
-                        <option value="company_code">회사코드</option>
+                        <option value="company_code">법인번호</option>
                     </select>
                 </div>
                 <!-- 검색 입력 필드 -->
@@ -86,7 +86,7 @@
                         placeholder="정보를 입력하세요..." required />
                     <!-- 자동완성 결과 표시 -->
                     <div id="autocomplete-results"
-                        class="absolute top-full left-0 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-10 hidden">
+                        class="absolute left-0 z-10 hidden w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg top-full">
                         <!-- JavaScript로 동적으로 결과 항목을 추가합니다. -->
                     </div>
                 </div>
@@ -110,10 +110,10 @@
 
 <div class="flex justify-center">
     <!-- 너비를 줄이기 위해 max-w-screen-lg를 사용 -->
-    <div class="container mx-auto p-6 ">
+    <div class="container p-6 mx-auto ">
 
         <section class="favorite-container">
-            <h1 class="text-3xl font-bold text-gray-800 mb-4">관심 업체 목록</h1>
+            <h1 class="mb-4 text-3xl font-bold text-gray-800">관심 업체 목록</h1>
             <div id="favorites-list">
                 <!-- 이곳에 즐겨찾기 업체 목록이 동적으로 추가됩니다. -->
             </div>
@@ -139,7 +139,7 @@
 
                 const tableHeader = `
                     <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
-                        <thead class="bg-gray-100 text-gray-600 uppercase text-base">
+                        <thead class="text-base text-gray-600 uppercase bg-gray-100">
                             <tr class="text-center">
                                 <th class="px-6 py-3 border-b">법인명</th>
                                 <th class="px-6 py-3 border-b">대표자명</th>
@@ -153,7 +153,7 @@
                                 <th class="px-6 py-3 border-b">업체등록</th>
                             </tr>
                         </thead>
-                        <tbody class="text-gray-700 text-base text-center">
+                        <tbody class="text-base text-center text-gray-700">
                 `;
 
                 const tableFooter = `
@@ -220,11 +220,11 @@
 
 
         <section>
-            <h1 class="text-3xl font-bold text-gray-800 mb-4">최근 조회 목록</h1>
+            <h1 class="mb-4 text-3xl font-bold text-gray-800">최근 조회 목록</h1>
 
             {% if recent_views_companies %}
             <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
-                <thead class="bg-gray-100 text-gray-600 uppercase text-base">
+                <thead class="text-base text-gray-600 uppercase bg-gray-100">
                     <tr class="text-center">
                         <th class="px-6 py-3 border-b">법인명</th>
                         <th class="px-6 py-3 border-b">대표자명</th>
@@ -238,7 +238,7 @@
                         <th class="px-6 py-3 border-b">업체등록</th>
                     </tr>
                 </thead>
-                <tbody class="text-gray-700 text-base text-center">
+                <tbody class="text-base text-center text-gray-700">
                     {% for company in recent_views_companies %}
                     <tr>
                         <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.corp_name }}</td>
