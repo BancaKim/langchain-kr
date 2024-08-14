@@ -19,7 +19,7 @@ def send_sms(username, corporation_name, content):
     # HTML 템플릿 로드 및 렌더링
     template = env.get_template('sms_template.txt')
     message = template.render(username=username, corporation_name=corporation_name, content=content, url=url)
-
+    
 
     params = {
         'type': 'lms',   #sms, lms, mms 선택
@@ -27,11 +27,15 @@ def send_sms(username, corporation_name, content):
         'from': from_number,  # 발신자 번호 (인증된 번호만 가능)
         'text': message
     }
+    print(to_number)
+    print(from_number)
+    print(message)
 
     cool = Message(api_key, api_secret)
 
     try:
         response = cool.send(params)
+        print("success")
         return {
             "success_count": response['success_count'],
             "error_count": response['error_count'],
