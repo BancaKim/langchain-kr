@@ -13,16 +13,16 @@
 
 
 <div class="w-full" style="background-image: url('/static/images/home7.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 50vh;">
-    <div class="p-8 w-full max-w-screen-xl mx-auto" >
+    <div class="w-full max-w-screen-xl p-8 mx-auto" >
 
-        <span class="block text-left text-xl mb-2">
+        <span class="block mb-2 text-xl text-left">
             <a href="/" class="mr-2 text-white ">홈  &nbsp; |</a> 
             <a href="/credit/creditReview" class="ml-2 text-white">AI심사보고서</a>
         </span>
         <br><br><br>
 
 
-        <div class="text-center mb-4">
+        <div class="mb-4 text-center">
             <h1 class="text-5xl font-bold text-white">AI 기반 기업여신 심사 보고서</h1>
         </div>
         <br><br><br>
@@ -46,7 +46,7 @@
                         placeholder="정보를 입력하세요..." required />
                     <!-- 자동완성 결과 표시 -->
                     <div id="autocomplete-results"
-                        class="absolute top-full left-0 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-10 hidden">
+                        class="absolute left-0 z-10 hidden w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg top-full">
                         <!-- JavaScript로 동적으로 결과 항목을 추가합니다. -->
                     </div>
                 </div>
@@ -68,10 +68,10 @@
 
 
 <br><br><br>
-<div class=" flex justify-center">
-    <table class="w-1600 text-base text-left rtl:text-right text-gray-800 dark:text-gray-600" id="company_table">
+<div class="flex justify-center ">
+    <table class="text-base text-left text-gray-800 w-1600 rtl:text-right dark:text-gray-600" id="company_table">
         <thead
-            class="shadow-md sm:rounded-lg text-s text-gray-800 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-600">
+            class="text-gray-800 uppercase shadow-md sm:rounded-lg text-s bg-gray-50 dark:bg-gray-700 dark:text-gray-600">
             <tr>
                 <th scope="col" class="px-6 py-3">
                     순서
@@ -135,11 +135,11 @@
     {% for i in range(1, total_pages + 1) %}
     {% if i == page %}
     <span
-        class="py-2 px-4 mx-1 text-gray-700 border border-gray-100 bg-gray-50 rounded-lg dark:bg-gray-200 dark:text-gray-300 dark:border-gray-100">{{
+        class="px-4 py-2 mx-1 text-gray-700 border border-gray-100 rounded-lg bg-gray-50 dark:bg-gray-200 dark:text-gray-300 dark:border-gray-100">{{
         i }}</span>
     {% else %}
     <a href="?page={{ i }}&name={{ search_term or '' }}"
-        class="py-2 px-4 mx-1 text-gray-500 border border-gray-100 rounded-lg hover:bg-gray-200 dark:text-gray-400 dark:border-gray-100 dark:hover:bg-gray-200 dark:hover:text-white">{{
+        class="px-4 py-2 mx-1 text-gray-500 border border-gray-100 rounded-lg hover:bg-gray-200 dark:text-gray-400 dark:border-gray-100 dark:hover:bg-gray-200 dark:hover:text-white">{{
         i }}</a>
     {% endif %}
     {% endfor %}

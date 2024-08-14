@@ -1106,6 +1106,7 @@ async def read_contact(
     )
 
 
+
 @router.post("/contact5")
 async def show_company_details(
     request: Request,
@@ -1118,23 +1119,17 @@ async def show_company_details(
         company_info = None
         news_articles = []
         news_error = None
-
-        if name:
-            if search_type == "company_name":
-                company_info = (
-                    db.query(CompanyInfo)
-                    .filter(func.trim(CompanyInfo.corp_name) == name)
-                    .first()
-                )
-            elif search_type == "company_code":
-                company_info = (
-                    db.query(CompanyInfo)
-                    .filter(func.trim(CompanyInfo.corp_code) == name)
-                    .first()
-                )
-
+        
+        if search_type == "company_name":
+            company_info = db.query(CompanyInfo).filter(func.trim(CompanyInfo.corp_name) == name).first()
+        elif search_type == "company_code":
+            company_info = db.query(CompanyInfo).filter(func.trim(CompanyInfo.corp_code) == name).first()
+        
         if not company_info:
-            raise HTTPException(status_code=404, detail="Company not found")
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Company not found"}
+            )
 
         # 뉴스 기사 가져오기
         try:
@@ -1146,21 +1141,10 @@ async def show_company_details(
         if not kakao_map_api_key:
             raise HTTPException(status_code=500, detail="Kakao Map API key is not set")
 
-        # 명함 데이터를 가져오기
-        # business_cards = db.query(BusinessCard).all()
-        business_cards = (
-            db.query(BusinessCard)
-            .filter(BusinessCard.corporation_name == company_info.corp_name)
-            .all()
-        )
-
-        # 포스트 데이터를 가져오기
-        # posts = db.query(Post).all()
-
-        # 포스트 데이터를 회사 이름으로 필터링하여 가져오기
-        posts = (
-            db.query(Post).filter(Post.corporation_name == company_info.corp_name).all()
-        )
+        
+        business_cards = db.query(BusinessCard).filter(BusinessCard.corporation_name == company_info.corp_name).all()
+        posts = db.query(Post).filter(Post.corporation_name == company_info.corp_name).all()
+        
 
         return templates.TemplateResponse(
             "contact/contact5.html",
