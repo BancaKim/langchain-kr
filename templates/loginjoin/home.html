@@ -10,6 +10,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
 <link rel="stylesheet" href="/static/css/font.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
 <style>
     .home-left-section {
@@ -59,18 +61,20 @@
         </div>
     </div>
 </div>
-{% if message %}
 <script>
-    Swal.fire({
-        title: '{{ message }}',
-        icon: '{{ message_icon }}',
-        showConfirmButton: false,
-        timer: 1500
-    }).then(() => {
-        window.location.href = "{{ url }}";
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if login_failed %}
+            Toastify({
+                text: "로그인을 실패했습니다. 아이디와 비밀번호를 확인해주세요.",
+                duration: 3000,
+                close: true,
+                gravity: "bottom",
+                position: "right",
+                backgroundColor: "#dc2626",
+            }).showToast();
+        {% endif %}
     });
 </script>
-{% endif %}
 {% endblock %}
 
 
