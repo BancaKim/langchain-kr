@@ -14,35 +14,43 @@
     <link href="/images/favicon.png" rel="shortcut icon" type="image/x-icon">
     <link href="/images/webclip.png" rel="apple-touch-icon">
     <link rel="stylesheet" href="/static/css/font.css">
-    <!-- <style>
-        .uui-section_heroheader11 {
-            background-color: #e0e7ff;
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <style>
+        .logout-button {
+            background-color: #7E22CE !important;
+            color: #fff;
+            padding: 6px 12px;
+            margin-left: 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;  
+            text-decoration: none;  
+            font-weight: 400;
         }
-
-        .uui-navbar08_link.w-nav-link {
-            color: #333; /* 기본 글자 색상 */
-            text-decoration: none; /* 기본 텍스트 장식 제거 */
-            transition: color 0.3s, background-color 0.3s; /* 색상 변경 시 부드러운 전환 효과 */
+        .logout-button:hover {
+            background-color: #6B21A8;
         }
-
-        .uui-navbar08_link.w-nav-link:hover,
-        .uui-navbar08_link.w-nav-link:active,
-        .uui-navbar08_link.w-nav-link:focus {
-            color: #007bff; /* 강조할 때 글자 색상 */
-            background-color: #f8f9fa; /* 강조할 때 배경 색상 */
-            border-radius: 4px; /* 강조할 때 둥근 테두리 */
-            font-weight: bold; /* 강조할 때 글자 두께 */
+    </style>
+    <!-- Toast 알림 함수 정의 -->
+    <script>
+        function showToast(message, type = 'success') {
+            let backgroundColor = "#A855F7";  // 성공 시 녹색 계열
+            if (type === 'error') {
+                backgroundColor = "#dc2626";  // 실패 시 빨간색 계열
+            }
+            
+            Toastify({
+                text: message,
+                duration: 3000,
+                close: true,
+                gravity: "bottom",
+                position: "right",
+                backgroundColor: backgroundColor,
+            }).showToast();
         }
-
-        .uui-navbar08_link.w-nav-link.active {
-            color: #fff; /* 활성화된 링크 글자 색상 */
-            background-color: #007bff; /* 활성화된 링크 배경 색상 */
-            border-radius: 4px; /* 활성화된 링크 둥근 테두리 */
-            font-weight: bold; /* 활성화된 링크 글자 두께 */
-        }
-    </style> -->
-
-    <!-- {% block head %}{% endblock %} -->
+    </script>
 </head>
 
 <body>
@@ -65,8 +73,8 @@
                     <div class="uui-navbar08_button-wrapper">
                         {% if username %}
                         <span style="color: black;">{{ username }} 님, 환영합니다!</span>
-                        <form action="/logout" method="post" style="display:inline;">
-                            <button type="submit" class="nav-link w-nav-link" style="background:none; border:none; cursor:pointer; color: black;">Logout</button>
+                        <form action="/logout" method="post">
+                            <button type="submit" class="logout-button">Logout</button>
                         </form>
                         {% else %}
                         <a href="/home" class="uui-button w-inline-block">Log in</a>
@@ -75,14 +83,14 @@
                 </div>
             </nav>            
 
-            <script>
+            {# <script>
                 function checkLogin(event) {
                     {% if not username %}
                     event.preventDefault();
                     alert("로그인 후, 이용 부탁드립니다");
                     {% endif %}
                 }
-            </script>
+            </script> #}
 
 
             <div class="uui-navbar08_menu-button w-nav-button">
@@ -100,7 +108,26 @@
     <div class="content">
         {% block content %}{% endblock %}
     </div>
+    <!-- 로그인 체크 및 Toast 알림 표시 스크립트 -->
+    <script>
+        function checkLogin(event) {
+            {% if not username %}
+                event.preventDefault();
+                showToast("로그인이 필요합니다.", "error");
+            {% endif %}
+        }
 
+        // URL 파라미터에 따른 Toast 알림 표시
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('login_success') === 'true') {
+                showToast("로그인에 성공했습니다");
+            }
+            if (urlParams.get('logout_success') === 'true') {
+                showToast("로그아웃되었습니다");
+            }
+        });
+    </script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const currentPath = window.location.pathname;

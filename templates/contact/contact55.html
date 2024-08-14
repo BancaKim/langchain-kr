@@ -48,7 +48,10 @@
     }
 
     .stats-container {
+        color: #333;
+        font-weight: bold;
         border-radius: 5px;
+        background-color: #F7FAFC;
     }
 </style>
 {% endblock %}
@@ -84,7 +87,7 @@
                 <div class="relative w-full">
                     <input type="search" id="company_name" name="company_name"
                         class="block p-2.5 w-full text-base text-gray-900 bg-gray-50 rounded-e-lg border-s-gray-50 border-s-2 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-s-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
-                        placeholder="정보를 입력하세요..." required />
+                        placeholder="섭외등록할 법인정보를 입력하세요..." required />
                     <!-- 자동완성 결과 표시 -->
                     <div id="autocomplete-results"
                         class="absolute left-0 z-10 hidden w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg top-full">
@@ -158,10 +161,8 @@
             </div>
         </div>
     </div>
-    
 
-
-
+  
         <!-- 검색 기능과 결과 리스트를 하나의 화면에 통합 -->
         <div class="p-6 bg-white rounded-lg shadow-md">
             <!-- 검색 기능 추가 -->
@@ -194,34 +195,36 @@
                 </div>
             </form>
 
-            <!-- 검색 결과 또는 전체 목록 표시 -->
-            {% if posts %}
-            <ul id="postsList" class="divide-y divide-gray-200">
-                {% for post in posts %}
-                <li class="py-4">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-lg font-semibold text-gray-800">{{ post.corporation_name }}</p>
-                            <p class="text-gray-600">{{ post.content }}</p>
-                            <p class="text-sm text-gray-500">{{ post.contact_type }} | {{ post.contact_method }} | {{
-                                post.username }} | {{ post.created_at.strftime('%Y-%m-%d') }}</p>
-                        </div>
+
+
+        <!-- 검색 결과 또는 전체 목록 표시 -->
+        {% if posts %}
+        <ul id="postsList" class="divide-y divide-gray-200">
+            {% for post in posts %}
+            <li class="py-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-lg font-semibold text-gray-800">{{ post.corporation_name }}</p>
+                        <p class="text-gray-600">{{ post.content }}</p>
+                        <p class="text-sm text-gray-500">{{ post.contact_type }} | {{ post.contact_method }} | {{
+                            post.username }} | {{ post.created_at.strftime('%Y-%m-%d') }}</p>
                     </div>
-                </li>
-                {% endfor %}
-            </ul>
-            <div class="flex justify-center mt-6">
-                <nav aria-label="Page navigation">
-                    <ul id="pagination" class="inline-flex -space-x-px text-sm">
-                        <!-- Pagination buttons will be inserted here by JavaScript -->
-                    </ul>
-                </nav>
-            </div>
-            {% else %}
-            <p class="text-gray-600">현재 등록된 섭외 내역이 없습니다.</p>
-            {% endif %}
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        <div class="mt-6 flex justify-center">
+            <nav aria-label="Page navigation">
+                <ul id="pagination" class="inline-flex -space-x-px text-sm">
+                    <!-- Pagination buttons will be inserted here by JavaScript -->
+                </ul>
+            </nav>
         </div>
+        {% else %}
+        <p class="text-gray-600">현재 등록된 섭외 내역이 없습니다.</p>
+        {% endif %}
     </div>
+</div>
 
 </div>
 
@@ -231,7 +234,7 @@
     function toggleContent(id) {
         const content = document.getElementById(id);
         const toggleText = document.getElementById('toggleText');
-        
+
         // 토글하여 콘텐츠 표시/숨기기
         content.classList.toggle('show');
 
@@ -251,7 +254,7 @@
             labels: ['삼성전자(주)', 'LG전자(주)', 'SK텔레콤(주)', '현대자동차(주)', '(주)셀트리온'],
             datasets: [{
                 label: '섭외 건수',
-                data: [65, 59, 80, 81, 56],
+                data: [90, 50, 56, 80, 65], // 합계: 341
                 backgroundColor: [
                     'rgba(255, 99, 132, 0.2)',
                     'rgba(54, 162, 235, 0.2)',
@@ -288,7 +291,7 @@
 
     // 직급별 섭외내역 통계 (도넛 차트)
     const positionCtx = document.getElementById('positionChart').getContext('2d');
-    const totalContacts = 41; // 총 섭외 건수
+    const totalContacts = 341; // 총 섭외 건수
     document.getElementById('totalContactsText').textContent = '총 섭외 건수: ' + totalContacts;
 
     new Chart(positionCtx, {
@@ -297,7 +300,7 @@
             labels: ['계장', '대리', '과장', '차장', '부지점장'],
             datasets: [{
                 label: '섭외 건수',
-                data: [12, 19, 3, 5, 2],
+                data: [50, 80, 70, 100, 41],// 합계: 341
                 backgroundColor: [
                     'rgba(255, 99, 132, 0.2)',
                     'rgba(54, 162, 235, 0.2)',
@@ -336,28 +339,28 @@
             datasets: [
                 {
                     label: '강남1(방배중앙)',
-                    data: [70, 35, 40, 38, 63, 45],
+                    data: [65, 45, 70, 85, 50, 90], // 마지막 값 합계: 90
                     borderColor: 'rgba(255, 99, 132, 1)',
                     backgroundColor: 'rgba(255, 99, 132, 0.2)',
                     tension: 0.1
                 },
                 {
                     label: '강남2(신사동)',
-                    data: [50, 57, 52, 55, 76, 58],
+                    data: [40, 55, 60, 70, 65, 85], // 마지막 값 합계: 85
                     borderColor: 'rgba(54, 162, 235, 1)',
                     backgroundColor: 'rgba(54, 162, 235, 0.2)',
                     tension: 0.1
                 },
                 {
                     label: '경인1(용현남)',
-                    data: [45, 58, 43, 48, 50, 52],
+                    data: [55, 65, 50, 60, 80, 80], // 마지막 값 합계: 80
                     borderColor: 'rgba(255, 206, 86, 1)',
                     backgroundColor: 'rgba(255, 206, 86, 0.2)',
                     tension: 0.1
                 },
                 {
                     label: '경인2(가좌공단)',
-                    data: [60, 58, 37, 65, 63, 68],
+                    data: [70, 50, 55, 75, 85, 86], // 마지막 값 합계: 86
                     borderColor: 'rgba(75, 192, 192, 1)',
                     backgroundColor: 'rgba(75, 192, 192, 0.2)',
                     tension: 0.1
