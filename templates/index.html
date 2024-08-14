@@ -631,6 +631,17 @@
             }).showToast();
         }
     });
+    // URL 파라미터 확인
+    var urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('logout_success') === 'true') {
+        Toastify({
+            text: "로그아웃 되었습니다.",
+            duration: 3000,
+            gravity: "bottom",
+            position: "right",
+            backgroundColor: "#9333EA",
+        }).showToast();
+    }
 </script>
 </body>
 

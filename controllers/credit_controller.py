@@ -101,7 +101,6 @@ async def read_credit(
 
     total = query.count()
     total_pages = ceil(total / per_page)
-    print(total_pages)
     reportContents = query.offset((page - 1) * per_page).limit(per_page).all()
 
     return templates.TemplateResponse(
