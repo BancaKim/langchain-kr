@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="/static/css/font.css">
 <script src="/static/js/AI_search.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <style>
     .chart-container {
         display: flex;
@@ -55,14 +57,14 @@
 
 <div class="w-full"
     style="background-image: url('/static/images/home8.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 50vh;">
-    <div class="p-8 w-full max-w-screen-xl mx-auto">
-        <span class="block text-left text-xl mb-2">
+    <div class="w-full max-w-screen-xl p-8 mx-auto">
+        <span class="block mb-2 text-xl text-left">
             <a href="/" class="mr-2 text-white">홈 &nbsp; |</a>
             <a href="/contact55" class="ml-2 text-white">섭외등록</a>
         </span>
         <br><br><br>
 
-        <div class="text-center mb-4">
+        <div class="mb-4 text-center">
             <h1 class="text-5xl font-bold text-white">섭외 등록</h1>
         </div>
         <br><br><br>
@@ -85,7 +87,7 @@
                         placeholder="정보를 입력하세요..." required />
                     <!-- 자동완성 결과 표시 -->
                     <div id="autocomplete-results"
-                        class="absolute top-full left-0 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-10 hidden">
+                        class="absolute left-0 z-10 hidden w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg top-full">
                         <!-- JavaScript로 동적으로 결과 항목을 추가합니다. -->
                     </div>
                 </div>
@@ -109,32 +111,32 @@
 
 
 
-<div class="w-full max-w-screen-xl mx-auto p-8">
+<div class="w-full max-w-screen-xl p-8 mx-auto">
     <div class="flex-shrink-0 bg-white rounded-lg shadow-lg">
-        <div class="bg-gray-100 p-3 rounded-t-lg flex cursor-pointer" onclick="toggleContent('allStatsContent')">
+        <div class="flex p-3 bg-gray-100 rounded-t-lg cursor-pointer" onclick="toggleContent('allStatsContent')">
             <h3 id="toggleText" class="text-2xl font-bold text-gray-800">섭외 통계 펼치기 ▼</h3>
         </div>
 
         <div id="allStatsContent" class="toggle-content">
             <div class="chart-container">
-                <div class="chart-item bg-white p-6 rounded-lg shadow-lg border border-gray-200">
-                    <h3 class="text-xl font-semibold mb-4">법인별 섭외내역 통계</h3>
+                <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-lg chart-item">
+                    <h3 class="mb-4 text-xl font-semibold">법인별 섭외내역 통계</h3>
                     <div style="height: 400px;">
                         <canvas id="corporationChart"></canvas>
                     </div>
                 </div>
 
-                <div class="chart-item bg-white p-6 rounded-lg shadow-lg border border-gray-200">
-                    <h3 class="text-xl font-semibold mb-4">직급별 섭외내역 통계</h3>
-                    <p id="totalContactsText" class="text-right text-sm text-gray-600">총 섭외 건수: 41</p>
+                <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-lg chart-item">
+                    <h3 class="mb-4 text-xl font-semibold">직급별 섭외내역 통계</h3>
+                    <p id="totalContactsText" class="text-sm text-right text-gray-600">총 섭외 건수: 41</p>
                     <div style="height: 300px;">
                         <canvas id="positionChart"></canvas>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
-                <h3 class="text-xl font-semibold mb-4">지역본부별 섭외내역 통계</h3>
+            <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-lg">
+                <h3 class="mb-4 text-xl font-semibold">지역본부별 섭외내역 통계</h3>
                 <div style="height: 400px;">
                     <canvas id="regionChart"></canvas>
                 </div>
@@ -142,9 +144,9 @@
         </div>
     </div>
 
-    <div class="stats-container mt-12">
-        <div class="bg-gray-100 p-3 rounded-t-lg">
-            <div class="flex justify-between items-center"> <!-- Flex 컨테이너를 사용하여 같은 줄에 배치 -->
+    <div class="mt-12 stats-container">
+        <div class="p-3 bg-gray-100 rounded-t-lg">
+            <div class="flex items-center justify-between"> <!-- Flex 컨테이너를 사용하여 같은 줄에 배치 -->
                 <h2 class="text-2xl font-bold text-gray-800">섭외 전체 내역</h2>
                 <!-- /qnas로 이동하는 버튼 추가 -->
                 <div class="flex justify-end">
@@ -161,7 +163,7 @@
 
 
         <!-- 검색 기능과 결과 리스트를 하나의 화면에 통합 -->
-        <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="p-6 bg-white rounded-lg shadow-md">
             <!-- 검색 기능 추가 -->
             <form action="/contact55/search" method="get">
                 <div class="relative flex mb-6"> <!-- mb-6으로 검색 필드와 목록 사이에 여백을 둠 -->
@@ -197,7 +199,7 @@
             <ul id="postsList" class="divide-y divide-gray-200">
                 {% for post in posts %}
                 <li class="py-4">
-                    <div class="flex justify-between items-center">
+                    <div class="flex items-center justify-between">
                         <div>
                             <p class="text-lg font-semibold text-gray-800">{{ post.corporation_name }}</p>
                             <p class="text-gray-600">{{ post.content }}</p>
@@ -208,7 +210,7 @@
                 </li>
                 {% endfor %}
             </ul>
-            <div class="mt-6 flex justify-center">
+            <div class="flex justify-center mt-6">
                 <nav aria-label="Page navigation">
                     <ul id="pagination" class="inline-flex -space-x-px text-sm">
                         <!-- Pagination buttons will be inserted here by JavaScript -->
@@ -373,7 +375,6 @@
         }
     });
 </script>
-
 <script>
     async function searchCompanies(event) {
         event.preventDefault();
@@ -381,28 +382,46 @@
         const name = document.getElementById('company_name').value;
         const searchType = document.getElementById('search_type').value;
 
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/contact5';
+        try {
+            const response = await fetch('/contact5', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'name': name,
+                    'search_type': searchType
+                })
+            });
 
-        const nameField = document.createElement('input');
-        nameField.type = 'hidden';
-        nameField.name = 'name';
-        nameField.value = name;
-        form.appendChild(nameField);
+            if (response.status === 404) {
 
-        const searchTypeField = document.createElement('input');
-        searchTypeField.type = 'hidden';
-        searchTypeField.name = 'search_type';
-        searchTypeField.value = searchType;
-        form.appendChild(searchTypeField);
-
-        document.body.appendChild(form);
-        form.submit();
+                Toastify({
+                    text: "업체를 찾을 수 없습니다. 정확한 업체명을 입력해주세요.",
+                    duration: 3000,
+                    close: true,
+                    gravity: "bottom",
+                    position: "right",
+                    backgroundColor: "#dc2626",
+                }).showToast();
+            } else if (response.ok) {
+                const text = await response.text();
+                document.open();
+                document.write(text);
+                document.close();
+            } else {
+                alert('서버 오류가 발생했습니다. 다시 시도해 주세요.');
+            }
+        } catch (error) {
+            console.error('검색 중 오류 발생:', error);
+            alert('검색 중 오류가 발생했습니다.');
+        }
     }
 
     document.getElementById('search_button').addEventListener('click', searchCompanies);
 </script>
+
+
 <script>
     // 기존 JavaScript 코드...
 
