@@ -30,8 +30,11 @@ def send_sms(username, corporation_name, content):
     print(to_number)
     print(from_number)
     print(message)
+    print(api_key)
+    print(api_secret)
 
     cool = Message(api_key, api_secret)
+    print("12345")
 
     try:
         response = cool.send(params)
