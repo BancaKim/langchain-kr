@@ -57,6 +57,7 @@ from services_def.connection_manager import manager
 import urllib.parse
 
 from services_def.news import fetch_naver_news
+from services_def.sms import send_sms
 
 logger = logging.getLogger("uvicorn.error")
 logger.setLevel(logging.DEBUG)
@@ -629,7 +630,8 @@ async def create_post(
     contact_type: str = Form(...),
     contact_method: str = Form(...),
     send_email_flag: str = Form(None),
-    db: Session = Depends(get_db),
+    send_sms_flag: str = Form(None),  # 새로 추가된 SMS 전송 플래그
+    db: Session = Depends(get_db)
 ):
     username = request.session.get("username")
     if not username:
@@ -676,8 +678,13 @@ async def create_post(
                 "contact/email_template.html",
                 email_content,
             )
+            
+    # 문자 전송 로직
+    if send_sms_flag == 'true':
+        background_tasks.add_task(send_sms, username=username, corporation_name=corporation_name, content=content)
 
     return RedirectResponse(url="/contact", status_code=303)
+    
 
 
 # 섭외등록 생성 페이지
@@ -1010,6 +1017,7 @@ async def search_contacts(
     page: int = Query(1, ge=1),
     db: Session = Depends(get_db),
 ):
+    username = request.session.get("username")
     per_page = 10
     query = db.query(Post)
 
@@ -1035,7 +1043,9 @@ async def search_contacts(
             "page": page,
             "total_pages": total_pages,
             "search_query": search_query,
-        },
+            "username": username
+        }
+
     )
 
 
@@ -1260,6 +1270,11 @@ async def show_cards(
 ):
     username = request.session.get("username")
     # 명함 데이터를 회사 이름으로 필터링하여 가져오기
+
+    cards = db.query(BusinessCard).filter(BusinessCard.corporation_name == corporation_name).all()
+    
+    return templates.TemplateResponse("contact/card.html", {"request": request, "cards": cards, "username": username, "corporation_name": corporation_name})
+
     cards = (
         db.query(BusinessCard)
         .filter(BusinessCard.corporation_name == corporation_name)
@@ -1275,3 +1290,4 @@ async def show_cards(
             "corporation_name": corporation_name,
         },
     )
+

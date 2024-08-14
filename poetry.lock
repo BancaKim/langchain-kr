@@ -1134,6 +1134,16 @@ test = ["Pillow", "contourpy[test-no-images]", "matplotlib"]
 test-no-images = ["pytest", "pytest-cov", "pytest-xdist", "wurlitzer"]
 
 [[package]]
+name = "coolsms-python-sdk"
+version = "2.0.3"
+description = "Send Message, Kakao Alimtalk and Management Message using Python and REST API."
+optional = false
+python-versions = "*"
+files = [
+    {file = "coolsms_python_sdk-2.0.3.zip", hash = "sha256:da4e9216eed35765a617f265078076a180f2220fe1f9d208a6dd710e11a47cb3"},
+]
+
+[[package]]
 name = "cryptography"
 version = "43.0.0"
 description = "cryptography is a package which provides cryptographic recipes and primitives to Python developers."
@@ -9825,3 +9835,4 @@ test = ["pytest"]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
 content-hash = "9e303efdc93fd79e9dc90f5fa6aa6e62cfc8736b967d7ded18221f85b9109237"
+
