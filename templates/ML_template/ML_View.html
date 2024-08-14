@@ -25,7 +25,6 @@
             border-radius: 50%;
         }
 
-
         .collapse-content {
             display: none;
         }
@@ -45,7 +44,6 @@
 
     {% include 'header.html' %}
 
-
     <br>
     <div class="container mx-auto p-8">
 
@@ -53,10 +51,10 @@
             style="background-image: url('/static/images/admin2.jpg');">
             <div class="max-w-4xl w-full">
                 <h1 class="text-5xl font-bold">바로등급 모델 정보</h1>
+              
             </div>
         </div>
         <br> <br>
-
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- 첫 번째 열 -->
@@ -79,7 +77,6 @@
                         <li>
                             <p class="text-lg font-semibold">학습 데이터: {{ model_info.n_samples }} 건</p>
                         </li>
-
                     </ul>
                 </div>
                 <div class="box bg-white p-6 rounded-lg shadow-md h-full flex flex-col items-start">
@@ -88,20 +85,25 @@
                     <div class="relative flex items-center justify-center h-64 w-64 mx-auto">
                         <div class="donut-chart" style="--percentage: {{ accuracy * 100 }}%;"></div>
                         <div class="absolute inset-0 flex items-center justify-center">
-                            <div class="text-5xl font-bold">{{ '{:.1f}'.format(accuracy * 100) }}%</div>
+                            <div class="text-5xl font-bold">{{ '%.1f'|format(accuracy * 100) }}%</div>
                         </div>
-
                     </div>
                     <br><Br><br>
-                    {% if show_predict_button %}
-                    <div class="flex items-center justify-center mt-8" style="margin: 0 auto;">
-                        <form action="/predict_all/" method="get">
-                            <button type="submit" class="px-6 py-3 bg-gray-800 text-white rounded hover:bg-gray-900">
-                                바로등급 산출
-                            </button>
-                        </form>
-                    </div>
-                    {% endif %}
+                        {% if show_predict_button %}
+                        <div class="flex items-center justify-center mt-8" style="margin: 0 auto;">
+                            <form action="/predict_all/" method="get" class="mr-4">
+                                <button type="submit" class="px-6 py-3 bg-gray-800 text-white rounded hover:bg-gray-900">
+                                    바로등급 산출
+                                </button>
+                            </form>
+                            <form id="set-default-form" method="post">
+                                <input type="hidden" id="default-model-id" name="model_id" value="{{ model_id }}"> <!-- 숨겨진 필드로 모델 ID를 전달 -->
+                                <button type="button" class="px-6 py-3 bg-gray-800 text-white rounded hover:bg-gray-900 set-default-button">
+                                    디폴트 모델 설정
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
                 </div>
             </div>
             <!-- 두 번째 열 -->
@@ -236,8 +238,6 @@
             </div>
         </div>
 
-
-
         <div class="mt-6">
             <!-- Classification Report -->
             <div class="box bg-white p-6 rounded-lg shadow-md mb-6">
@@ -280,6 +280,7 @@
                     Feature Importances
                 </button>
                 <div id="feature-importances" class="collapse-content">
+                    {% if model_info.feature_importances %}
                     <table class="w-full border-collapse border border-gray-200 mt-4">
                         <thead>
                             <tr class="bg-gray-100">
@@ -296,12 +297,14 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                    {% else %}
+                    <p class="text-gray-600">Feature importances are not available for this model.</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
-
-
     </div>
+
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const cells = document.querySelectorAll(".js-heatmap td");
@@ -361,6 +364,34 @@
                 content.classList.add('show');
             }
         }
+
+        // Set Default Model button click handler
+        document.querySelector('.set-default-button').addEventListener('click', function() {
+            const modelId = "{{ model_id }}"; // 모델 ID를 Jinja2 템플릿 변수를 사용하여 가져옴
+
+            // Fetch form element and set the model ID
+            const form = document.getElementById('set-default-form');
+            const hiddenInput = document.getElementById('default-model-id');
+            hiddenInput.value = modelId;
+
+            // Make an API call to set the selected model as default
+            fetch(`/default_model_pick/${modelId}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload(); // Reload the page to reflect changes
+                } else {
+                    alert('Failed to set model as default.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error setting model as default.');
+            });
+        });
     </script>
 </body>
 

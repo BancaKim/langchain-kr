@@ -378,7 +378,6 @@ async def get_stockgraph1(stock_code: str) -> Dict[str, List[Dict[str, Union[str
             })
 
         return {"stock_data": stock_data}
-    
     except Exception as e:
         # 기타 예외 처리
         print(f"오류가 발생했습니다: {e}")
@@ -392,7 +391,7 @@ import logging
 
 
 def generate_pdf(html_content):
-    path_to_wkhtmltopdf = 'C:/Program Files (x86)/wkhtmltopdf/bin/wkhtmltopdf.exe'  # 경로를 자신의 시스템에 맞게 수정
+    path_to_wkhtmltopdf = '/usr/bin/wkhtmltox/bin/wkhtmltopdf'  # 경로를 자신의 시스템에 맞게 수정
     config = pdfkit.configuration(wkhtmltopdf=path_to_wkhtmltopdf)
 
     options = {
@@ -413,7 +412,8 @@ def generate_pdf(html_content):
         'disable-smart-shrinking': None,  # 스마트 축소 비활성화
     }
 
-    pdf_path = "C:/Users/BIT/Desktop/Spoon_Report.pdf"
+    pdf_path = "./static/images/Spoon_Report.pdf"
+
 
     try:
         pdfkit.from_string(html_content, pdf_path, options=options, configuration=config)

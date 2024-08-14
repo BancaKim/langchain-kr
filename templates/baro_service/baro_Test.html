@@ -1,0 +1,117 @@
+{% include 'header.html' %}
+
+{% block head %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/font.css">
+<!--<script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
+
+{% endblock %}
+
+{% block content %}
+<div class="w-full"
+    style="background-image: url('static/images/home4.png'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 40vh;">
+    <div class="p-8 w-full max-w-screen-xl mx-auto">
+        <span class="block text-left text-xl mb-2">
+            <a href="/" class="mr-2 text-white">홈 &nbsp; |</a>
+            <a href="/baro_companyList" class="ml-2 text-white">바로등급 &nbsp; |</a>
+            <span class="text-white"> &nbsp; 상세조회</span>
+        </span>
+        <br><br><br>
+
+
+        <div class="text-center mb-4">
+            <h1 class="text-6xl font-bold text-white">기업 정보</h1>
+        </div>
+        <br><br><br>
+    </div>
+</div>
+
+<br>
+<div class="container mx-auto p-6 max-w-screen-xl">
+
+    <div class="flex items-center mb-10">
+        <h2 class="text-4xl font-bold flex-1">{{ company_info.corp_name }}</h2>
+ 
+    </div>
+
+
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <div class="box bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-3xl font-bold">기본 정보</h2>
+            {% if company_info %}
+            <br>
+            <ul class="list-disc pl-5 space-y-2">
+                <li>
+                    <p class="text-lg font-semibold mb-4">대표: {{ company_info.ceo_nm }}</p>
+                </li>
+                <li>
+                    <p class="text-lg font-semibold mb-4">법인구분:
+                        {% if company_info.corp_cls == 'Y' %}
+                        유가 (Y)
+                        {% elif company_info.corp_cls == 'K' %}
+                        코스닥 (K)
+                        {% elif company_info.corp_cls == 'N' %}
+                        코넥스 (N)
+                        {% elif company_info.corp_cls == 'E' %}
+                        기타 (E)
+                        {% else %}
+                        {{ company_info.corp_cls }}
+                        {% endif %}</p>
+                </li>
+                <li>
+                    <p class="text-lg font-semibold mb-4">주소: {{ company_info.adres }}</p>
+                </li>
+                <li>
+                    <p class="text-lg font-semibold mb-4">홈페이지: {{ company_info.hm_url }}</p>
+                </li>
+                <li>
+                    <p class="text-lg font-semibold mb-4">H.P: {{ company_info.phn_no }}</p>
+                </li>
+                <li>
+                    <p class="text-lg font-semibold mb-4">Fax: {{ company_info.fax_no }}</p>
+                </li>
+                <!--<li>
+                    <p class="text-lg font-semibold mb-4">산업코드: {{ company_info.induty_code }}</p>
+                </li>
+            -->
+            </ul>
+            {% else %}
+            <p class="text-gray-600">해당 기업은 금융감독원(Dart API)에서 정보를 제공받을 수 없습니다.</p>
+            {% endif %}
+        </div>
+
+
+        <div class="container max-w-screen-xl mx-auto p-6">
+            <h2 class="text-4xl font-bold mb-4">재무 정보</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="p-6 bg-white rounded-lg shadow-md">
+                    <h3 class="text-2xl font-semibold mb-4">23년 매출액</h3>
+                    <p class="text-3xl font-bold text-gray-800">
+                        {{ "{:,}".format(fs2023.revenue2023 // 100000000) }} 억원
+                    </p>
+                </div>
+                <div class="p-6 bg-white rounded-lg shadow-md">
+                    <h3 class="text-2xl font-semibold mb-4">23년 영업이익</h3>
+                    <p class="text-3xl font-bold text-gray-800">
+                        {{ "{:,}".format(fs2023.operatingIncome2023 // 100000000) }} 억원
+                    </p>
+                </div>
+                <div class="p-6 bg-white rounded-lg shadow-md">
+                    <h3 class="text-2xl font-semibold mb-4">23년 자본총계</h3>
+                    <p class="text-3xl font-bold text-gray-800">
+                        {{ "{:,}".format(fs2023.totalEquity2023 // 100000000) }} 억원
+                    </p>
+                </div>
+            </div>
+        </div>
+    
+
+
+
+    {% endblock %}
+    {% include 'footer.html'%}

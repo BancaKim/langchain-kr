@@ -391,8 +391,8 @@ async def generate_pdf_endpoint(jurir_no: str, request: Request, db: Session = D
     company_info = get_company_info(db, jurir_no)
     
     # 예를 들어, 이미지 경로와 함께 Base64 문자열을 가져옵니다.
-    financialbarchart = get_base64_image("static/images/financialbarchart.png")
-    stockchart = get_base64_image("static/images/stockchart.png")
+    financialbarchart = get_base64_image("./static/images/financialbarchart.png")
+    stockchart = get_base64_image("./static/images/stockchart.png")
         
     if not company_info:
         raise HTTPException(status_code=404, detail="Company not found")

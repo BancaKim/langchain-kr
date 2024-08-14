@@ -2,32 +2,115 @@
 
 {% block head %}
 <link rel="stylesheet" href="/static/css/style.css">
+<link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/font.css">
+<style>
+    .detail-content {
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .title {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .separator {
+        margin: 20px 0;
+    }
+
+    .info-section {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+    }
+
+    .info-column {
+        flex: 1;
+        padding: 0 10px;
+        border-right: 1px solid #ddd;
+    }
+
+    .info-column:last-child {
+        border-right: none;
+    }
+
+    .content-section,
+    .attachment-section {
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+    }
+
+    .content-section p {
+        font-size: 18px;
+        /* 글자 크기 키움 */
+    }
+
+    .attachment-image {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .button-section {
+        text-align: center;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<section class="create">
-    <div class="container">
-        <div class="page-title">
-            <h3>공지사항 작성</h3>
+
+<div class="w-full"
+    style="background-image: url('/static/images/home9.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 35vh;">
+
+    <div class="w-full max-w-screen-xl p-8 mx-auto">
+        <span class="block mb-2 text-xl text-left">
+            <a href="/" class="mr-2 text-white">홈 &nbsp; |</a>
+            <a href="/notices" class="ml-2 text-white">공지사항</a>
+        </span>
+        <br><br><br>
+
+        <div class="text-center">
+            <h1 class="text-5xl font-bold text-white">공지사항 등록</h1>
         </div>
-        <form id="noticeForm" action="/notices/create" method="post">
-            <div class="form-group">
-                <label for="username">작성자</label>
-                <input type="text" class="form-control" id="username" name="username" value="{{ username }}" readonly>
-            </div>
-            <div class="form-group">
-                <label for="title">제목</label>
-                <input type="text" class="form-control" id="title" name="title" required>
-            </div>
-            <div class="form-group">
-                <label for="content">내용</label>
-                <textarea class="form-control" id="content" name="content" rows="5" required></textarea>
-            </div>
-            <div class="btn-wrap">
-                <button type="submit" class="btn btn-dark">등록</button>
-                <button type="button" onclick="location.href='/contact'" class="btn btn-dark">목록으로</button>
-            </div>
-        </form>
+        <br>
+    </div>
+</div>
+<br><Br>
+
+<section class="w-full py-8 mb-10">
+    <div class="container max-w-5xl px-4 mx-auto sm:px-6 lg:px-8">
+        <div class="detail-content">
+            <form id="noticeForm" action="/notices/create" method="post">
+                <div class="form-group">
+                    <label for="username">작성자</label>
+                    <input type="text" class="form-control" id="username" name="username" value="{{ username }}"
+                        readonly>
+                </div>
+                <div class="form-group">
+                    <label for="title">제목</label>
+                    <input type="text" class="form-control" id="title" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="content">내용</label>
+                    <textarea class="form-control" id="content" name="content" rows="5" required></textarea>
+                </div>
+                <div class="button-section">
+      
+                        <button type="submit"
+                            class="inline-block px-4 py-2 text-white bg-purple-700 rounded hover:bg-purple-980">등록</button>
+                        &nbsp;
+                        <button type="button" onclick="location.href='/contact'"
+                            class="inline-block px-4 py-2 text-white bg-purple-700 rounded hover:bg-purple-980">목록으로</button>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 </section>
 {% endblock %}
