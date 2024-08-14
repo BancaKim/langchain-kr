@@ -14,8 +14,8 @@
 
 <div class="w-full"
     style="background-image: url('static/images/home4.png'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 40vh;">
-    <div class="p-8 w-full max-w-screen-xl mx-auto">
-        <span class="block text-left text-xl mb-2">
+    <div class="w-full max-w-screen-xl p-8 mx-auto">
+        <span class="block mb-2 text-xl text-left">
             <a href="/" class="mr-2 text-white">홈 &nbsp; |</a>
             <a href="/baro_companyList" class="ml-2 text-white">바로등급 &nbsp; |</a>
             <span class="text-white"> &nbsp; 상세조회</span>
@@ -23,7 +23,7 @@
         <br><br><br>
 
 
-        <div class="text-center mb-4">
+        <div class="mb-4 text-center">
             <h1 class="text-6xl font-bold text-white">기업 정보</h1>
         </div>
         <br><br><br>
@@ -43,10 +43,10 @@
 <!-- ---------------------------------------------------------------------------------------->
 
 <br>
-<div class="container mx-auto p-6 max-w-screen-xl">
+<div class="container max-w-screen-xl p-6 mx-auto">
 
     <div class="flex items-center mb-10">
-        <h2 class="text-4xl font-bold flex-1">
+        <h2 class="flex-1 text-4xl font-bold">
             {{ company_info.corp_name }}
             <button id="favorite-btn" class="text-4xl" onclick="toggleFavorite()">
                 ☆
@@ -94,23 +94,23 @@
             document.addEventListener('DOMContentLoaded', checkFavorite);
         </script>
 
-        <button onclick="downloadPDF()" class="text-purple-500 hover:underline ml-auto text-2xl">PDF
+        <button onclick="downloadPDF()" class="ml-auto text-2xl text-purple-500 hover:underline">PDF
             다운로드</button>&nbsp;&nbsp;&nbsp;
     </div>
 
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
 
-        <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="p-6 bg-white rounded-lg shadow-md">
             <h2 class="text-3xl font-bold">기본 정보</h2>
             {% if company_info %}
             <br>
-            <ul class="list-disc pl-5 space-y-2">
+            <ul class="pl-5 space-y-2 list-disc">
                 <li>
-                    <p class="text-lg font-semibold mb-4">대표: {{ company_info.ceo_nm }}</p>
+                    <p class="mb-4 text-lg font-semibold">대표: {{ company_info.ceo_nm }}</p>
                 </li>
                 <li>
-                    <p class="text-lg font-semibold mb-4">법인구분:
+                    <p class="mb-4 text-lg font-semibold">법인구분:
                         {% if company_info.corp_cls == 'Y' %}
                         유가 (Y)
                         {% elif company_info.corp_cls == 'K' %}
@@ -124,19 +124,19 @@
                         {% endif %}</p>
                 </li>
                 <li>
-                    <p class="text-lg font-semibold mb-4">주소: {{ company_info.adres }}</p>
+                    <p class="mb-4 text-lg font-semibold">주소: {{ company_info.adres }}</p>
                 </li>
                 <li>
-                    <p class="text-lg font-semibold mb-4">홈페이지: {{ company_info.hm_url }}</p>
+                    <p class="mb-4 text-lg font-semibold">홈페이지: {{ company_info.hm_url }}</p>
                 </li>
                 <li>
-                    <p class="text-lg font-semibold mb-4">H.P: {{ company_info.phn_no }}</p>
+                    <p class="mb-4 text-lg font-semibold">H.P: {{ company_info.phn_no }}</p>
                 </li>
                 <li>
-                    <p class="text-lg font-semibold mb-4">Fax: {{ company_info.fax_no }}</p>
+                    <p class="mb-4 text-lg font-semibold">Fax: {{ company_info.fax_no }}</p>
                 </li>
                 <!--<li>
-                    <p class="text-lg font-semibold mb-4">산업코드: {{ company_info.induty_code }}</p>
+                    <p class="mb-4 text-lg font-semibold">산업코드: {{ company_info.induty_code }}</p>
                 </li>
             -->
             </ul>
@@ -145,48 +145,48 @@
             {% endif %}
         </div>
 
-        <div class="box bg-white p-6 rounded-lg shadow-md ">
+        <div class="p-6 bg-white rounded-lg shadow-md box ">
             <h2 class="text-3xl font-bold">주요 정보</h2>
             <br>
-            <ul class="list-disc pl-5 space-y-2">
+            <ul class="pl-5 space-y-2 list-disc">
                 <li>
-                    <p class="text-lg font-semibold mb-4"> 매출액: {{ "{:,}".format(fs2023.revenue2023 // 100000000) }}
+                    <p class="mb-4 text-lg font-semibold"> 매출액: {{ "{:,}".format(fs2023.revenue2023 // 100000000) }}
                         억원
                     </p>
                 </li>
                 <li>
-                    <p class="text-lg font-semibold mb-4"> 영업이익: {{ "{:,}".format(fs2023.operatingIncome2023 //
+                    <p class="mb-4 text-lg font-semibold"> 영업이익: {{ "{:,}".format(fs2023.operatingIncome2023 //
                         100000000) }} 억원
                     </p>
                 </li>
                 <li>
-                    <p class="text-lg font-semibold mb-4"> 자본총계: {{ "{:,}".format(fs2023.totalEquity2023 //
+                    <p class="mb-4 text-lg font-semibold"> 자본총계: {{ "{:,}".format(fs2023.totalEquity2023 //
                         100000000)
                         }} 억원
                     </p>
                 </li>
                 <li>
-                    <p class="text-lg font-semibold mb-4"> 시가총액: {{
+                    <p class="mb-4 text-lg font-semibold"> 시가총액: {{
                         "{:,.0f}".format(stock_data.market_capitalization /
                         100000000) }} 억원
                     </p>
                 </li>
 
                 <li>
-                    <p class="text-lg font-semibold mb-4"> 최근 1년 주가 성장률: {{ '{:.1f}'.format(stock_data.cagr_1y *
+                    <p class="mb-4 text-lg font-semibold"> 최근 1년 주가 성장률: {{ '{:.1f}'.format(stock_data.cagr_1y *
                         100)
                         }}%
                     </p>
                 </li>
                 <li>
-                    <p class="text-lg font-semibold mb-4">산업코드: {{ company_info.induty_code }}</p>
+                    <p class="mb-4 text-lg font-semibold">산업코드: {{ company_info.induty_code }}</p>
                 </li>
 
             </ul>
         </div>
 
-        <div class="box bg-white p-6 rounded-lg shadow-md">
-            <h2 class="text-3xl font-bold mb-6">신용 등급</h2>
+        <div class="p-6 bg-white rounded-lg shadow-md box">
+            <h2 class="mb-6 text-3xl font-bold">신용 등급</h2>
 
             {% if top3_rate[0]["key"] == "credit_rate" and top3_rate[0]["value"] == "None" %}
             <br>
@@ -196,7 +196,7 @@
                     Dart 재무 정보가 존재하지 않습니다.<br>
                     정보를 직접 입력하여 등급을 확인하시겠습니까?
                 </div>
-                <button class="bg-purple-500 text-white font-bold py-3 px-6 rounded text-xl"
+                <button class="px-6 py-3 text-xl font-bold text-white bg-purple-500 rounded"
                     onclick="calculateCreditRating()">
                     바로등급 확인
                 </button>
@@ -205,21 +205,21 @@
             {% else %}
             <div class="flex flex-col">
                 <!-- 상단 영역: 세로 2 비율 -->
-                <div class="flex-1 p-4 flex items-center justify-center">
-                    <h2 class="text-8xl font-bold">{{ top3_rate[0]["key"] }}</h2>
+                <div class="flex items-center justify-center flex-1 p-4">
+                    <h2 class="font-bold text-8xl">{{ top3_rate[0]["key"] }}</h2>
                 </div>
                 <!-- 하단 영역: 세로 1 비율 -->
-                <div class="flex-2 p-4 flex">
+                <div class="flex p-4 flex-2">
                     <div class="flex flex-row w-full space-x-4">
-                        <div class="flex-1 bg-purple-300 p-4 rounded-lg flex items-center justify-center">
+                        <div class="flex items-center justify-center flex-1 p-4 bg-purple-300 rounded-lg">
                             <p class="text-2xl font-semibold">{{ top3_rate[0]["key"] }}<br> {{
                                 '{:.1f}'.format(top3_rate[0]["value"] * 100) }}%</p>
                         </div>
-                        <div class="flex-1 bg-purple-200 p-4 rounded-lg flex items-center justify-center">
+                        <div class="flex items-center justify-center flex-1 p-4 bg-purple-200 rounded-lg">
                             <p class="text-2xl font-semibold">{{ top3_rate[1]["key"] }}<br> {{
                                 '{:.1f}'.format(top3_rate[1]["value"] * 100) }}%</p>
                         </div>
-                        <div class="flex-1 bg-purple-100 p-4 rounded-lg flex items-center justify-center">
+                        <div class="flex items-center justify-center flex-1 p-4 bg-purple-100 rounded-lg">
                             <p class="text-2xl font-semibold">{{ top3_rate[2]["key"] }}<br> {{
                                 '{:.1f}'.format(top3_rate[2]["value"] * 100) }}%</p>
                         </div>
@@ -242,11 +242,11 @@
         src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_map_api_key }}&libraries=services"></script>
 
     <!-- 추가 정보 영역 -->
-    <div class="box bg-white p-6 rounded-lg shadow-md">
-        <section class="notice mb-6">
+    <div class="p-6 bg-white rounded-lg shadow-md box">
+        <section class="mb-6 notice">
             <div class="page-title">
                 <div class="container">
-                    <h3 class="text-3xl font-bold mb-4">상세 주소</h3>
+                    <h3 class="mb-4 text-3xl font-bold">상세 주소</h3>
                 </div>
             </div>
 
@@ -326,81 +326,81 @@
 
 
     <!-- 주가 정보 ---------------------------------------------------------------------------------------------------------------------->
-    <div class="container max-w-screen-xl mx-auto p-6">
-        <h2 class="text-4xl font-bold mb-6 ">주가 정보</h2>
+    <div class="container max-w-screen-xl p-6 mx-auto">
+        <h2 class="mb-6 text-4xl font-bold ">주가 정보</h2>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
             <div class="p-6 bg-white rounded-lg shadow-md">
-                <h3 class="text-2xl font-semibold mb-4">시가총액</h3>
+                <h3 class="mb-4 text-2xl font-semibold">시가총액</h3>
                 <p class="text-3xl font-bold text-gray-800">
                     {{ "{:,.0f}".format(stock_data.market_capitalization / 100000000) }} 억원
                 </p>
             </div>
             <div class="p-6 bg-white rounded-lg shadow-md">
-                <h3 class="text-2xl font-semibold mb-4">PER</h3>
+                <h3 class="mb-4 text-2xl font-semibold">PER</h3>
                 <p class="text-3xl font-bold text-gray-800">{{ stock_data.per_value }}</p>
             </div>
             <div class="p-6 bg-white rounded-lg shadow-md">
-                <h3 class="text-2xl font-semibold mb-4">PBR</h3>
+                <h3 class="mb-4 text-2xl font-semibold">PBR</h3>
                 <p class="text-3xl font-bold text-gray-800">{{ stock_data.pbr_value }}</p>
             </div>
         </div>
         <br>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
             <!-- 가로 1: 시가총액, PER, PBR을 세로로 배치 -->
-            <div class="col-span-1 flex flex-col space-y-6">
+            <div class="flex flex-col col-span-1 space-y-6">
                 <!-- 시가총액 -->
                 <div class="p-6 bg-white rounded-lg shadow-md">
-                    <h3 class="text-2xl font-semibold mb-4">1년 성장률
-                        <span class="text-lg font-semibold mb-4">
+                    <h3 class="mb-4 text-2xl font-semibold">1년 성장률
+                        <span class="mb-4 text-lg font-semibold">
                             (주가변동률)
                         </span>
                     </h3>
                     <p class="text-3xl font-bold text-black-800">
-                        {{ '{:.1f}'.format(stock_data.cagr_1y * 100) }}%
+                        {{ '{:.1f}'.format((stock_data.cagr_1y  or 0 ) * 100) }}%
                         <span class="text-xl font-normal text-black-600">
-                            ({{ '{:.1f}'.format(stock_data.vol_1y * 100) }}%)
+                            ({{ '{:.1f}'.format((stock_data.vol_1y or 0 ) * 100) }}%)
                         </span>
                     </p>
                 </div>
                 <!-- PER -->
                 <div class="p-6 bg-white rounded-lg shadow-md">
-                    <h3 class="text-2xl font-semibold mb-4">3년 성장률
-                        <span class="text-lg font-semibold mb-4">
+                    <h3 class="mb-4 text-2xl font-semibold">3년 성장률
+                        <span class="mb-4 text-lg font-semibold">
                             (주가변동률)
                         </span>
                     </h3>
                     <p class="text-3xl font-bold text-black-800">
-                        {{ '{:.1f}'.format(stock_data.cagr_3y * 100) }}%
+                        {{ '{:.1f}'.format((stock_data.cagr_3y  or 0 ) * 100) }}%
                         <span class="text-xl font-normal text-black-600">
-                            ({{ '{:.1f}'.format(stock_data.vol_3y * 100) }}%)
+                            ({{ '{:.1f}'.format((stock_data.vol_3y or 0 ) * 100) }}%)
                         </span>
                     </p>
                 </div>
                 <!-- PBR -->
                 <div class="p-6 bg-white rounded-lg shadow-md">
-                    <h3 class="text-2xl font-semibold mb-4">5년 성장률
-                        <span class="text-lg font-semibold mb-4">
+                    <h3 class="mb-4 text-2xl font-semibold">5년 성장률
+                        <span class="mb-4 text-lg font-semibold">
                             (주가변동률)
                         </span>
                     </h3>
                     <p class="text-3xl font-bold text-black-800">
-                        {{ '{:.1f}'.format(stock_data.cagr_5y * 100) }}%
+                        {{ '{:.1f}'.format((stock_data.cagr_5y  or 0 ) * 100) }}%
                         <span class="text-xl font-normal text-black-600">
-                            ({{ '{:.1f}'.format(stock_data.vol_5y * 100) }}%)
+                            ({{ '{:.1f}'.format((stock_data.vol_5y or 0 )* 100) }}%)
                         </span>
                     </p>
                 </div>
             </div>
 
-            <div class="col-span-2 bg-white rounded-lg shadow-md p-6">
+            <div class="col-span-2 p-6 bg-white rounded-lg shadow-md">
                 <!--
-            <h2 class="text-2xl font-semibold mb-4">주가 성장·변동률 추세</h2>
+            <h2 class="mb-4 text-2xl font-semibold">주가 성장·변동률 추세</h2>
             <div class="relative h-80">
                 <canvas id="financialTrendChart" class="absolute inset-0"></canvas>
             </div>
             -->
-                <h2 class="text-2xl font-semibold mb-4">최근 3개월 주가 추이(일봉)</h2>
+                <h2 class="mb-4 text-2xl font-semibold">최근 3개월 주가 추이(일봉)</h2>
                 <div class="relative h-80">
                     <style>
                         canvas {
@@ -411,7 +411,7 @@
                     <canvas id="stockChart"></canvas>
                     <div id="noDataMessage" class="flex flex-col items-center justify-center space-y-4"
                         style="display: none;">
-                        <div class="text-center text-2xl">
+                        <div class="text-2xl text-center">
                             <br><br><br><br>
                             상장 업체가 아닙니다.
                         </div>
@@ -425,23 +425,23 @@
     <br><br>
     <!-- 재무 정보 ---------------------------------------------------------------------------------------------------------------------->
 
-    <div class="container max-w-screen-xl mx-auto p-6">
-        <h2 class="text-4xl font-bold mb-4">재무 정보</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="container max-w-screen-xl p-6 mx-auto">
+        <h2 class="mb-4 text-4xl font-bold">재무 정보</h2>
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
             <div class="p-6 bg-white rounded-lg shadow-md">
-                <h3 class="text-2xl font-semibold mb-4">23년 매출액</h3>
+                <h3 class="mb-4 text-2xl font-semibold">23년 매출액</h3>
                 <p class="text-3xl font-bold text-gray-800">
                     {{ "{:,}".format(fs2023.revenue2023 // 100000000) }} 억원
                 </p>
             </div>
             <div class="p-6 bg-white rounded-lg shadow-md">
-                <h3 class="text-2xl font-semibold mb-4">23년 영업이익</h3>
+                <h3 class="mb-4 text-2xl font-semibold">23년 영업이익</h3>
                 <p class="text-3xl font-bold text-gray-800">
                     {{ "{:,}".format(fs2023.operatingIncome2023 // 100000000) }} 억원
                 </p>
             </div>
             <div class="p-6 bg-white rounded-lg shadow-md">
-                <h3 class="text-2xl font-semibold mb-4">23년 자본총계</h3>
+                <h3 class="mb-4 text-2xl font-semibold">23년 자본총계</h3>
                 <p class="text-3xl font-bold text-gray-800">
                     {{ "{:,}".format(fs2023.totalEquity2023 // 100000000) }} 억원
                 </p>
@@ -449,9 +449,9 @@
         </div>
     </div>
 
-    <div class="container max-w-screen-xl mx-auto p-6">
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-2xl font-semibold mb-4">매출액·영업이익 현황</h3>
+    <div class="container max-w-screen-xl p-6 mx-auto">
+        <div class="p-6 bg-white rounded-lg shadow-md">
+            <h3 class="mb-4 text-2xl font-semibold">매출액·영업이익 현황</h3>
             <!-- 연도별 재무제표 비교 -->
             <div class="relative h-72">
                 <canvas id="financialBarChart1" class="absolute inset-0"></canvas>
@@ -525,180 +525,180 @@
     });
     </script>
 
-    <div class="container max-w-screen-xl mx-auto p-6">
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h2 class="text-2xl font-semibold mb-4">연도별 재무정보</h2>
-            <table class="text-lg w-full text-left border-collapse">
+    <div class="container max-w-screen-xl p-6 mx-auto">
+        <div class="p-6 bg-white rounded-lg shadow-md">
+            <h2 class="mb-4 text-2xl font-semibold">연도별 재무정보</h2>
+            <table class="w-full text-lg text-left border-collapse">
                 <thead class="bg-gray-100">
                     <tr>
-                        <th class="py-2 px-4 border-b">항목</th>
-                        <th class="py-2 px-4 border-b">2020</th>
-                        <th class="py-2 px-4 border-b">2021</th>
-                        <th class="py-2 px-4 border-b">2022</th>
-                        <th class="py-2 px-4 border-b">2023</th>
+                        <th class="px-4 py-2 border-b">항목</th>
+                        <th class="px-4 py-2 border-b">2020</th>
+                        <th class="px-4 py-2 border-b">2021</th>
+                        <th class="px-4 py-2 border-b">2022</th>
+                        <th class="px-4 py-2 border-b">2023</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td class="py-2 px-4 border-b">총 매출</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2020.revenue2020 // 100000000)
+                        <td class="px-4 py-2 border-b">총 매출</td>
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2020.revenue2020 // 100000000)
                             }}
                             억원
                         </td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2021.revenue2021 // 100000000)
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2021.revenue2021 // 100000000)
                             }}
                             억원
                         </td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2022.revenue2022 // 100000000)
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2022.revenue2022 // 100000000)
                             }}
                             억원
                         </td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2023.revenue2023 // 100000000)
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2023.revenue2023 // 100000000)
                             }}
                             억원
                         </td>
                     </tr>
                     <tr>
-                        <td class="py-2 px-4 border-b">순이익</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2020.netIncome2020 //
+                        <td class="px-4 py-2 border-b">순이익</td>
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2020.netIncome2020 //
                             100000000) }}
                             억원
                         </td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2021.netIncome2021 //
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2021.netIncome2021 //
                             100000000) }}
                             억원
                         </td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2022.netIncome2022 //
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2022.netIncome2022 //
                             100000000) }}
                             억원
                         </td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2023.netIncome2023 //
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2023.netIncome2023 //
                             100000000) }}
                             억원
                         </td>
                     </tr>
                     <tr>
-                        <td class="py-2 px-4 border-b">총 자산</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2020.totalAsset2020 //
+                        <td class="px-4 py-2 border-b">총 자산</td>
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2020.totalAsset2020 //
                             100000000)
                             }} 억원
                         </td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2021.totalAsset2021 //
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2021.totalAsset2021 //
                             100000000)
                             }} 억원
                         </td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2022.totalAsset2022 //
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2022.totalAsset2022 //
                             100000000)
                             }} 억원
                         </td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2023.totalAsset2023 //
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2023.totalAsset2023 //
                             100000000)
                             }} 억원
                         </td>
                     </tr>
                     <tr>
-                        <td class="py-2 px-4 border-b">부채총계</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2020.totalDebt2020 //
+                        <td class="px-4 py-2 border-b">부채총계</td>
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2020.totalDebt2020 //
                             100000000) }}
                             억원
                         </td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2021.totalDebt2021 //
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2021.totalDebt2021 //
                             100000000) }}
                             억원
                         </td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2022.totalDebt2022 //
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2022.totalDebt2022 //
                             100000000) }}
                             억원
                         </td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2023.totalDebt2023 //
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2023.totalDebt2023 //
                             100000000) }}
                             억원
                         </td>
                     </tr>
                     <tr>
-                        <td class="py-2 px-4 border-b">자본총계</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2020.totalEquity2020 //
+                        <td class="px-4 py-2 border-b">자본총계</td>
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2020.totalEquity2020 //
                             100000000)
                             }}
                             억원</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2021.totalEquity2021 //
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2021.totalEquity2021 //
                             100000000)
                             }}
                             억원</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2022.totalEquity2022 //
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2022.totalEquity2022 //
                             100000000)
                             }}
                             억원</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2023.totalEquity2023 //
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2023.totalEquity2023 //
                             100000000)
                             }}
                             억원</td>
                     </tr>
                     <tr>
-                        <td class="py-2 px-4 border-b">자본금</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2020.capital2020 // 100000000)
+                        <td class="px-4 py-2 border-b">자본금</td>
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2020.capital2020 // 100000000)
                             }}
                             억원
                         </td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2021.capital2021 // 100000000)
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2021.capital2021 // 100000000)
                             }}
                             억원
                         </td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2022.capital2022 // 100000000)
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2022.capital2022 // 100000000)
                             }}
                             억원
                         </td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2023.capital2023 // 100000000)
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2023.capital2023 // 100000000)
                             }}
                             억원
                         </td>
                     </tr>
                     <tr>
-                        <td class="py-2 px-4 border-b">영업이익</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2020.operatingIncome2020 //
+                        <td class="px-4 py-2 border-b">영업이익</td>
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2020.operatingIncome2020 //
                             100000000)
                             }} 억원</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2021.operatingIncome2021 //
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2021.operatingIncome2021 //
                             100000000)
                             }} 억원</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2022.operatingIncome2022 //
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2022.operatingIncome2022 //
                             100000000)
                             }} 억원</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ "{:,}".format(fs2023.operatingIncome2023 //
+                        <td class="table-cell px-4 py-2 border-b">{{ "{:,}".format(fs2023.operatingIncome2023 //
                             100000000)
                             }} 억원</td>
                     </tr>
                     <tr>
-                        <td class="py-2 px-4 border-b">부채비율</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ '{:.1f}'.format(fs2020.debtRatio2020) }}%</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ '{:.1f}'.format(fs2021.debtRatio2021) }}%</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ '{:.1f}'.format(fs2022.debtRatio2022) }}%</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ '{:.1f}'.format(fs2023.debtRatio2023) }}%</td>
+                        <td class="px-4 py-2 border-b">부채비율</td>
+                        <td class="table-cell px-4 py-2 border-b">{{ '{:.1f}'.format(fs2020.debtRatio2020) }}%</td>
+                        <td class="table-cell px-4 py-2 border-b">{{ '{:.1f}'.format(fs2021.debtRatio2021) }}%</td>
+                        <td class="table-cell px-4 py-2 border-b">{{ '{:.1f}'.format(fs2022.debtRatio2022) }}%</td>
+                        <td class="table-cell px-4 py-2 border-b">{{ '{:.1f}'.format(fs2023.debtRatio2023) }}%</td>
                     </tr>
                     <tr>
-                        <td class="py-2 px-4 border-b">순이익률</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ '{:.1f}'.format(fs2020.margin2020 * 100) }}%
+                        <td class="px-4 py-2 border-b">순이익률</td>
+                        <td class="table-cell px-4 py-2 border-b">{{ '{:.1f}'.format(fs2020.margin2020 * 100) }}%
                         </td>
-                        <td class="py-2 px-4 border-b table-cell">{{ '{:.1f}'.format(fs2021.margin2021 * 100) }}%
+                        <td class="table-cell px-4 py-2 border-b">{{ '{:.1f}'.format(fs2021.margin2021 * 100) }}%
                         </td>
-                        <td class="py-2 px-4 border-b table-cell">{{ '{:.1f}'.format(fs2022.margin2022 * 100)}}%
+                        <td class="table-cell px-4 py-2 border-b">{{ '{:.1f}'.format(fs2022.margin2022 * 100)}}%
                         </td>
-                        <td class="py-2 px-4 border-b table-cell">{{ '{:.1f}'.format(fs2023.margin2023 * 100) }}%
+                        <td class="table-cell px-4 py-2 border-b">{{ '{:.1f}'.format(fs2023.margin2023 * 100) }}%
                         </td>
                     </tr>
                     <tr>
-                        <td class="py-2 px-4 border-b">매출회전률</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ fs2020.turnover2020 }}</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ fs2021.turnover2021 }}</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ fs2022.turnover2022 }}</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ fs2023.turnover2023 }}</td>
+                        <td class="px-4 py-2 border-b">매출회전률</td>
+                        <td class="table-cell px-4 py-2 border-b">{{ fs2020.turnover2020 }}</td>
+                        <td class="table-cell px-4 py-2 border-b">{{ fs2021.turnover2021 }}</td>
+                        <td class="table-cell px-4 py-2 border-b">{{ fs2022.turnover2022 }}</td>
+                        <td class="table-cell px-4 py-2 border-b">{{ fs2023.turnover2023 }}</td>
                     </tr>
                     <tr>
-                        <td class="py-2 px-4 border-b">Leverage</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ fs2020.leverage2020 }}</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ fs2021.leverage2021 }}</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ fs2022.leverage2022 }}</td>
-                        <td class="py-2 px-4 border-b table-cell">{{ fs2023.leverage2023 }}</td>
+                        <td class="px-4 py-2 border-b">Leverage</td>
+                        <td class="table-cell px-4 py-2 border-b">{{ fs2020.leverage2020 }}</td>
+                        <td class="table-cell px-4 py-2 border-b">{{ fs2021.leverage2021 }}</td>
+                        <td class="table-cell px-4 py-2 border-b">{{ fs2022.leverage2022 }}</td>
+                        <td class="table-cell px-4 py-2 border-b">{{ fs2023.leverage2023 }}</td>
                     </tr>
                 </tbody>
             </table>

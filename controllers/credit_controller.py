@@ -102,7 +102,6 @@ async def read_credit(
 
     total = query.count()
     total_pages = ceil(total / per_page)
-    print(total_pages)
     reportContents = query.offset((page - 1) * per_page).limit(per_page).all()
 
     return templates.TemplateResponse(
@@ -213,7 +212,7 @@ async def stream_content(rcept_no: str, db: Session = Depends(get_db)):
             paragraph_content = extract_content(paragraphs[key])
             html_content = (
                 "<div class='flex-1 bg-white rounded-lg shadow-lg'>"
-                f"<div class='bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg'>"
+                f"<div class='p-3 bg-gray-100 border-b border-gray-300 rounded-t-lg'>"
                 f"<h2 class='text-xl font-semibold text-gray-800'>{titles[key]}</h2></div>"
                 f"<div class='p-6 text-lg'>{paragraph_content}</div></div><br>"
             )
@@ -252,7 +251,7 @@ async def autocomplete(
             LIMIT 5
         """
         )
-        results = db.execute(sql_query, {"query": f"{query}%"}).fetchall()
+        results = db.execute(sql_query, {"query": f"%{query}%"}).fetchall()
         return [row[0] for row in results]  # Return list of results
     finally:
         db.close()
