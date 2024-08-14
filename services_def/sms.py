@@ -38,6 +38,7 @@ def send_sms(username, corporation_name, content):
 
     try:
         response = cool.send(params)
+        print(response)
         print("success")
         return {
             "success_count": response['success_count'],
