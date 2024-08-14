@@ -27,6 +27,11 @@ def send_sms(username, corporation_name, content):
         'from': from_number,  # 발신자 번호 (인증된 번호만 가능)
         'text': message
     }
+
+    cool = Message(api_key, api_secret, True)
+    
+    print(cool)
+
     print(to_number)
     print(from_number)
     print(message)
@@ -34,12 +39,15 @@ def send_sms(username, corporation_name, content):
     print(api_secret)
 
     cool = Message(api_key, api_secret)
-    print("12345")
+
+
 
     try:
         response = cool.send(params)
         print(response)
+        print("12345")
         print("success")
+
         return {
             "success_count": response['success_count'],
             "error_count": response['error_count'],
