@@ -2,6 +2,7 @@ import base64
 import os
 from fastapi import APIRouter, Form, HTTPException, Request, Depends, Query
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from datetime import date
@@ -12,13 +13,12 @@ from sqlalchemy import distinct, text, func
 from models.common_models import Post
 from schemas.baro_schemas import CompanyInfoSchema
 from services_def.baro_service import  FavoriteService, add_recent_view, get_company_info, get_favorite_companies, get_recent_views,  get_stockgraph1, generate_pdf, get_username_from_session
-from services_def.baro_service import get_FS2023, get_FS2022, get_FS2021, get_FS2020, get_Stock_data,  search_company, get_company_infoFS_list
+from services_def.baro_service import get_FS2023, get_FS2022, get_FS2021, get_FS2020, get_Stock_data,  search_company, get_company_infoFS_list, FS_update, get_sample_jurir_no
 import logging
 from typing import Dict, List, Optional
 from models.baro_models import CompanyInfo
 import requests
 from services_def.news import fetch_naver_news
-
 
 
 logging.basicConfig(level=logging.INFO)
@@ -33,6 +33,71 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+@baro.get("/baro_FScheck", response_class=HTMLResponse)
+async def read_companyList(request: Request, db: Session = Depends(get_db)):
+    jurir_no_list = get_sample_jurir_no(db)
+    
+    # HTML content를 담을 변수
+    content = "<html><body>"
+    
+    for jurir_no in jurir_no_list:
+        # 각 jurir_no에 대한 회사 정보와 재무 데이터를 가져옵니다.
+        company_info = get_company_info(db, jurir_no)
+        FS2023 = get_FS2023(db, jurir_no)
+        corp_name = company_info.corp_name
+        corp_code = company_info.corp_code
+        
+        fs_dict = FS_update(db, corp_code, corp_name)
+        
+        # FS_update 함수가 None을 반환할 경우에 대한 처리
+        if fs_dict is None:
+            content += f"<p>FS_update returned None for {corp_name}({jurir_no})({corp_code})</p>"
+            continue
+        
+        # FS2023 데이터에서 필요한 항목을 추출하여 딕셔너리 생성
+        fs_dict2 = {
+            "자산총계": FS2023.totalAsset2023,
+            "부채총계": FS2023.totalDebt2023,
+            "자본총계": FS2023.totalEquity2023,
+            "자본금": FS2023.capital2023,
+            "매출액": FS2023.revenue2023,
+            "영업이익": FS2023.operatingIncome2023,
+            "법인세차감전순이익": FS2023.earningBeforeTax2023,
+            "당기순이익": FS2023.netIncome2023
+        }
+
+        # 백만 단위로 나누고 소수점 이하 제거
+        for key in fs_dict2.keys():
+            if fs_dict2[key] is not None:
+                fs_dict2[key] = fs_dict2[key] // 1000000  # 백만으로 나눈 후 소수점 버림
+            if fs_dict.get(key) is not None:
+                fs_dict[key] = fs_dict[key] // 1000000  # 백만으로 나눈 후 소수점 버림
+        
+        # fs_dict와 fs_dict2를 HTML로 출력
+        content += f"<h3>DB: {company_info.corp_name}, FS DB  : {fs_dict2}</h3>"
+        content += f"<h3>DART: {company_info.corp_name}, FS DART: {fs_dict}</h3>"
+
+        # fs_dict와 fs_dict2가 다를 경우에 대한 처리
+        differences = {}
+        for key in fs_dict2.keys():
+            if fs_dict.get(key) != fs_dict2[key]:  # fs_dict가 None이 아닌 경우에만 비교
+                differences[key] = {
+                    "DB": fs_dict2[key],
+                    "DART": fs_dict.get(key)
+                }
+
+        if differences:
+            content += "<h4>@@@@@@@@@@@경고불일치 발생</h4>"
+            content += f"<pre>Differences for {corp_name}: {differences}</pre><BR>"
+    
+    # HTML 태그 닫기
+    content += "</body></html>"
+    
+    # HTMLResponse로 content를 반환
+    return HTMLResponse(content=content)
+
 
 
 
@@ -51,12 +116,33 @@ async def read_companyList(request: Request, db: Session = Depends(get_db)):
         }
     )
 
+# 하단 검색
 @baro.get("/baro_companyInfo", response_class=HTMLResponse)
 async def read_company_info(request: Request, jurir_no: str = Query(...), db: Session = Depends(get_db)):
     username = request.session.get("username")
-    print(jurir_no)
+    
     company_info = get_company_info(db, jurir_no)
     FS2023 = get_FS2023(db, jurir_no)
+    
+    
+    fs_dict = {
+        "자산총계": FS2023.totalAsset2023,
+        "부채총계": FS2023.totalDebt2023,
+        "자본총계": FS2023.totalEquity2023,
+        "자본금": FS2023.capital2023,
+        "매출액": FS2023.revenue2023,
+        "영업이익": FS2023.operatingIncome2023,
+        "법인세차감전순이익": FS2023.earningBeforeTax2023,
+        "당기순이익": FS2023.netIncome2023
+    }
+    
+    print(fs_dict)
+    
+    # if FS2023.totalAsset2023==0:
+    corp_code = company_info.corp_code
+    FS_update(db, corp_code, company_info.corp_name)
+    
+    # FS2023 = get_FS2023(db, jurir_no)
     FS2022 = get_FS2022(db, jurir_no)
     FS2021 = get_FS2021(db, jurir_no)
     FS2020 = get_FS2020(db, jurir_no)
@@ -146,7 +232,7 @@ async def read_company_info(request: Request, jurir_no: str = Query(...), db: Se
     })
     
     
-
+# 상단 검색
 @baro.post("/baro_companyInfo2")
 async def read_company_info(
     request: Request,
@@ -155,6 +241,7 @@ async def read_company_info(
     search_type: Optional[str] = Form(None)
 ):
     username = request.session.get("username")
+    print("한일섭")
     try:
         query = db.query(CompanyInfo)
         
@@ -181,6 +268,25 @@ async def read_company_info(
                 print("company_info.corp_code:", company_info.corp_code)  # Debug print to check corp_code
 
                 FS2023 = get_FS2023(db, jurir_no)
+                
+                # 테스트
+                corp_code = company_info.corp_code
+                FS_update(db, corp_code, company_info.corp_name)
+                
+                fs_dict = {
+                "자산총계": FS2023.totalAsset2023,
+                "부채총계": FS2023.totalDebt2023,
+                "자본총계": FS2023.totalEquity2023,
+                "자본금": FS2023.capital2023,
+                "매출액": FS2023.revenue2023,
+                "영업이익": FS2023.operatingIncome2023,
+                "법인세차감전순이익": FS2023.earningBeforeTax2023,
+                "당기순이익": FS2023.netIncome2023
+                }    
+                print("DB")
+                print(fs_dict)
+    
+                #상단 추후 삭제
                 FS2022 = get_FS2022(db, jurir_no)
                 FS2021 = get_FS2021(db, jurir_no)
                 FS2020 = get_FS2020(db, jurir_no)                
