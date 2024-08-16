@@ -8,3 +8,5 @@ DATABASE_URL = f"mysql+pymysql://manager:{password}@211.37.179.178/spoon"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
+crtfc_key = '01d7c563ea724921b2a130434dcc54593cb34f82'  # 여기에 본인의 API 인증키를 입력하세요

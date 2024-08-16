@@ -1,16 +1,18 @@
 import yfinance as yf
 from datetime import datetime, timedelta
 from typing import Dict, List, Union
+import re
 from bs4 import BeautifulSoup
 from fastapi import HTTPException, Request, requests ,status
+import requests as http_requests
 import httpx
 from jinja2 import Template
-from database import SessionLocal
+from database import SessionLocal, crtfc_key
 from sqlalchemy import func, cast, Integer
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 from sqlalchemy import text
 from models.baro_models import CompanyInfo, FS2023, FS2022, FS2021, FS2020, Favorite, RecentView, StockData
-
+import requests as http_requests
 import zipfile
 import io
 from lxml import etree
@@ -23,6 +25,12 @@ from langchain.prompts import PromptTemplate
 from langchain.chains.llm import LLMChain
 from langchain.chains.combine_documents.stuff import StuffDocumentsChain
 from langchain.chains import MapReduceDocumentsChain, ReduceDocumentsChain
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from langchain_openai import ChatOpenAI
+from langchain_teddynote import logging
+import pdfkit
+import logging
 
 
 
@@ -87,8 +95,6 @@ def get_company_infoFS_list(db: Session, jurir_no_list: List[str]):
 def get_company_info_list(db: Session, jurir_no_list: List[str]) -> List[CompanyInfo]:
     return db.query(CompanyInfo).filter(CompanyInfo.jurir_no.in_(jurir_no_list)).all()
 
-
-
 def get_company_info_list(db: Session, jurir_no_list: List[str]) -> List[CompanyInfo]:
     return db.query(CompanyInfo).filter(CompanyInfo.jurir_no.in_(jurir_no_list)).all()
 
@@ -119,6 +125,29 @@ def get_Stock_data(db: Session, corp_code: str):
 
 def get_FS2023_list(db: Session, jurir_no_list: List[str]) -> List[FS2023]:
     return db.query(FS2023).filter(FS2023.jurir_no.in_(jurir_no_list)).all()
+
+## DB의 재무 정보와 DART의 결과 임의로 비교하기 위해 임시로 만듬.
+def get_sample_jurir_no(db: Session) -> List[str]:
+    # Alias for the tables
+    CompanyInfoAlias = aliased(CompanyInfo)
+    FS2023Alias = aliased(FS2023)
+
+    # Create the query
+    subquery = (
+        db.query(CompanyInfoAlias.jurir_no)
+        .join(FS2023Alias, CompanyInfoAlias.jurir_no == FS2023Alias.jurir_no)
+        .filter(FS2023Alias.totalAsset2023 > 0)
+        .order_by(FS2023Alias.totalAsset2023.desc())
+        .offset(30)  # 시작점
+        .limit(40)   # 종료점    
+        )
+
+    # Execute the query and get the jurir_no list
+    jurir_no_list = [result[0] for result in subquery.all()]
+
+    return jurir_no_list
+
+
 
 def get_FS2023(db: Session, jurir_no: str):
     # Retrieve the data from the database
@@ -348,8 +377,6 @@ async def get_stockgraph(stock_code: str) -> Dict[str, List[Dict[str, Union[str,
     stock_data.reverse()  # 데이터를 오래된 순으로 정렬
     return {"stock_data": stock_data[:90]}  # 최대 90일치 데이터만 반환
 
-
-
 # get_stockgraph1 함수
 async def get_stockgraph1(stock_code: str) -> Dict[str, List[Dict[str, Union[str, float]]]]:
     # 주식 코드에 올바른 접미사 추가
@@ -365,7 +392,7 @@ async def get_stockgraph1(stock_code: str) -> Dict[str, List[Dict[str, Union[str
 
         # 데이터가 없는 경우 처리
         if hist.empty:
-            raise ValueError(f"No data found for stock code: {stock_code}")
+            raise ValueError(f"주가정보가 존재하지 않습니다.: {stock_code}")
 
         stock_data = []
         for date, row in hist.iterrows():
@@ -384,10 +411,6 @@ async def get_stockgraph1(stock_code: str) -> Dict[str, List[Dict[str, Union[str
         raise ValueError(f"An unexpected error occurred while retrieving data for stock code: {stock_code}") from e
     
 
-
-
-import pdfkit
-import logging
 
 
 def generate_pdf(html_content):
@@ -468,8 +491,6 @@ def get_username_from_session(request: Request):
         )       
     return username
 
-
-
 def get_favorite_companies(db: Session, username: str):
     favorites = db.query(Favorite).filter(Favorite.username == username).all()
     favorite_companies = []
@@ -490,9 +511,6 @@ def get_favorite_companies(db: Session, username: str):
 
             })
     return favorite_companies
-
-
-
 
 def add_recent_view(db: Session, username: str, corp_code: str):
     # Check if the recent view already exists
@@ -516,9 +534,6 @@ def add_recent_view(db: Session, username: str, corp_code: str):
 
     return existing_view if existing_view else new_view
 
-
-
-
 def get_recent_views(db: Session, username: str):
     recent_views = db.query(RecentView).filter(RecentView.username == username).order_by(RecentView.created_at.desc()).limit(5).all()
     
@@ -540,3 +555,398 @@ def get_recent_views(db: Session, username: str):
                 "netIncome2023": financial_info.netIncome2023 // 100000000 if financial_info else None,
             })
     return recent_views_companies
+
+
+import os
+from dotenv import load_dotenv
+from langchain_teddynote import logging
+# 환경 변수에서 DART_API_KEY를 가져옵니다
+GPT_API_KEY = os.getenv("OPENAI_API_KEY")
+
+# API KEY 정보로드
+load_dotenv()
+
+logging.langsmith("Spoon")
+# 데이터베이스 설정
+
+
+def FS_update(db: Session, corp_code: str, corp_name: str):
+    print(corp_name)
+    # Step 1: DART 공시 보고서 번호를 받아옵니다.
+    report_list = get_dart_report_list(corp_code)
+    
+    # Step 2: 2023년 기준의 최신 보고서 접수번호를 가져옵니다.
+    FSSreport2023 = get_latest_report_receipt_no(report_list, 2023)
+    print(f"Latest report for 2023: {FSSreport2023}")
+    
+    # Step 3: 보고서 번호로 DART 사이트에서 필요한 데이터를 추출합니다.
+    soup = fetch_and_create_urls(FSSreport2023, 1)
+ 
+    # Step 4: 추출된 데이터에서 계정 정보와 당기 금액을 정리합니다.
+    extracted_data = None
+    if soup:
+        extracted_data = extract_account_data(soup)
+        print(f"Extracted Data 1st try: {extracted_data}")
+    
+        if extracted_data == []:
+            soup = fetch_and_create_urls(FSSreport2023, 2)
+            extracted_data = extract_account_data(soup)
+            print(f"Extracted Data 2nd try: {extracted_data}")
+    
+    if not extracted_data:
+        print("Failed to retrieve or parse the report.")
+        return None  # 또는 적절한 기본값을 반환
+
+    # Step 5: 요약된 재무 데이터를 처리 (이 단계는 추가적으로 필요에 따라 구현)
+    fs_dict = FSmaker(extracted_data)
+    print("DART")
+    print(fs_dict)
+    return fs_dict
+
+# Step 1: DART 공시 보고서 리스트를 리턴하는 함수
+def get_dart_report_list(corp_code: str):
+    # API 요청 URL
+    url = 'https://opendart.fss.or.kr/api/list.json'
+    all_reports = []
+    pblntf_types = ['A', 'E', 'F']
+    start_date = datetime(2020, 1, 1)
+    end_date = datetime(2026, 12, 31)
+
+    while start_date < end_date:
+        bgn_de = start_date.strftime('%Y%m%d')
+        end_de = (start_date + timedelta(days=2*365)).strftime('%Y%m%d')
+        if end_de > end_date.strftime('%Y%m%d'):
+            end_de = end_date.strftime('%Y%m%d')
+
+        for pblntf_ty in pblntf_types:
+            params = {
+                'crtfc_key': crtfc_key,
+                'corp_code': corp_code,
+                'bgn_de': bgn_de,
+                'end_de': end_de,
+                'pblntf_ty': pblntf_ty,
+                'page_no': '1',
+                'page_count': '10',
+                'sort': 'date',
+                'sort_mth': 'desc'
+            }
+
+            response = http_requests.get(url, params=params)
+            if response.status_code == 200:
+                data = response.json()
+                if data['status'] == '000':
+                    for report in data['list']:
+                        report_info = {
+                            'corp_code': report.get('corp_code'),
+                            'report_nm': report.get('report_nm'),
+                            'rcept_no': report.get('rcept_no'),
+                            'flr_nm': report.get('flr_nm'),
+                            'rcept_dt': report.get('rcept_dt')
+                        }
+                        all_reports.append(report_info)
+            else:
+                print(f"HTTP 요청 실패: {response.status_code}")
+
+        start_date += timedelta(days=2*365)
+
+    # print("조회된 보고서 목록:")
+    # for report in all_reports:
+        # print(f"회사코드: {report['corp_code']}, 보고서명: {report['report_nm']}, 접수번호: {report['rcept_no']}, 제출인명: {report['flr_nm']}, 접수일자: {report['rcept_dt']}")
+        
+    return all_reports
+
+# Step 2: 최신 보고서 접수번호를 리턴하는 함수
+def get_latest_report_receipt_no(all_reports, baseYear):
+    latest_receipt_no = None
+    secondary_receipt_no = None
+
+    business_report_name = f"사업보고서 ({baseYear}.12)"
+    consolidated_audit_report_name = f"연결감사보고서 ({baseYear}.12)"
+    audit_report_name = f"감사보고서 ({baseYear}.12)"
+
+    for report in all_reports:
+        report_name = report['report_nm']
+        if report_name in [business_report_name, consolidated_audit_report_name]:
+            if latest_receipt_no is None or report['rcept_no'] > latest_receipt_no:
+                latest_receipt_no = report['rcept_no']
+        elif report_name == audit_report_name:
+            if secondary_receipt_no is None or report['rcept_no'] > secondary_receipt_no:
+                secondary_receipt_no = report['rcept_no']
+
+    return latest_receipt_no if latest_receipt_no else secondary_receipt_no
+
+# Step 3: DART 사이트에서 보고서를 추출하는 함수
+def fetch_and_create_urls(report_numbers, tryNum):
+    url_base = 'https://dart.fss.or.kr/dsaf001/main.do?rcpNo='
+
+
+    url = f"{url_base}{report_numbers}"
+    print(f"Processing URL: {url}")
+
+    response = http_requests.get(url)
+    if response.status_code == 200:
+
+        return create_report_url(response.text, report_numbers, tryNum)
+    else:
+        print(f"HTTP 요청 실패: {response.status_code}")
+        return None
+    
+    
+    
+
+
+def extract_account_data(soup):
+    extracted_data = []
+    unit = 1  # 기본 단위를 원으로 초기화
+
+    # 모든 테이블을 처리
+    tables = soup.find_all('table')
+
+    for table in tables:
+        # 주석 열이 있는 경우 해당 열 인덱스를 찾음
+        thead = table.find('thead')
+        if thead:
+            th_tags = thead.find_all('th')
+            annotation_index = None
+            for index, th in enumerate(th_tags):
+                if '주석' in th.get_text(strip=True):
+                    annotation_index = index
+                    break
+
+            # 주석 열을 제거
+            if annotation_index is not None:
+                for tr in table.find_all('tr'):
+                    td_tags = tr.find_all('td')
+                    if len(td_tags) > annotation_index:
+                        td_tags[annotation_index].decompose()  # 주석 열 태그를 실제로 HTML에서 제거
+
+
+        for tr in table.find_all('tr'):
+            td_tags = tr.find_all('td')
+
+            # 모든 <td> 값이 비어있거나 ' ' 또는 특수문자(예: '-')로만 이루어진 경우, 해당 <td>를 삭제
+            td_tags = [td for td in td_tags if re.sub(r'[\s\-]+', '', td.get_text(strip=True)) != '']
+
+            # 모든 <td> 값이 삭제되어 비어있는 <tr>은 삭제 (continue로 건너뜀)
+            if not td_tags:
+                continue
+
+            # "단위:"라는 키워드가 포함된 <td> 태그에서 단위를 추출
+            for td in td_tags:
+                td_text = td.get_text(strip=True)
+                if '단위' in td_text:
+                    if '십억원' in td_text:
+                        unit = 1000000000
+                    elif '억원' in td_text:
+                        unit = 100000000
+                    elif '백만원' in td_text:
+                        unit = 1000000
+                    elif '천원' in td_text:
+                        unit = 1000
+                    elif '원' in td_text:
+                        unit = 1
+                    break  # 단위를 찾았으므로 더 이상 반복할 필요 없음
+
+            current_amount = None  # 초기값 설정
+            account_name = None
+
+            # "자본의 변동" 또는 "현금 흐름" 키워드가 등장하면 중단하고 데이터 반환
+            tr_text = tr.get_text(strip=True).replace(' ', '')
+            if re.search(r'자본의변동|현금흐름표', tr_text):
+                return extracted_data
+
+            # 계정과목과 금액 값을 추출
+            if len(td_tags) >= 2:
+                # 괄호 안에 "주"로 시작하고 숫자가 뒤따르는 패턴 제거 (숫자가 여러 자리일 수 있음)
+                account_name = re.sub(r'\(주\d{1,3}(,\d{1,3})*\)', '', td_tags[0].get_text(strip=True))
+
+                # 괄호 안에 "주석"과 숫자가 포함된 패턴 제거
+                account_name = re.sub(r'\(주석\s*\d{1,3}(,\s*\d{1,3})*\)', '', account_name)
+
+                # "(손실)" 텍스트가 있을 경우 괄호 포함 제거
+                account_name = re.sub(r'\(손실\)', '', account_name)
+                
+                # "(손실)" 텍스트가 있을 경우 괄호 포함 제거
+                account_name = re.sub(r'\(순손실\)', '', account_name)
+                
+                # "(이익)" 텍스트가 있을 경우 괄호 포함 제거
+                account_name = re.sub(r'\(이익\)', '', account_name)
+
+                # 한글 이외의 모든 문자 제거
+                account_name = re.sub(r'[^가-힣]', '', account_name)
+
+                # 모든 텍스트를 결합하여 current_amount로 설정
+                current_amount = ''.join(list(td_tags[1].stripped_strings)).replace(',', '').replace('=', '')
+                if not current_amount and len(td_tags) > 2:
+                    current_amount = ''.join(list(td_tags[2].stripped_strings)).replace(',', '').replace('=', '')
+
+            # 금액에서 괄호를 제거하고 음수로 변환
+            if current_amount:
+                current_amount = current_amount.replace(',', '')
+                if current_amount.startswith('(') and current_amount.endswith(')'):
+                    current_amount = '-' + current_amount[1:-1]
+
+                try:
+                    current_amount = int(current_amount) * unit  # 단위를 곱하여 원단위로 변환
+                except ValueError:
+                    current_amount = None  # 금액이 숫자가 아닐 경우 None 처리
+
+            # 계정명과 당기 금액을 딕셔너리로 저장
+            if account_name and current_amount is not None:
+                extracted_data.append({
+                    'account_name': account_name,
+                    'current_amount': current_amount
+                })
+
+    return extracted_data
+
+# 기타 함수들
+def create_report_url(html_content, rcp_no, tryNum):
+    # 우선순위에 따라 키워드 목록을 정의합니다.
+    
+    if tryNum == 1:
+        keyword_patterns = [
+            r"연\s*결\s*재\s*무\s*제\s*표",
+            r"연\s*결\s*재\s*무\s*상\s*태\s*표",
+            r"재\s*무\s*제\s*표",
+            r"재\s*무\s*상\s*태\s*표"
+        ]
+    elif tryNum == 2:
+        # '연결'이라는 키워드가 포함되지 않은 패턴만 사용
+        keyword_patterns = [
+            r"재\s*무\s*제\s*표",
+            r"재\s*무\s*상\s*태\s*표"
+        ]
+
+    lines = html_content.split('\n')
+    node_data = {}
+    
+    for pattern in keyword_patterns:
+        keyword_regex = re.compile(pattern)
+        
+        for i, line in enumerate(lines):
+            # '연결'이 포함된 줄은 제외
+            if '연결' in line and tryNum == 2:
+                continue
+            
+            if keyword_regex.search(line):
+                node_data = extract_node_data(lines, i)
+                if node_data:
+                    report_url = format_report_url(node_data, rcp_no)
+                    return fetch_and_save_report_details(report_url)
+
+    return None
+
+def extract_node_data(lines, start_index):
+    node_data = {}
+    patterns = {
+        'dcmNo': r"node\d+\['dcmNo'\]\s*=\s*\"(\d+)\";",
+        'eleId': r"node\d+\['eleId'\]\s*=\s*\"(\d+)\";",
+        'offset': r"node\d+\['offset'\]\s*=\s*\"(\d+)\";",
+        'length': r"node\d+\['length'\]\s*=\s*\"(\d+)\";"
+    }
+
+    # 각 값을 처음으로 매칭된 패턴에 따라 추출합니다.
+    for key, pattern in patterns.items():
+        for line in lines[start_index:start_index + 100]:  # 범위를 100줄로 제한
+            match = re.search(pattern, line)
+            if match:
+                node_data[key] = match.group(1)
+                break  # 첫 번째로 매칭된 값만 사용
+                
+    return node_data
+
+def format_report_url(data, rcp_no):
+    # 필요한 모든 데이터가 존재하는지 확인
+    if all(k in data for k in ('dcmNo', 'eleId', 'offset', 'length')):
+        return f"https://dart.fss.or.kr/report/viewer.do?rcpNo={rcp_no}&dcmNo={data['dcmNo']}&eleId={data['eleId']}&offset={data['offset']}&length={data['length']}&dtd=dart4.xsd"
+    else:
+        return None
+    
+def fetch_and_save_report_details(report_url):
+    response = http_requests.get(report_url)
+    print(f"report_url: {report_url}")
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.text, 'html.parser')
+        # print(soup)
+        return soup
+    else:
+        print(f"HTTP 요청 실패: {response.status_code}")
+        return None
+
+
+def FSmaker(extracted_data):
+    fs_dict = {
+        "자산총계": None,
+        "부채총계": None,
+        "자본총계": None,
+        "자본금": None,
+        "매출액": None,
+        "영업이익": None,
+        "법인세차감전순이익": None,
+        "당기순이익": None,
+    }
+    
+    # 필요한 항목 이름 매핑 (복수의 항목이 매핑될 수 있음)
+    keys_mapping = {
+        "자산총계": ["자산총계", "자산"],
+        "부채총계": ["부채총계", "부채"],
+        "자본총계": ["자본총계","자본","순자산","자본계"],
+        "자본금": ["자본금", "보통주자본금","납입자본"],
+        "매출액": ["외부고객으로부터의수익", "매출액", "영업수익", "수익매출액", "매출", "영업수익매출액","매출액주석","매출및지분법손익"],
+        "영업이익": ["영업이익", "영업이익손실", "영업손실"],
+        "법인세차감전순이익": ["법인세차감전계속영업이익","계속영업법인세비용차감전순이익","법인세비용차감전계속사업이익","법인세비용차감전계속영업이익","법인세비용차감전손익", "법인세비용차감전순이익", "법인세차감전순이익", "법인세비용차감전순손실", "법인세비용차감전순손익", "법인세비용차감전당기순이익","법인세비용차감전계속영업순이익","법인세비용차감전이익","법인세차감전순손실"],
+        "당기순이익": ["당기순이익", "당기순이익", "연결당기순이익", "당기순손실","당기순손익","당기연결순이익"]
+    }
+
+    # 매출액 관련 항목
+    revenue_sources = {
+        "보험영업수익": None,
+        "투자영업수익": None,
+        "이자수익": None,
+        "수수료수익": None
+    }
+    
+    # 데이터에서 항목 추출
+    for item in extracted_data:
+        account_name = item['account_name']
+        current_amount = item['current_amount']
+        
+        # current_amount가 None인 경우 무시하고 다음 항목으로 넘어감
+        if current_amount is None:
+            continue
+        
+        # 손실 항목일 경우 음수로 변환
+        if account_name.endswith("손실"):
+            current_amount = -abs(current_amount)
+
+        # 기본 항목 추출 (복수 항목 매핑 가능)
+        for key, names in keys_mapping.items():
+            for name in names:
+                if name == account_name and (fs_dict[key] is None or fs_dict[key] == 0):  # 현재 None 또는 0인 경우에도 반영
+                    fs_dict[key] = current_amount
+                    break  # 값을 찾았으면 다른 매핑 항목은 볼 필요 없음
+
+        # 매출액 관련 항목 추출 (정확한 일치만 허용)
+        for key in revenue_sources.keys():
+            if key == account_name:  # 정확히 일치하는 경우만 처리
+                if revenue_sources[key] is None:
+                    revenue_sources[key] = current_amount
+                    break  # 최초의 일치하는 값을 반영하면 루프 종료
+                
+    # 매출액 계산
+    if fs_dict["매출액"] is None:
+        # 보험영업수익, 투자영업수익을 합산하여 매출액으로 사용
+        if revenue_sources["보험영업수익"] is not None:
+            fs_dict["매출액"] = (
+                (revenue_sources["보험영업수익"] or 0) +
+                (revenue_sources["투자영업수익"] or 0)
+            )
+        # 보험영업수익이 없을 경우 이자수익과 수수료 수익을 합산하여 매출액으로 사용
+        elif revenue_sources["이자수익"] is not None:
+            fs_dict["매출액"] = (
+                (revenue_sources["이자수익"] or 0) +
+                (revenue_sources["수수료수익"] or 0)
+            )
+
+    return fs_dict
