@@ -36,7 +36,8 @@ def send_sms(username, corporation_name, content):
         'text': message
     }
 
-    ssl_context = ssl.create_default_context(cafile=certifi.where())
+    # SSL 검증 비활성화
+    ssl_context = ssl._create_unverified_context()
     cool = Message(api_key, api_secret, ssl_context=ssl_context)
     
     print(cool)
