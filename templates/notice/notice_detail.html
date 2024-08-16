@@ -2,6 +2,9 @@
 
 {% block head %}
 <link rel="stylesheet" href="/static/css/style.css">
+<link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/font.css">
 <style>
     .detail-content {
         padding: 20px;
@@ -60,11 +63,26 @@
 {% endblock %}
 
 {% block content %}
-<section class="detail">
-    <div class="container">
-        <div class="page-title">
-            <h3>공지사항 상세</h3>
+
+<div class="w-full" style="background-image: url('/static/images/home9.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 35vh;">
+    
+    <div class="w-full max-w-screen-xl p-8 mx-auto" >
+        <span class="block mb-2 text-xl text-left">
+            <a href="/" class="mr-2 text-white">홈 &nbsp; |</a> 
+            <a href="/notices" class="ml-2 text-white">공지사항</a>
+        </span>
+        <br><br><br>
+
+        <div class="text-center">
+            <h1 class="text-5xl font-bold text-white">공지사항 상세</h1>
         </div>
+        <br>
+    </div>
+</div>
+
+<br><br>
+<section class="w-full py-8 mb-10">
+    <div class="container max-w-5xl px-4 mx-auto sm:px-6 lg:px-8">
 
         <div class="detail-content">
             <h1 class="title">{{ notice.title }}</h1>
@@ -78,19 +96,17 @@
             </div>
 
             <div class="content-section">
-                <h4>내용:</h4>
-                <p>{{ notice.content }}</p>
+                <p>{{ notice.content | safe }}</p>
             </div>
 
-            <hr class="separator">
             <div class="button-section">
                 {% if username == 'admin' %}
-                <a href="/notices/update/{{ notice.id }}" class="btn btn-dark">수정</a>
+                <a href="/notices/update/{{ notice.id }}" class="inline-block px-4 py-2 text-white bg-purple-700 rounded hover:bg-purple-980">수정</a>&nbsp;
                 <form action="/notices/delete/{{ notice.id }}" method="post" style="display: inline;">
-                    <button type="submit" class="btn btn-danger">삭제</button>
+                    <button type="submit" class="inline-block px-4 py-2 text-white bg-purple-700 rounded hover:bg-purple-980">삭제</button>&nbsp;
                 </form>
                 {% endif %}
-                <button onclick="location.href='/notices'" class="btn btn-dark">목록으로</button>
+                <button onclick="location.href='/notices'" class="inline-block px-4 py-2 text-white bg-purple-700 rounded hover:bg-purple-980">목록으로</button>
             </div>
         </div>
     </div>

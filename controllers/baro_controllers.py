@@ -247,14 +247,15 @@ async def read_company_info(
         
         jurir_no = None
         company_info = None
-        
+        print(name)
+        print(search_type)
         if name:
             if search_type == "company_name":
                 result = db.query(CompanyInfo.jurir_no).filter(func.trim(CompanyInfo.corp_name) == name).first()
                 if result:
                     jurir_no = result[0]
             elif search_type == "company_code":
-                result = db.query(CompanyInfo.jurir_no).filter(func.trim(CompanyInfo.corp_code) == name).first()
+                result = db.query(CompanyInfo.jurir_no).filter(func.trim(CompanyInfo.jurir_no) == func.trim(name)).first()
                 if result:
                     jurir_no = result[0]
 
@@ -465,7 +466,7 @@ async def autocomplete(
             column = "corp_name"
             print(column)
         elif search_type == "company_code":
-            column = "corp_code"
+            column = "jurir_no"
             print(column)
         else:
             raise ValueError("Invalid search type")
@@ -497,8 +498,8 @@ async def generate_pdf_endpoint(jurir_no: str, request: Request, db: Session = D
     company_info = get_company_info(db, jurir_no)
     
     # 예를 들어, 이미지 경로와 함께 Base64 문자열을 가져옵니다.
-    financialbarchart = get_base64_image("static/images/financialbarchart.png")
-    stockchart = get_base64_image("static/images/stockchart.png")
+    financialbarchart = get_base64_image("./static/images/financialbarchart.png")
+    stockchart = get_base64_image("./static/images/stockchart.png")
         
     if not company_info:
         raise HTTPException(status_code=404, detail="Company not found")

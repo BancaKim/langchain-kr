@@ -3,11 +3,12 @@ from math import ceil
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, StreamingResponse
-from sqlalchemy import text
+from sqlalchemy import desc, text
 from sqlalchemy.orm import Session
 from fastapi.templating import Jinja2Templates
 from database import SessionLocal
 from models.baro_models import CompanyInfo
+from models.common_models import Post
 from models.credit_models import ReportContent
 from dotenv import load_dotenv
 from services_def.chatbot_logic import generate_response, setup_chatbot
@@ -101,7 +102,6 @@ async def read_credit(
 
     total = query.count()
     total_pages = ceil(total / per_page)
-    print(total_pages)
     reportContents = query.offset((page - 1) * per_page).limit(per_page).all()
 
     return templates.TemplateResponse(
@@ -141,6 +141,11 @@ async def readcredit(
             company_info = (
                 db.query(CompanyInfo).filter(CompanyInfo.corp_code == corp_code).first()
             )
+            # 포스트 데이터를 회사 이름으로 필터링하여 가져오기
+            posts = db.query(Post).filter(Post.corporation_name == company_info.corp_name)\
+                                .order_by(desc(Post.created_at))\
+                                .limit(3)\
+                                .all()
             if company_info:
                 print(
                     "company_info:", company_info
@@ -155,6 +160,7 @@ async def readcredit(
                 "username": username,
                 "reportContent": reportContent,
                 "company_info": company_info,
+                "posts": posts
             },
         )
     except Exception as e:
@@ -206,7 +212,7 @@ async def stream_content(rcept_no: str, db: Session = Depends(get_db)):
             paragraph_content = extract_content(paragraphs[key])
             html_content = (
                 "<div class='flex-1 bg-white rounded-lg shadow-lg'>"
-                f"<div class='bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg'>"
+                f"<div class='p-3 bg-gray-100 border-b border-gray-300 rounded-t-lg'>"
                 f"<h2 class='text-xl font-semibold text-gray-800'>{titles[key]}</h2></div>"
                 f"<div class='p-6 text-lg'>{paragraph_content}</div></div><br>"
             )
@@ -245,7 +251,7 @@ async def autocomplete(
             LIMIT 5
         """
         )
-        results = db.execute(sql_query, {"query": f"{query}%"}).fetchall()
+        results = db.execute(sql_query, {"query": f"%{query}%"}).fetchall()
         return [row[0] for row in results]  # Return list of results
     finally:
         db.close()
