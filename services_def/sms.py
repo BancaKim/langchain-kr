@@ -3,6 +3,8 @@
 import logging
 import os
 from pickle import TRUE
+import ssl
+import certifi
 from dotenv import load_dotenv
 from fastapi import logger
 from jinja2 import Environment, FileSystemLoader, Template
@@ -34,7 +36,8 @@ def send_sms(username, corporation_name, content):
         'text': message
     }
 
-    cool = Message(api_key, api_secret, TRUE)
+    ssl_context = ssl.create_default_context(cafile=certifi.where())
+    cool = Message(api_key, api_secret, ssl_context=ssl_context)
     
     print(cool)
 
