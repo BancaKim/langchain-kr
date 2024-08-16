@@ -155,7 +155,7 @@ async def predict_all(request: Request, db: Session = Depends(get_db)):
         "n_samples": model_store["model_info"]["n_samples"]
     }
     # logger.info(predictions)
-    return templates.TemplateResponse("ML_template/ML_creditViewHTML.html", {
+    return templates.TemplateResponse("/ML_template/ML_creditViewHTML.html", {
         "request": request,
         "predictions": predictions,
         "model_info": model_info,
@@ -339,6 +339,26 @@ async def train(request: Request, file_upload: UploadFile = File(...), db: Sessi
 async def default_model_pick(model_id: str, db: Session = Depends(get_db)):
     logger.info(model_id)
     success = set_default_model(db, model_id)
+    
+    
+    model_info = get_model_info_by_id(db, model_id)
+    
+    # Parse JSON fields from the database
+    accuracy = model_info['accuracy']
+    class_report = json.loads(model_info['class_report'])
+    conf_matrix = json.loads(model_info['conf_matrix'])
+
+    # Load the model and scaler if necessary
+    model_filepath = model_info['model_filepath']
+    model_store["model"] = joblib.load(model_filepath)
+    model_store["scaler"] = pickle.loads(model_info['scaler'])
+    model_store["accuracy"] = accuracy
+    model_store["class_report"] = class_report
+    model_store["conf_matrix"] = conf_matrix
+    model_store["model_info"] = {**model_info, "feature_importances": model_info['feature_importances']}
+    
+    logger.info(model_filepath)
+        
     if not success:
         raise HTTPException(status_code=404, detail="Model not found or could not be set as default.")
     
