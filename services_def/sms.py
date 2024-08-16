@@ -3,7 +3,6 @@
 import logging
 import os
 from pickle import FALSE, TRUE
-from socket import AF_AAL5
 from dotenv import load_dotenv
 from fastapi import logger
 from jinja2 import Environment, FileSystemLoader, Template
