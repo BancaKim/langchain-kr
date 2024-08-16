@@ -2,14 +2,14 @@
 
 import logging
 import os
-from pickle import TRUE
-import ssl
-import certifi
+from pickle import FALSE, TRUE
+from socket import AF_AAL5
 from dotenv import load_dotenv
 from fastapi import logger
 from jinja2 import Environment, FileSystemLoader, Template
 from sdk.api.message import Message
 from sdk.exceptions import CoolsmsException
+from sqlalchemy import ARRAY
 
 load_dotenv()
 env = Environment(loader=FileSystemLoader('templates/contact'))  # 템플릿 디렉토리 설정
@@ -36,9 +36,7 @@ def send_sms(username, corporation_name, content):
         'text': message
     }
 
-    # SSL 검증 비활성화
-    ssl_context = ssl._create_unverified_context()
-    cool = Message(api_key, api_secret, ssl_context=ssl_context)
+    cool = Message(api_key, api_secret, True)
     
     print(cool)
 
