@@ -24,7 +24,7 @@
 </head>
 <div data-w-id="03e4e7de-f531-4cf3-b037-5a0ea7fd7ab7" data-animation="default" data-collapse="medium"
   data-duration="400" data-easing="ease" data-easing2="ease" role="banner" class="uui-navbar08_component w-nav">
-  <div class="uui-navbar08_container"><a href="/"><img height="90" alt="" src="images/logo-4.png" class="spoonlogo"></a>
+  <div class="uui-navbar08_container"><a href="/"><img alt="" src="images/logo-4.png" class="spoonlogo"></a>
 
     <nav role="navigation" class="uui-navbar08_menu w-nav-menu">
       <div class="uui-navbar08_menu-left">
@@ -132,8 +132,8 @@
 
     </video>
     <div class="flex items-center justify-center h-full overlay-text">
-      <h1 class="text-3xl leading-tight text-white sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
-        당신을 위한 AI 기업금융 전문가, Spoon
+      <h1 class="w-auto text-xl text-white sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
+      AI 기업금융 전문 플랫폼<br>Spoon
       </h1>
     </div>
   </div>
@@ -151,7 +151,10 @@
     .show-below-850 {
       display: block;
     }
-
+    .spoonlogo {
+      height: 50px; /* 850px 이하일 때 이미지 크기를 60px로 줄임 */
+      width: auto;
+    }
   }
 
   .home-button-container {
@@ -476,17 +479,17 @@
                 </div>
               </div>
             </div>
-            
-            <div class="hidden show-below-850">
-            <div class="uui-button-row is-reverse-mobile-landscape">
-              <div class="uui-button-wrapper max-width-full-mobile-landscape">
-                <a href="/credit/creditReview/" class="uui-button-secondary-gray w-inline-block">
-                  <div>바로가기</div>
-                </a>
-              </div>
-            </div>  
-          </div>
 
+            <div class="hidden show-below-850">
+              <div class="uui-button-row is-reverse-mobile-landscape">
+                <div class="uui-button-wrapper max-width-full-mobile-landscape">
+                  <a href="/marketing/globalList/" class="uui-button-secondary-gray w-inline-block">
+                    <div>바로가기</div>
+                  </a>
+                </div>
+              </div>
+            </div>
+            </div>          
           <div class="hidden-below-850">
             <div class="uui-layout08_image-wrapper"><img src="images/contents3.png" loading="lazy" width="1440"
                 sizes="(max-width: 767px) 93vw, (max-width: 991px) 94vw, (max-width: 1919px) 44vw, 608.0113525390625px"
