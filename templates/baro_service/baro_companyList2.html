@@ -87,6 +87,9 @@
         .show-below-850 {
             display: block;
         }
+        .height40 {
+            height: 40vh;
+        }
 
     }
 </style>
@@ -96,17 +99,23 @@
     <div class="w-full"
         style=" background-image: url('static/images/home4.png'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 40vh;">
 
-        <div class="w-full max-w-screen-xl p-8 mx-auto">
+        <div class="w-full p-8 mx-auto max-w-screen height40">
             <span class="block mb-2 text-xl text-left">
                 <a href="/" class="mr-2 text-white">홈 &nbsp; |</a>
                 <a href="/baro_companyList" class="ml-2 text-white">바로등급</a>
             </span>
-            <br><br><br>
+            <br>
+            <div class="hidden-below-850">
+                <br><br>
+            </div>
 
             <div class="mb-4 text-center">
-                <h1 class="text-4xl font-bold text-white lg:text-5xl">ML 기반 바로등급 서비스</h1>
+                <h1 class="text-3xl font-bold text-white lg:text-5xl">ML 기반 바로등급 서비스</h1>
             </div>
-            <br><br><br>
+            <br>
+            <div class="hidden-below-850">
+                <br><br>
+            </div>
 
             <!-- 검색란 -->
             <div class="w-full max-w-4xl mx-auto">
@@ -141,7 +150,10 @@
                     </button>
                 </div>
             </div>
-            <br><br><br>
+            <br><br>
+            <div class="hidden-below-850">
+                <br>
+            </div>
         </div>
     </div>
 </div>

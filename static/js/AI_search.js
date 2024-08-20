@@ -37,16 +37,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     searchInput.value = item;
                     resultContainer.innerHTML = ''; // Clear results when an item is selected
                     resultContainer.classList.add('hidden'); // Hide the results
-\                });
+                });
                 list.appendChild(listItem);
             });
 
             resultContainer.appendChild(list);
             resultContainer.classList.remove('hidden'); // Show the results
-
         } else {
             resultContainer.classList.add('hidden'); // Hide the results if no suggestions
-
         }
     }
 });
