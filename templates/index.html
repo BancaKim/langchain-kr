@@ -24,7 +24,7 @@
 </head>
 <div data-w-id="03e4e7de-f531-4cf3-b037-5a0ea7fd7ab7" data-animation="default" data-collapse="medium"
   data-duration="400" data-easing="ease" data-easing2="ease" role="banner" class="uui-navbar08_component w-nav">
-  <div class="uui-navbar08_container"><a href="/"><img height="90" alt="" src="images/logo-4.png" class="spoonlogo"></a>
+  <div class="uui-navbar08_container"><a href="/"><img alt="" src="images/logo-4.png" class="spoonlogo"></a>
 
     <nav role="navigation" class="uui-navbar08_menu w-nav-menu">
       <div class="uui-navbar08_menu-left">
@@ -34,11 +34,14 @@
           onclick="checkLogin(event)">AI심사보고서</a>
         <a href="/contact55" class="text-lg uui-navbar08_link w-nav-link" onclick="checkLogin(event)">섭외등록</a>
         <a href="/notices" class="text-lg uui-navbar08_link w-nav-link" onclick="checkLogin(event)">공지사항</a>
-        {% if username == 'admin' %}
 
-        <a href="/modelControl" class="uui-navbar08_link w-nav-link text-lg">신용등급 모델 관리</a>
+        <div class="hidden-below-850">
+          {% if username == 'admin' %}
 
-        {% endif %}
+          <a href="/modelControl" class="text-lg uui-navbar08_link w-nav-link">신용등급 모델 관리</a>
+
+          {% endif %}
+        </div>
       </div>
 
       <div class="uui-navbar08_menu-right">
@@ -59,41 +62,42 @@
     <style>
       /* Notyf 알림을 우측 상단에서 아래쪽으로 쌓이도록 설정 */
       .notyf {
-          right: 20px;
-          bottom: 80px;
+        right: 20px;
+        bottom: 80px;
       }
     </style>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf/notyf.min.css">
     <script src="https://cdn.jsdelivr.net/npm/notyf/notyf.min.js"></script>
 
     <script>
-        // Notyf 인스턴스 생성
-        const notyf = new Notyf();
-        
-        function checkLogin(event) {
-            {% if not username %}
-            event.preventDefault();
-            notyf.error('로그인 후, 이용 부탁드립니다');
-            {% endif %}
-        }
+      // Notyf 인스턴스 생성
+      const notyf = new Notyf();
+
+      function checkLogin(event) {
+        {% if not username %}
+        event.preventDefault();
+        notyf.error('로그인 후, 이용 부탁드립니다');
+        {% endif %}
+      }
     </script>
     <!-- 기존 head 내용 -->
     <style>
-        .logout-button {
-            background-color: #7E22CE !important;
-            color: #fff;
-            padding: 6px 12px;
-            margin-left: 30px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;  
-            text-decoration: none;  
-            font-weight: 400;
-        }
-        .logout-button:hover {
-            background-color: #6B21A8;
-        }
+      .logout-button {
+        background-color: #7E22CE !important;
+        color: #fff;
+        padding: 6px 12px;
+        margin-left: 30px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        font-weight: 400;
+      }
+
+      .logout-button:hover {
+        background-color: #6B21A8;
+      }
     </style>
     <div class="uui-navbar08_menu-button w-nav-button">
       <div class="menu-icon_component">
@@ -107,18 +111,57 @@
   </div>
 </div>
 
+<div class="hidden-below-850">
 
-<div class="home-button-container">
-  <video autoplay muted loop class="background-video">
-    <source src="static/images/video1.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
-  <div class="overlay-text">
-    <h1 class="fonthead">No.1 Financial Big Data &<br />AI Analytics Platform</h1>
+  <div class="home-button-container">
+    <video autoplay muted loop class="background-video ">
+      <source src="static/images/video1.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+    <div class="flex items-center justify-center h-full overlay-text">
+      <h1 class="text-3xl leading-tight text-white sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
+        No.1 Financial Big Data &<br />AI Analytics Platform
+      </h1>
+    </div>
   </div>
+
 </div>
 
+<div class="hidden show-below-850">
+
+  <div class="home-button-container2">
+    <video autoplay muted loop class="background-video ">
+      <source src="static/images/video1.mp4" type="video/mp4">
+
+    </video>
+    <div class="flex items-center justify-center h-full overlay-text">
+      <h1 class="w-auto text-xl text-white sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
+        AI 기업금융 전문 플랫폼<br>Spoon
+      </h1>
+    </div>
+  </div>
+
+</div>
+
+
 <style>
+  @media (max-width: 850px) {
+    .hidden-below-850 {
+      display: none;
+      height: 0px;
+    }
+
+    .show-below-850 {
+      display: block;
+    }
+
+    .spoonlogo {
+      height: 50px;
+      /* 850px 이하일 때 이미지 크기를 60px로 줄임 */
+      width: auto;
+    }
+  }
+
   .home-button-container {
     position: relative;
     /* 상대 위치 설정 */
@@ -129,8 +172,18 @@
     /* 수직 중앙 정렬 */
     height: 60vh;
     /* 화면 높이 설정 */
-    overflow: hidden;
-    /* 넘치는 콘텐츠 숨김 */
+  }
+
+  .home-button-container2 {
+    position: relative;
+    /* 상대 위치 설정 */
+    display: flex;
+    justify-content: center;
+    /* 버튼을 중앙 정렬 */
+    align-items: center;
+    /* 수직 중앙 정렬 */
+    height: 30vh;
+    /* 화면 높이 설정 */
   }
 
   /* 배경 비디오 */
@@ -165,77 +218,52 @@
     /* 텍스트 가운데 정렬 */
   }
 
-  .fonthead {
-    font-size: 4.0rem;
-    /* 텍스트 크기 */
-    font-weight: bold;
-    /* 텍스트 두께 */
-    line-height: 1.5;
+  @media (max-width: 850px) {
+    .image_size img {
+      width: 140%;
+    }
+
+    .image_size {
+      display: flex;
+      justify-content: center;
+    }
   }
 </style>
 </header>
 
-
-<!-- <a href="#" class="uui-layout31_lightbox w-inline-block w-lightbox">
-            <div class="lightbox_video-overlay-layer">
-                <img src="images/play-icon.svg" loading="lazy" alt="Play video icon" class="uui-lightbox_play-icon">
+<div class="hidden-below-850">
+  <section class="uui-section_layout31" style="height: 350px;">
+    <div class="uui-page-padding">
+      <div class="uui-container-large">
+        <div class="uui-padding-vertical-xhuge">
+          <div class="w-layout-grid uui-layout31_component">
+            <div class="uui-layout31_content-left">
+              <div class="text-3xl leading-relaxed uui-heading-subheading ">우리의 서비스</div>
+              <h2 class="text-4xl leading-relaxed uui-heading-medium">당신을 위한 AI 기업금융 전문가,</h2>
+              <h2 class="text-5xl leading-snug uui-heading-medium">Spoon</h2>
             </div>
-            <img src="images/HeaderAI.webp" loading="lazy" sizes="(max-width: 767px) 100vw, (max-width: 1919px) 94vw, 1280px"
-                srcset="images/HeaderAI.webp 500w, images/HeaderAI.webp 1080w, images/HeaderAI.webp 1600w, images/HeaderAI.webp 1920w"
-                alt="AI Header" class="uui-layout31_lightbox-image">
-            <script type="application/json" class="w-json">
-                {
-                    "items": [
-                        {
-                            "url": "/static/videos/AI.mp4",
-                            "originalUrl": "/static/videos/AI.mp4",
-                            "width": 940,
-                            "height": 528,
-                            "thumbnailUrl": "images/HeaderAI.webp",
-                            "html": "<video width='940' height='528' controls><source src='/static/videos/AI.mp4' type='video/mp4'>Your browser does not support the video tag.</video>",
-                            "type": "video"
-                        }
-                    ],
-                    "group": ""
-                }
-            </script>
-        </a>
-      -->
-
-
-
-<section class="uui-section_layout31" style="height: 350px;">
-  <div class="uui-page-padding">
-    <div class="uui-container-large">
-      <div class="uui-padding-vertical-xhuge">
-        <div class="w-layout-grid uui-layout31_component">
-          <div class="uui-layout31_content-left">
-            <div class="text-3xl leading-relaxed uui-heading-subheading ">우리의 서비스</div>
-            <h2 class="text-4xl leading-relaxed uui-heading-medium">당신을 위한 AI 기업금융 전문가,</h2>
-            <h2 class="text-5xl leading-snug uui-heading-medium">Spoon</h2>
-          </div>
-          <div class="uui-layout31_content-right">
-            <div class="text-2xl text-black uui-text-size-large">✔️ 최적의 기업금융 결정을 위한 스마트 도우미 플랫폼</div>
-            <div class="w-layout-grid uui-layout31_item-list">
-              <div class="uui-layout31_text-wrapper">
-                <div class="text-2xl text-black uui-layout31_number-text">조회가능 업체</div>
-                <div class="leading-relaxed uui-layout31_number">106,450</div>
-              </div>
-              <div class="uui-layout31_text-wrapper">
-                <div class="text-2xl text-black uui-layout31_number-text">신용평가 모델적합도</div>
-                <div class="leading-relaxed uui-layout31_number">85.9%</div>
+            <div class="uui-layout31_content-right">
+              <div class="text-2xl text-black uui-text-size-large">✔️ 최적의 기업금융 결정을 위한 스마트 도우미 플랫폼</div>
+              <div class="w-layout-grid uui-layout31_item-list">
+                <div class="uui-layout31_text-wrapper">
+                  <div class="text-2xl text-black uui-layout31_number-text">조회가능 업체</div>
+                  <div class="leading-relaxed uui-layout31_number">106,450</div>
+                </div>
+                <div class="uui-layout31_text-wrapper">
+                  <div class="text-2xl text-black uui-layout31_number-text">신용평가 모델적합도</div>
+                  <div class="leading-relaxed uui-layout31_number">85.9%</div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-
       </div>
     </div>
-  </div>
-</section>
+  </section>
+</div>
 
 <section class="uui-section_layout08">
-  <div class="uui-page-padding" style="height: 600px;">
+  <div class="uui-page-padding">
     <div class="uui-container-large">
       <div class="uui-padding-vertical-xhuge">
         <div class="w-layout-grid uui-layout08_component">
@@ -296,32 +324,36 @@
             </div>
             <div class="uui-button-row is-reverse-mobile-landscape">
               <div class="uui-button-wrapper max-width-full-mobile-landscape">
-                <a href="/baro_companyList/" class="uui-button-secondary-gray w-inline-block" onclick="checkLogin(event)">
+                <a href="/baro_companyList/" class="uui-button-secondary-gray w-inline-block"
+                  onclick="checkLogin(event)">
                   <div>바로가기</div>
                 </a>
               </div>
             </div>
           </div>
-          <div class="uui-layout08_image-wrapper"><img src="images/contents11.png" loading="lazy" width="1440"
-              sizes="(max-width: 767px) 93vw, (max-width: 991px) 94vw, (max-width: 1919px) 44vw, 680"
-              alt="Dashboard mockup"
-              srcset="images/contents11.png 500w, images/contents11.png 800w, images/contents11.png 1080w, images/dcontents11.png 1600w, images/contents11.png 2880w"
-              class="uui-layout08_image"></div>
+          <div class="hidden-below-850">
+            <div class="uui-layout08_image-wrapper"><img src="images/contents11.png" loading="lazy" width="1440"
+                sizes="(max-width: 850px) 50vw, (max-width: 1919px) 44vw, 680" alt="Dashboard mockup"
+                srcset="images/contents11.png 500w, images/contents11.png 800w, images/contents11.png 1080w, images/dcontents11.png 1600w, images/contents11.png 2880w"
+                class="uui-layout08_image"></div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </section>
 <section class="uui-section_layout56">
-  <div class="uui-page-padding" style="height: 600px;">
+  <div class="uui-page-padding">
     <div class="uui-container-large">
       <div class="uui-padding-vertical-xhuge">
         <div class="w-layout-grid uui-layout56_component">
-          <div class="uui-layout56_image-wrapper"><img src="images/contents222.png" loading="lazy" width="1440"
-              sizes="(max-width: 767px) 93vw, (max-width: 991px) 94vw, (max-width: 1919px) 44vw, 607.9971313476562px"
-              alt="Dashboard mockup"
-              srcset="images/contents222.png 500w, images/contents222.png 800w, images/contents222.png 1080w, images/contents222.png 1600w, images/contents222.png 2880w"
-              class="uui-layout56_image"></div>
+          <div class="hidden-below-850">
+            <div class="uui-layout56_image-wrapper"><img src="images/contents222.png" loading="lazy" width="1440"
+                sizes="(max-width: 767px) 93vw, (max-width: 991px) 94vw, (max-width: 1919px) 44vw, 607.9971313476562px"
+                alt="Dashboard mockup"
+                srcset="images/contents222.png 500w, images/contents222.png 800w, images/contents222.png 1080w, images/contents222.png 1600w, images/contents222.png 2880w"
+                class="uui-layout56_image"></div>
+          </div>
           <div id="w-node-_7bb775aa-2c2d-e51b-fa09-51b0e7dda26f-e7360896" class="uui-layout56_content">
             <div class="uui-heading-subheading">주요 기능 2 </div>
             <h2 class="uui-heading-medium">AI 심사보고서<br></h2>
@@ -380,7 +412,8 @@
             </div>
             <div class="uui-button-row is-reverse-mobile-landscape">
               <div class="uui-button-wrapper max-width-full-mobile-landscape">
-                <a href="/credit/creditReview/" class="uui-button-secondary-gray w-inline-block" onclick="checkLogin(event)">
+                <a href="/credit/creditReview/" class="uui-button-secondary-gray w-inline-block"
+                  onclick="checkLogin(event)">
                   <div>바로가기</div>
                 </a>
               </div>
@@ -392,7 +425,7 @@
   </div>
 </section>
 <section class="uui-section_layout08">
-  <div class="uui-page-padding" style="height: 600px;">
+  <div class="uui-page-padding">
     <div class="uui-container-large">
       <div class="uui-padding-vertical-xhuge">
         <div class="w-layout-grid uui-layout08_component">
@@ -451,21 +484,24 @@
                 </div>
               </div>
             </div>
-            <!--
-            <div class="uui-button-row is-reverse-mobile-landscape">
-              <div class="uui-button-wrapper max-width-full-mobile-landscape">
-                <a href="/marketing/globalList/" class="uui-button-secondary-gray w-inline-block">
-                  <div>바로가기</div>
-                </a>
+
+            <div class="hidden show-below-850">
+              <div class="uui-button-row is-reverse-mobile-landscape">
+                <div class="uui-button-wrapper max-width-full-mobile-landscape">
+                  <a href="/credit/creditReview/" class="uui-button-secondary-gray w-inline-block">
+                    <div>바로가기</div>
+                  </a>
+                </div>
               </div>
             </div>
-            -->
           </div>
-          <div class="uui-layout08_image-wrapper"><img src="images/contents3.png" loading="lazy" width="1440"
-              sizes="(max-width: 767px) 93vw, (max-width: 991px) 94vw, (max-width: 1919px) 44vw, 608.0113525390625px"
-              alt="Dashboard mockup"
-              srcset="images/contents3.png 500w, images/contents3.png 800w, images/contents3.png 1080w, images/contents3.png 1600w, images/contents3.png 2880w"
-              class="uui-layout08_image"></div>
+          <div class="hidden-below-850">
+            <div class="uui-layout08_image-wrapper"><img src="images/contents3.png" loading="lazy" width="1440"
+                sizes="(max-width: 767px) 93vw, (max-width: 991px) 94vw, (max-width: 1919px) 44vw, 608.0113525390625px"
+                alt="Dashboard mockup"
+                srcset="images/contents3.png 500w, images/contents3.png 800w, images/contents3.png 1080w, images/contents3.png 1600w, images/contents3.png 2880w"
+                class="uui-layout08_image"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -478,11 +514,13 @@
     <div class="uui-container-large">
       <div class="uui-padding-vertical-xhuge">
         <div class="w-layout-grid uui-layout56_component">
-          <div class="uui-layout56_image-wrapper"><img src="images/contents4.png" loading="lazy" width="1440"
-              sizes="(max-width: 767px) 93vw, (max-width: 991px) 94vw, (max-width: 1919px) 44vw, 607.9971313476562px"
-              alt="Dashboard mockup"
-              srcset="images/contents4.png 500w, images/contents4.png 800w, images/contents4.png 1080w, images/contents4.png 1600w, images/contents4.png 2880w"
-              class="uui-layout56_image"></div>
+          <div class="hidden-below-850">
+            <div class="uui-layout56_image-wrapper"><img src="images/contents4.png" loading="lazy" width="1440"
+                sizes="(max-width: 767px) 93vw, (max-width: 991px) 94vw, (max-width: 1919px) 44vw, 607.9971313476562px"
+                alt="Dashboard mockup"
+                srcset="images/contents4.png 500w, images/contents4.png 800w, images/contents4.png 1080w, images/contents4.png 1600w, images/contents4.png 2880w"
+                class="uui-layout56_image"></div>
+          </div>
           <div id="w-node-_10099206-b163-8837-d204-6a3ebcf232dc-e7360896" class="uui-layout56_content">
             <div class="uui-heading-subheading">주요 기능 4</div>
             <h2 class="uui-heading-medium">섭외등록<br></h2>
@@ -550,60 +588,62 @@
 
         <br><br><br><br><br><br><br><br>
 
-        <section class="uui-section_team01">
-          <div class="uui-page-padding-2">
-            <div class="uui-container-large-2">
-              <div class="uui-padding-vertical-xhuge-2">
-                <div class="uui-text-align-center-2">
-                  <div class="uui-max-width-large-2 align-center">
-                    <h2 class="uui-heading-medium-2">Team Spoon</h2>
-                    <div class="uui-space-xsmall-2"></div>
-                    <div class="uui-text-size-large-2">우리의 철학: 어려운 기업금융 심사, 저희 Spoon 서비스를 통해 더 나은 평가를 경험해보세요.</div>
+
+        <div class="hidden-below-850">
+          <section class="uui-section_team01">
+            <div class="uui-page-padding-2">
+              <div class="uui-container-large-2">
+                <div class="uui-padding-vertical-xhuge-2">
+                  <div class="uui-text-align-center-2">
+                    <div class="uui-max-width-large-2 align-center">
+                      <h2 class="uui-heading-medium-2">Team Spoon</h2>
+                      <div class="uui-space-xsmall-2"></div>
+                      <div class="uui-text-size-large-2">우리의 철학: 어려운 기업금융 심사, 저희 Spoon 서비스를 통해 더 나은 평가를 경험해보세요.</div>
+                    </div>
                   </div>
-                </div>
-                <div class="uui-team01_component">
-                  <div class="uui-team01_list-wrapper">
-                    <div class="w-layout-grid uui-team01_list">
-                      <div class="uui-team01_item">
-                        <div class="uui-team01_image-wrapper"><img src="images/pokemon1.png" loading="lazy" alt=""
-                            class="uui-team01_image" style="margin: 0 auto;"></div>
-                        <div class="uui-heading-tiny">한일섭</div>
-                        <div class="uui-text-size-medium text-color-primary700">CEO</div>
-                        <div class="uui-space-xxsmall"></div>
-                        <div class="uui-text-size-medium">머신러닝 총괄</div>
-                      </div>
-                      <div class="uui-team01_item">
-                        <div class="uui-team01_image-wrapper"><img src="images/pokemon2.png" loading="lazy" alt=""
-                            class="uui-team01_image" style="margin: 0 auto;"></div>
-                        <div class="uui-heading-tiny">김건</div>
-                        <div class="uui-text-size-medium text-color-primary700">AI Manager</div>
-                        <div class="uui-space-xxsmall"></div>
-                        <div class="uui-text-size-medium">AI 기술 총괄</div>
-                      </div>
-                      <div class="uui-team01_item">
-                        <div class="uui-team01_image-wrapper"><img src="images/pokemon3.png" loading="lazy" alt=""
-                            class="uui-team01_image" style="margin: 0 auto;"></div>
-                        <div class="uui-heading-tiny">신정</div>
-                        <div class="uui-text-size-medium text-color-primary700">BackEnd Manager</div>
-                        <div class="uui-space-xxsmall"></div>
-                        <div class="uui-text-size-medium">백엔드 및 바로등급 총괄</div>
-                      </div>
-                      <div class="uui-team01_item">
-                        <div class="uui-team01_image-wrapper"><img src="images/pokemon4.png" loading="lazy" alt=""
-                            class="uui-team01_image" style="margin: 0 auto;"></div>
-                        <div class="uui-heading-tiny">김철민</div>
-                        <div class="uui-text-size-medium text-color-primary700">FrontEnd Manager</div>
-                        <div class="uui-space-xxsmall"></div>
-                        <div class="uui-text-size-medium">프론트엔드 및 섭외등록 총괄</div>
+                  <div class="uui-team01_component">
+                    <div class="uui-team01_list-wrapper">
+                      <div class="w-layout-grid uui-team01_list">
+                        <div class="uui-team01_item">
+                          <div class="uui-team01_image-wrapper"><img src="images/pokemon1.png" loading="lazy" alt=""
+                              class="uui-team01_image" style="margin: 0 auto;"></div>
+                          <div class="uui-heading-tiny">한일섭</div>
+                          <div class="uui-text-size-medium text-color-primary700">CEO</div>
+                          <div class="uui-space-xxsmall"></div>
+                          <div class="uui-text-size-medium">머신러닝 총괄</div>
+                        </div>
+                        <div class="uui-team01_item">
+                          <div class="uui-team01_image-wrapper"><img src="images/pokemon2.png" loading="lazy" alt=""
+                              class="uui-team01_image" style="margin: 0 auto;"></div>
+                          <div class="uui-heading-tiny">김건</div>
+                          <div class="uui-text-size-medium text-color-primary700">AI Manager</div>
+                          <div class="uui-space-xxsmall"></div>
+                          <div class="uui-text-size-medium">AI 기술 총괄</div>
+                        </div>
+                        <div class="uui-team01_item">
+                          <div class="uui-team01_image-wrapper"><img src="images/pokemon3.png" loading="lazy" alt=""
+                              class="uui-team01_image" style="margin: 0 auto;"></div>
+                          <div class="uui-heading-tiny">신정</div>
+                          <div class="uui-text-size-medium text-color-primary700">BackEnd Manager</div>
+                          <div class="uui-space-xxsmall"></div>
+                          <div class="uui-text-size-medium">백엔드 및 바로등급 총괄</div>
+                        </div>
+                        <div class="uui-team01_item">
+                          <div class="uui-team01_image-wrapper"><img src="images/pokemon4.png" loading="lazy" alt=""
+                              class="uui-team01_image" style="margin: 0 auto;"></div>
+                          <div class="uui-heading-tiny">김철민</div>
+                          <div class="uui-text-size-medium text-color-primary700">FrontEnd Manager</div>
+                          <div class="uui-space-xxsmall"></div>
+                          <div class="uui-text-size-medium">프론트엔드 및 섭외등록 총괄</div>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
-
+          </section>
+        </div>
       </div>
     </div>
   </div>
@@ -620,30 +660,30 @@
 
 {% include 'footer.html' %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('login_success') === 'true') {
-            Toastify({
-                text: "로그인에 성공했습니다",
-                duration: 3000,
-                close: true,
-                gravity: "bottom", // `top` or `bottom`
-                position: "right", // `left`, `center` or `right`
-                backgroundColor: "#9333EA",
-            }).showToast();
-        }
-    });
-    // URL 파라미터 확인
-    var urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('logout_success') === 'true') {
-        Toastify({
-            text: "로그아웃 되었습니다.",
-            duration: 3000,
-            gravity: "bottom",
-            position: "right",
-            backgroundColor: "#9333EA",
-        }).showToast();
+  document.addEventListener('DOMContentLoaded', function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('login_success') === 'true') {
+      Toastify({
+        text: "로그인에 성공했습니다",
+        duration: 3000,
+        close: true,
+        gravity: "bottom", // `top` or `bottom`
+        position: "right", // `left`, `center` or `right`
+        backgroundColor: "#9333EA",
+      }).showToast();
     }
+  });
+  // URL 파라미터 확인
+  var urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('logout_success') === 'true') {
+    Toastify({
+      text: "로그아웃 되었습니다.",
+      duration: 3000,
+      gravity: "bottom",
+      position: "right",
+      backgroundColor: "#9333EA",
+    }).showToast();
+  }
 </script>
 </body>
 

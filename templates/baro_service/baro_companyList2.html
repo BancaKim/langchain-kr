@@ -48,146 +48,199 @@
             transform: rotate(360deg);
         }
     }
+
+    @media (max-width: 850px) {
+        .background-section {
+            height: 30vh;
+            /* Reduce height on smaller screens */
+        }
+
+        .search-type {
+            width: 100%;
+            /* Full width on smaller screens */
+            margin-bottom: 1rem;
+            /* Space below */
+        }
+
+        .search-input {
+            width: calc(100% - 3rem);
+            /* Adjust width to account for button */
+            margin-right: 1rem;
+            /* Space to the right of input field */
+        }
+
+        .search-button {
+            width: 2.5rem;
+            /* Adjust button width */
+            height: 2.5rem;
+            /* Adjust button height */
+        }
+    }
+
+
+    @media (max-width: 850px) {
+        .hidden-below-850 {
+            display: none;
+            height: 0px;
+        }
+
+        .show-below-850 {
+            display: block;
+        }
+        .height40 {
+            height: 40vh;
+        }
+
+    }
 </style>
 {% endblock %}
 
 {% block content %}
+    <div class="w-full"
+        style=" background-image: url('static/images/home4.png'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 40vh;">
 
-<div class="w-full"
-    style="background-image: url('static/images/home4.png'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 50vh;">
+        <div class="w-full p-8 mx-auto max-w-screen height40">
+            <span class="block mb-2 text-xl text-left">
+                <a href="/" class="mr-2 text-white">홈 &nbsp; |</a>
+                <a href="/baro_companyList" class="ml-2 text-white">바로등급</a>
+            </span>
+            <br>
+            <div class="hidden-below-850">
+                <br><br>
+            </div>
 
-    <div class="w-full max-w-screen-xl p-8 mx-auto">
-        <span class="block mb-2 text-xl text-left">
-            <a href="/" class="mr-2 text-white">홈 &nbsp; |</a>
-            <a href="/baro_companyList" class="ml-2 text-white">바로등급</a>
-        </span>
-        <br><br><br>
+            <div class="mb-4 text-center">
+                <h1 class="text-3xl font-bold text-white lg:text-5xl">ML 기반 바로등급 서비스</h1>
+            </div>
+            <br>
+            <div class="hidden-below-850">
+                <br><br>
+            </div>
 
-        <div class="mb-4 text-center">
-            <h1 class="text-5xl font-bold text-white">ML 기반 바로등급 서비스</h1>
-        </div>
-        <br><br><br>
-
-        <!-- 검색란 -->
-        <div class="w-full max-w-4xl mx-auto">
-            <div class="relative flex">
-                <!-- 검색 타입 선택 -->
-                <div class="relative w-48">
-                    <select id="search_type"
-                        class="block w-full py-2.5 px-4 text-base font-medium text-gray-900 bg-gray-50 border-gray-300 rounded-s-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600">
-                        <option value="company_name">회사명</option>
-                        <option value="company_code">법인번호</option>
-                    </select>
-                </div>
-                <!-- 검색 입력 필드 -->
-                <div class="relative w-full">
-                    <input type="search" id="company_name" name="company_name"
-                        class="block p-2.5 w-full text-base text-gray-900 bg-gray-50 rounded-e-lg border-s-gray-50 border-s-2 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-s-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
-                        placeholder="정보를 입력하세요..." required />
-                    <!-- 자동완성 결과 표시 -->
-                    <div id="autocomplete-results"
-                        class="absolute left-0 z-10 hidden w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg top-full">
-                        <!-- JavaScript로 동적으로 결과 항목을 추가합니다. -->
+            <!-- 검색란 -->
+            <div class="w-full max-w-4xl mx-auto">
+                <div class="relative flex">
+                    <!-- 검색 타입 선택 -->
+                    <div class="relative w-48">
+                        <select id="search_type"
+                            class="block w-full py-2.5 px-4 text-base font-medium text-gray-900 bg-gray-50 border-gray-300 rounded-s-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600">
+                            <option value="company_name">회사명</option>
+                            <option value="company_code">법인번호</option>
+                        </select>
                     </div>
+                    <!-- 검색 입력 필드 -->
+                    <div class="relative w-full">
+                        <input type="search" id="company_name" name="company_name"
+                            class="block p-2.5 w-full text-base text-gray-900 bg-gray-50 rounded-e-lg border-s-gray-50 border-s-2 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-s-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
+                            placeholder="정보를 입력하세요..." required />
+                        <!-- 자동완성 결과 표시 -->
+                        <div id="autocomplete-results"
+                            class="absolute left-0 z-10 hidden w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg top-full">
+                            <!-- JavaScript로 동적으로 결과 항목을 추가합니다. -->
+                        </div>
+                    </div>
+                    <!-- 검색 버튼 -->
+                    <button type="submit" id="search_button"
+                        class="absolute top-0 end-0 p-2.5 text-sm font-medium h-full text-white bg-purple-700 rounded-e-lg border border-blue-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 20 20">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                        </svg>
+                    </button>
                 </div>
-                <!-- 검색 버튼 -->
-                <button type="submit" id="search_button"
-                    class="absolute top-0 end-0 p-2.5 text-sm font-medium h-full text-white bg-purple-700 rounded-e-lg border border-blue-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                        viewBox="0 0 20 20">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
-                    </svg>
-                </button>
+            </div>
+            <br><br>
+            <div class="hidden-below-850">
+                <br>
             </div>
         </div>
-
-        <br><br><br>
     </div>
 </div>
 
+
 <br><br><br>
 
-<div class="flex justify-center">
-    <!-- 너비를 줄이기 위해 max-w-screen-lg를 사용 -->
-    <div class="container p-6 mx-auto ">
+<div class="hidden-below-850">
+    <div class="flex justify-center">
+        <!-- 너비를 줄이기 위해 max-w-screen-lg를 사용 -->
+        <div class="container p-6 mx-auto ">
 
-        <section class="favorite-container">
-            <h1 class="mb-4 text-3xl font-bold text-gray-800">관심 업체 목록</h1>
-            <div id="favorites-list">
-                <!-- 이곳에 즐겨찾기 업체 목록이 동적으로 추가됩니다. -->
-            </div>
-        </section>
+            <section class="favorite-container">
+                <h1 class="mb-4 text-3xl font-bold text-gray-800">관심 업체 목록</h1>
+                <div id="favorites-list">
+                    <!-- 이곳에 즐겨찾기 업체 목록이 동적으로 추가됩니다. -->
+                </div>
+            </section>
 
-        <script>
-            async function loadFavorites() {
-                try {
-                    const response = await fetch(`/api/favorites`);
-                    if (!response.ok) {
-                        throw new Error(`Failed to fetch: ${response.statusText}`);
+            <script>
+                async function loadFavorites() {
+                    try {
+                        const response = await fetch(`/api/favorites`);
+                        if (!response.ok) {
+                            throw new Error(`Failed to fetch: ${response.statusText}`);
+                        }
+                        const companies = await response.json();
+                        displayFavorites(companies);
+                    } catch (error) {
+                        console.error('Failed to load favorites:', error);
+                        displayFavorites([]);
                     }
-                    const companies = await response.json();
-                    displayFavorites(companies);
-                } catch (error) {
-                    console.error('Failed to load favorites:', error);
-                    displayFavorites([]);
                 }
-            }
 
-            function displayFavorites(companies) {
-                const container = document.getElementById('favorites-list');
+                function displayFavorites(companies) {
+                    const container = document.getElementById('favorites-list');
 
-                const tableHeader = `
+                    const tableHeader = `
                     <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
                         <thead class="text-base text-gray-600 uppercase bg-gray-100">
                             <tr class="text-center">
                                 <th class="px-6 py-3 border-b">법인명</th>
-                                <th class="px-6 py-3 border-b">대표자명</th>
-                                <th class="px-6 py-3 border-b whitespace-nowrap">상장구분</th>
-                                <th class="px-6 py-3 border-b">법인번호</th>
-                                <th class="px-6 py-3 border-b">총자산</th>
-                                <th class="px-6 py-3 border-b">자기자본</th>
-                                <th class="px-6 py-3 border-b">매출</th>
-                                <th class="px-6 py-3 border-b">순이익</th>
-                                <th class="px-6 py-3 border-b">바로등급</th>
-                                <th class="px-6 py-3 border-b">업체등록</th>
+                                <th class="px-6 py-3 border-b hidden-on-large">대표자명</th>
+                                <th class="px-6 py-3 border-b hidden-on-large whitespace-nowrap">상장구분</th>
+                                <th class="px-6 py-3 border-b hidden-on-large">법인번호</th>
+                                <th class="px-6 py-3 border-b hidden-on-large">총자산</th>
+                                <th class="px-6 py-3 border-b hidden-on-large">자기자본</th>
+                                <th class="px-6 py-3 border-b hidden-on-large">매출</th>
+                                <th class="px-6 py-3 border-b hidden-on-large">순이익</th>
+                                <th class="px-6 py-3 border-b hidden-on-small">바로등급</th>
+                                <th class="px-6 py-3 border-b hidden-on-small">섭외등록</th>
                             </tr>
                         </thead>
                         <tbody class="text-base text-center text-gray-700">
                 `;
 
-                const tableFooter = `
+                    const tableFooter = `
                         </tbody>
                     </table>
                 `;
 
-                if (companies.length === 0) {
-                    const emptyRow = `
+                    if (companies.length === 0) {
+                        const emptyRow = `
                         <tr>
                             <td class="px-6 py-4 border-b whitespace-nowrap" colspan="10">관심 업체가 없습니다.</td>
                         </tr>
                     `;
-                    container.innerHTML = tableHeader + emptyRow + tableFooter;
-                    return;
-                }
+                        container.innerHTML = tableHeader + emptyRow + tableFooter;
+                        return;
+                    }
 
-                const rows = companies.map(company => `
+                    const rows = companies.map(company => `
                     <tr>
                         <td class="px-6 py-4 border-b whitespace-nowrap">${company.corp_name}</td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">${company.ceo_nm}</td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">
+                        <td class="px-6 py-4 border-b hidden-on-large whitespace-nowrap">${company.ceo_nm}</td>
+                        <td class="px-6 py-4 border-b hidden-on-large whitespace-nowrap">
                             ${getCorpClsDisplay(company.corp_cls)}
                         </td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">${company.jurir_no}</td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">${formatNumber(Math.floor(company.totalAsset2023 ))} 억원</td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">${formatNumber(Math.floor(company.capital2023 ))} 억원</td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">${formatNumber(Math.floor(company.revenue2023 ))} 억원</td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">${formatNumber(Math.floor(company.netIncome2023))} 억원</td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">
+                        <td class="px-6 py-4 border-b hidden-on-large whitespace-nowrap">${company.jurir_no}</td>
+                        <td class="px-6 py-4 border-b hidden-on-large whitespace-nowrap">${formatNumber(Math.floor(company.totalAsset2023))} 억원</td>
+                        <td class="px-6 py-4 border-b hidden-on-large whitespace-nowrap">${formatNumber(Math.floor(company.capital2023))} 억원</td>
+                        <td class="px-6 py-4 border-b hidden-on-large whitespace-nowrap">${formatNumber(Math.floor(company.revenue2023))} 억원</td>
+                        <td class="px-6 py-4 border-b hidden-on-large whitespace-nowrap">${formatNumber(Math.floor(company.netIncome2023))} 억원</td>
+                        <td class="px-6 py-4 border-b hidden-on-small whitespace-nowrap">
                             <a href="/baro_companyInfo?jurir_no=${company.jurir_no}" class="text-purple-500 hover:underline">확인</a>
                         </td>
-
-                        <td class="px-6 py-4 border-b whitespace-nowrap">
+                        <td class="px-6 py-4 border-b hidden-on-small whitespace-nowrap">
                             <form method="GET" action="/contact5">
                                 <input type="hidden" name="jurir_no" value="${company.jurir_no}">
                                 <button type="submit" class="text-purple-500 hover:underline">등록</button>
@@ -196,92 +249,239 @@
                     </tr>
                 `).join('');
 
-                container.innerHTML = tableHeader + rows + tableFooter;
-            }
-
-            function getCorpClsDisplay(corpCls) {
-                switch (corpCls) {
-                    case 'Y': return '유가 (Y)';
-                    case 'K': return '코스닥 (K)';
-                    case 'N': return '코넥스 (N)';
-                    case 'E': return '기타 (E)';
-                    default: return corpCls;
+                    container.innerHTML = tableHeader + rows + tableFooter;
                 }
-            }
 
-            function formatNumber(num) {
-                return num.toLocaleString();  // Add commas to number
-            }
+                function getCorpClsDisplay(corpCls) {
+                    switch (corpCls) {
+                        case 'Y': return '유가 (Y)';
+                        case 'K': return '코스닥 (K)';
+                        case 'N': return '코넥스 (N)';
+                        case 'E': return '기타 (E)';
+                        default: return corpCls;
+                    }
+                }
 
-            // 페이지 로드 시 즐겨찾기 목록 불러오기
-            document.addEventListener('DOMContentLoaded', loadFavorites);
-        </script>
-        <br><br>
+                function formatNumber(num) {
+                    return num.toLocaleString();  // Add commas to number
+                }
 
-
-        <section>
-            <h1 class="mb-4 text-3xl font-bold text-gray-800">최근 조회 목록</h1>
-
-            {% if recent_views_companies %}
-            <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
-                <thead class="text-base text-gray-600 uppercase bg-gray-100">
-                    <tr class="text-center">
-                        <th class="px-6 py-3 border-b">법인명</th>
-                        <th class="px-6 py-3 border-b">대표자명</th>
-                        <th class="px-6 py-3 border-b whitespace-nowrap">상장구분</th>
-                        <th class="px-6 py-3 border-b">법인번호</th>
-                        <th class="px-6 py-3 border-b">총자산</th>
-                        <th class="px-6 py-3 border-b">자기자본</th>
-                        <th class="px-6 py-3 border-b">매출</th>
-                        <th class="px-6 py-3 border-b">순이익</th>
-                        <th class="px-6 py-3 border-b">바로등급</th>
-                        <th class="px-6 py-3 border-b">업체등록</th>
-                    </tr>
-                </thead>
-                <tbody class="text-base text-center text-gray-700">
-                    {% for company in recent_views_companies %}
-                    <tr>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.corp_name }}</td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.ceo_nm }}</td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">
-                            {% if company.corp_cls == 'Y' %}
-                            유가 (Y)
-                            {% elif company.corp_cls == 'K' %}
-                            코스닥 (K)
-                            {% elif company.corp_cls == 'N' %}
-                            코넥스 (N)
-                            {% elif company.corp_cls == 'E' %}
-                            기타 (E)
-                            {% else %}
-                            {{ company.corp_cls }}
-                            {% endif %}
-                        </td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.jurir_no }}</td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ '{:,}'.format(company.totalAsset2023 or 0) }} 억원</td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ '{:,}'.format(company.capital2023 or 0) }} 억원</td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ '{:,}'.format(company.revenue2023 or 0) }} 억원</td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">{{ '{:,}'.format(company.netIncome2023 or 0) }} 억원</td>
-                        </td>
-                        <td class="px-6 py-4 border-b whitespace-nowrap">
-                            <a href="/baro_companyInfo?jurir_no={{company.jurir_no}}" class="text-purple-500 hover:underline">확인</a>
-                        </td>
-
-                        <td class="px-6 py-4 border-b whitespace-nowrap">
-                            <form method="GET" action="/contact5">
-                                <input type="hidden" name="jurir_no" value="{{company.jurir_no}}">
-                                <button type="submit" class="text-purple-500 hover:underline">등록</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-            <p class="text-gray-600">최근 조회한 업체가 없습니다.</p>
-            {% endif %}
-        </section>
+                // 페이지 로드 시 즐겨찾기 목록 불러오기
+                document.addEventListener('DOMContentLoaded', loadFavorites);
+            </script>
+            <br><br>
 
 
+            <section>
+                <h1 class="mb-4 text-3xl font-bold text-gray-800">최근 조회 목록</h1>
+
+                {% if recent_views_companies %}
+                <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
+                    <thead class="text-base text-gray-600 uppercase bg-gray-100">
+                        <tr class="text-center">
+                            <th class="px-6 py-3 border-b">법인명</th>
+                            <th class="px-6 py-3 border-b">대표자명</th>
+                            <th class="px-6 py-3 border-b whitespace-nowrap">상장구분</th>
+                            <th class="px-6 py-3 border-b">법인번호</th>
+                            <th class="px-6 py-3 border-b">총자산</th>
+                            <th class="px-6 py-3 border-b">자기자본</th>
+                            <th class="px-6 py-3 border-b">매출</th>
+                            <th class="px-6 py-3 border-b">순이익</th>
+                            <th class="px-6 py-3 border-b">바로등급</th>
+                            <th class="px-6 py-3 border-b">섭외등록</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-base text-center text-gray-700">
+                        {% for company in recent_views_companies %}
+                        <tr>
+                            <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.corp_name }}</td>
+                            <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.ceo_nm }}</td>
+                            <td class="px-6 py-4 border-b whitespace-nowrap">
+                                {% if company.corp_cls == 'Y' %}
+                                유가 (Y)
+                                {% elif company.corp_cls == 'K' %}
+                                코스닥 (K)
+                                {% elif company.corp_cls == 'N' %}
+                                코넥스 (N)
+                                {% elif company.corp_cls == 'E' %}
+                                기타 (E)
+                                {% else %}
+                                {{ company.corp_cls }}
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.jurir_no }}</td>
+                            <td class="px-6 py-4 border-b whitespace-nowrap">{{ '{:,}'.format(company.totalAsset2023 or
+                                0)
+                                }} 억원</td>
+                            <td class="px-6 py-4 border-b whitespace-nowrap">{{ '{:,}'.format(company.capital2023 or 0)
+                                }}
+                                억원</td>
+                            <td class="px-6 py-4 border-b whitespace-nowrap">{{ '{:,}'.format(company.revenue2023 or 0)
+                                }}
+                                억원</td>
+                            <td class="px-6 py-4 border-b whitespace-nowrap">{{ '{:,}'.format(company.netIncome2023 or
+                                0) }}
+                                억원</td>
+                            </td>
+                            <td class="px-6 py-4 border-b whitespace-nowrap">
+                                <a href="/baro_companyInfo?jurir_no={{company.jurir_no}}"
+                                    class="text-purple-500 hover:underline">확인</a>
+                            </td>
+
+                            <td class="px-6 py-4 border-b whitespace-nowrap">
+                                <form method="GET" action="/contact5">
+                                    <input type="hidden" name="jurir_no" value="{{company.jurir_no}}">
+                                    <button type="submit" class="text-purple-500 hover:underline">등록</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-gray-600">최근 조회한 업체가 없습니다.</p>
+                {% endif %}
+            </section>
+
+
+        </div>
+    </div>
+</div>
+
+
+<div class="hidden show-below-850">
+    <div class="flex justify-center">
+        <!-- 너비를 줄이기 위해 max-w-screen-lg를 사용 -->
+        <div class="container p-6 mx-auto ">
+
+            <section class="favorite-container">
+                <h1 class="mb-4 text-3xl font-bold text-gray-800">관심 업체 목록</h1>
+                <div id="favorites-list2">
+                    <!-- 이곳에 즐겨찾기 업체 목록이 동적으로 추가됩니다. -->
+                </div>
+            </section>
+
+            <script>
+                async function loadFavorites2() {
+                    try {
+                        const response = await fetch(`/api/favorites`);
+                        if (!response.ok) {
+                            throw new Error(`Failed to fetch: ${response.statusText}`);
+                        }
+                        const companies = await response.json();
+                        displayFavorites2(companies);
+                    } catch (error) {
+                        console.error('Failed to load favorites:', error);
+                        displayFavorites2([]);
+                    }
+                }
+
+                function displayFavorites2(companies) {
+                    const container = document.getElementById('favorites-list2');
+
+                    const tableHeader = `
+                        <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
+                            <thead class="text-base text-gray-600 uppercase bg-gray-100">
+                                <tr class="text-center">
+                                    <th class="px-6 py-3 border-b">법인명</th>
+                                    <th class="px-6 py-3 border-b hidden-on-small">바로등급</th>
+                                    <th class="px-6 py-3 border-b hidden-on-small">섭외등록</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-base text-center text-gray-700">
+                    `;
+
+                    const tableFooter = `
+                            </tbody>
+                        </table>
+                    `;
+
+                    if (companies.length === 0) {
+                        const emptyRow = `
+                            <tr>
+                                <td class="px-6 py-4 border-b whitespace-nowrap" colspan="10">관심 업체가 없습니다.</td>
+                            </tr>
+                        `;
+                        container.innerHTML = tableHeader + emptyRow + tableFooter;
+                        return;
+                    }
+
+                    const rows = companies.map(company => `
+                            <tr>
+                                <td class="px-6 py-4 border-b whitespace-nowrap">${company.corp_name}</td>
+                                <td class="px-6 py-4 border-b hidden-on-small whitespace-nowrap">
+                                    <a href="/baro_companyInfo?jurir_no=${company.jurir_no}" class="text-purple-500 hover:underline">확인</a>
+                                </td>
+                                <td class="px-6 py-4 border-b hidden-on-small whitespace-nowrap">
+                                    <form method="GET" action="/contact5">
+                                        <input type="hidden" name="jurir_no" value="${company.jurir_no}">
+                                        <button type="submit" class="text-purple-500 hover:underline">등록</button>
+                                    </form>
+                                </td>
+                            </tr>
+                    `).join('');
+
+                    container.innerHTML = tableHeader + rows + tableFooter;
+                }
+
+                function getCorpClsDisplay(corpCls) {
+                    switch (corpCls) {
+                        case 'Y': return '유가 (Y)';
+                        case 'K': return '코스닥 (K)';
+                        case 'N': return '코넥스 (N)';
+                        case 'E': return '기타 (E)';
+                        default: return corpCls;
+                    }
+                }
+
+                function formatNumber(num) {
+                    return num.toLocaleString();  // Add commas to number
+                }
+
+                // 페이지 로드 시 즐겨찾기 목록 불러오기
+                document.addEventListener('DOMContentLoaded', loadFavorites2);
+            </script>
+            <br><br>
+
+
+            <section>
+                <h1 class="mb-4 text-3xl font-bold text-gray-800">최근 조회 목록</h1>
+
+                {% if recent_views_companies %}
+                <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
+                    <thead class="text-base text-gray-600 uppercase bg-gray-100">
+                        <tr class="text-center">
+                            <th class="px-6 py-3 border-b">법인명</th>
+                            <th class="px-6 py-3 border-b">바로등급</th>
+                            <th class="px-6 py-3 border-b">섭외등록</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-base text-center text-gray-700">
+                        {% for company in recent_views_companies %}
+                        <tr>
+                            <td class="px-6 py-4 border-b whitespace-nowrap">{{ company.corp_name }}</td>
+                            <td class="px-6 py-4 border-b whitespace-nowrap">
+                                <a href="/baro_companyInfo?jurir_no={{company.jurir_no}}"
+                                    class="text-purple-500 hover:underline">확인</a>
+                            </td>
+
+                            <td class="px-6 py-4 border-b whitespace-nowrap">
+                                <form method="GET" action="/contact5">
+                                    <input type="hidden" name="jurir_no" value="{{company.jurir_no}}">
+                                    <button type="submit" class="text-purple-500 hover:underline">등록</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-gray-600">최근 조회한 업체가 없습니다.</p>
+                {% endif %}
+            </section>
+
+
+        </div>
     </div>
 </div>
 

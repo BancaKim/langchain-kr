@@ -1,6 +1,7 @@
 {% include 'header.html' %}
 
 {% block head %}
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -55,18 +56,18 @@
         word-break: break-word;
     }
 
-
     .equal-height {
         display: flex;
         flex-wrap: wrap;
     }
 
+    /*
     .equal-height>div {
         flex: 1;
         display: flex;
         flex-direction: column;
     }
-
+*/
     .container {
         max-width: 80%;
     }
@@ -76,6 +77,7 @@
     }
 
 
+    /* 채팅창 스타일 */
     /* 채팅창 스타일 */
     .chat-container {
         display: flex;
@@ -115,6 +117,8 @@
         display: flex;
         padding: 10px;
         border-top: 1px solid #ccc;
+        flex-wrap: wrap;
+        gap: 10px;
     }
 
     #userInput {
@@ -122,16 +126,51 @@
         padding: 10px;
         border: 1px solid #ccc;
         border-radius: 5px;
+        min-width: 0;
+        /* 이 설정으로 인해 Flexbox에서 줄어들어야 할 때 정상적으로 작동합니다. */
     }
 
     #sendButton {
-        margin-left: 10px;
         padding: 10px 20px;
         background-color: #7F56D9;
         color: white;
         border: none;
         border-radius: 5px;
         cursor: pointer;
+        flex-shrink: 0;
+        /* 버튼이 줄어들지 않도록 고정 크기를 유지합니다. */
+    }
+
+    @media (max-width: 850px) {
+        .hide-on-small {
+            display: none;
+        }
+
+        .height30 {
+            height: 25vh;
+        }
+
+        .hidden-below-850 {
+            display: none;
+        }
+
+        .show-below-850 {
+            display: block;
+        }
+
+        .container {
+            max-width: 100%;
+        }
+
+        .chat-input {
+            flex-direction: column;
+        }
+    
+        #sendButton {
+            width: 100%;
+            padding: 10px;
+            margin-left: 0;
+        }
     }
 </style>
 <meta charset="UTF-8">
@@ -146,31 +185,36 @@
 {% block content %}
 <div class="w-full"
     style="background-image: url('/static/images/home7.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 40vh;">
-    <div class="p-8 w-full max-w-screen-xl mx-auto">
+    <div class="w-full max-w-screen-xl p-8 mx-auto height30">
 
-        <span class="block text-left text-xl mb-2">
+        <span class="block mb-2 text-xl text-left ">
             <a href="/" class="mr-2 text-white ">홈 &nbsp; |</a>
             <a href="/credit/creditReview" class="ml-2 text-white">AI심사보고서 &nbsp; |</a>
             <span class="text-white"> &nbsp; 종합의견</span>
         </span>
-        <br><br><br><br>
-
-
-        <div class="text-center mb-4">
-            <h1 class="text-5xl font-bold text-white">심사보고서 종합 의견</h1>
-            <h2></h2>
+        <br><br>
+        <div class="hidden-below-850">
+            <br>
         </div>
-        <br><br><br>
+
+        <div class="mb-4 text-center">
+            <h1 class="text-3xl font-bold text-white lg:text-5xl">심사보고서 종합 의견</h1>
+        </div>
+        <br>
+        <div class="hidden-below-850">
+            <br><br>
+        </div>
     </div>
 </div>
 <br>
 
-<div class="container mx-auto my-8 px-6">
+<div class="container px-6 mx-auto my-8">
 
-    <div class="flex items-center mb-5 justify-between">
+    <div class="flex items-center justify-between mb-5">
         <h2 class="text-4xl font-bold">{{ company_info.corp_name }}</h2>
 
-        <div class="text-xl p-0">업체의 자세한 정보가 궁금하다면?
+
+        <div class="p-0 text-xl hide-on-small">업체의 자세한 정보가 궁금하다면?
             <a href="/baro_companyInfo?jurir_no={{ company_info.jurir_no }}"
                 class="px-2 py-2 text-purple-700 hover:underline">
                 바로등급
@@ -178,73 +222,79 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 equal-height">
+    <div class="show-below-850">
+        <br>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3 equal-height">
         <!-- 기업정보 영역 -->
-        <div class="col-span-1 flex flex-col space-y-6">
-            <div class="flex-1 bg-white rounded-lg shadow-lg">
-                <div class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg">
-                    <h2 class="text-xl font-semibold text-gray-800">기본 정보</h2>
-                </div>
-                <div class="p-6">
-                    {% if company_info %}
-                    <br>
-                    <ul class="list-disc pl-5 space-y-2">
-                        <li>
-                            <p class="text-lg font-semibold mb-4">기업명: {{ company_info.corp_name }}</p>
-                        </li>
-                        <li>
-                            <p class="text-lg font-semibold mb-4">대표: {{ company_info.ceo_nm }}</p>
-                        </li>
-                        <li>
-                            <p class="text-lg font-semibold mb-4">법인구분:
-                                {% if company_info.corp_cls == 'Y' %}
-                                유가 (Y)
-                                {% elif company_info.corp_cls == 'K' %}
-                                코스닥 (K)
-                                {% elif company_info.corp_cls == 'N' %}
-                                코넥스 (N)
-                                {% elif company_info.corp_cls == 'E' %}
-                                기타 (E)
-                                {% else %}
-                                {{ company_info.corp_cls }}
-                                {% endif %}</p>
-                        </li>
-                        <li>
-                            <p class="text-lg font-semibold mb-4">주소: {{ company_info.adres }}</p>
-                        </li>
-                        <li>
-                            <p class="text-lg font-semibold mb-4">홈페이지: {{ company_info.hm_url }}</p>
-                        </li>
-                        <li>
-                            <p class="text-lg font-semibold mb-4">H.P: {{ company_info.phn_no }}</p>
-                        </li>
-                        <li>
-                            <p class="text-lg font-semibold mb-4">Fax: {{ company_info.fax_no }}</p>
-                        </li>
-                        <li>
-                            <p class="text-lg font-semibold mb-4">산업코드: {{ company_info.induty_code }}</p>
-                        </li>
-                        <li>
-                            <p class="text-lg font-semibold mb-4">법인번호: {{ company_info.jurir_no }}</p>
-                        </li>
-                        <li>
-                            <p class="text-lg font-semibold mb-4">설립일: {{ company_info.est_dt }}</p>
-                        </li>
-                        <li>
-                            <p class="text-lg font-semibold">최근 섭외내역</p>
-                            <div class="flex-grow p-6 overflow-y-auto sticky-notes-container">
-                                {% if posts %}
+        <div class="space-y-6 lg:block lg:col-span-1 hidden-below-850">
+            <div class="flex flex-col space-y-6">
+                <div class="flex-1 bg-white rounded-lg shadow-lg">
+                    <div class="p-3 bg-gray-100 border-b border-gray-300 rounded-t-lg">
+                        <h2 class="text-xl font-semibold text-gray-800">기본 정보</h2>
+                    </div>
+                    <div class="p-6">
+                        {% if company_info %}
+                        <br>
+                        <ul class="pl-5 space-y-2 list-disc">
+                            <li>
+                                <p class="mb-4 text-lg font-semibold">기업명: {{ company_info.corp_name }}</p>
+                            </li>
+                            <li>
+                                <p class="mb-4 text-lg font-semibold">대표: {{ company_info.ceo_nm }}</p>
+                            </li>
+                            <li>
+                                <p class="mb-4 text-lg font-semibold">법인구분:
+                                    {% if company_info.corp_cls == 'Y' %}
+                                    유가 (Y)
+                                    {% elif company_info.corp_cls == 'K' %}
+                                    코스닥 (K)
+                                    {% elif company_info.corp_cls == 'N' %}
+                                    코넥스 (N)
+                                    {% elif company_info.corp_cls == 'E' %}
+                                    기타 (E)
+                                    {% else %}
+                                    {{ company_info.corp_cls }}
+                                    {% endif %}</p>
+                            </li>
+                            <li>
+                                <p class="mb-4 text-lg font-semibold">주소: {{ company_info.adres }}</p>
+                            </li>
+                            <li>
+                                <p class="mb-4 text-lg font-semibold">홈페이지: {{ company_info.hm_url }}</p>
+                            </li>
+                            <li>
+                                <p class="mb-4 text-lg font-semibold">H.P: {{ company_info.phn_no }}</p>
+                            </li>
+                            <li>
+                                <p class="mb-4 text-lg font-semibold">Fax: {{ company_info.fax_no }}</p>
+                            </li>
+                            <li>
+                                <p class="mb-4 text-lg font-semibold">산업코드: {{ company_info.induty_code }}</p>
+                            </li>
+                            <li>
+                                <p class="mb-4 text-lg font-semibold">법인번호: {{ company_info.jurir_no }}</p>
+                            </li>
+                            <li>
+                                <p class="mb-4 text-lg font-semibold">설립일: {{ company_info.est_dt }}</p>
+                            </li>
+                            <li>
+                                <p class="text-lg font-semibold">최근 섭외내역</p>
+                                <div class="flex-grow p-6 overflow-y-auto sticky-notes-container">
+                                    {% if posts %}
                                     {% for post in posts %}
-                                    <div class="sticky-note-row flex space-x-4">
-                                        <div class="sticky-note flex-1 bg-purple-50 p-4 rounded-lg shadow-md relative mb-4">
+                                    <div class="flex space-x-4 sticky-note-row">
+                                        <div
+                                            class="relative flex-1 p-4 mb-4 rounded-lg shadow-md sticky-note bg-purple-50">
                                             <p class="sticky-note-content">{{ post.content }}</p>
                                             <br><br>
-                                            <div class="sticky-note-info absolute bottom-4 left-4 text-sm">
+                                            <div class="absolute text-sm sticky-note-info bottom-4 left-4">
                                                 <span>섭외유형: {{ post.contact_type }}</span><br>
                                                 <span>섭외방법: {{ post.contact_method }}</span>
                                             </div>
 
-                                            <div class="sticky-note-info absolute bottom-4 right-4 text-sm text-right">
+                                            <div class="absolute text-sm text-right sticky-note-info bottom-4 right-4">
                                                 <span>{{ post.username }}</span><br>
                                                 <span>{{ post.created_at.strftime('%Y-%m-%d') }}</span>
                                             </div>
@@ -253,38 +303,41 @@
                                     </div>
                                     {% endfor %}
                                     <br>
-                                {% else %}
+                                    {% else %}
                                     <p class="text-gray-600">등록된 섭외 내역이 없습니다.</p>
-                                {% endif %}
-                            </div>
-                        </li>
+                                    {% endif %}
+                                </div>
+                            </li>
 
-                    </ul>
-                    {% else %}
-                    <p class="text-gray-600">해당 기업은 금융감독원(Dart API)에서 정보를 제공받을 수 없습니다.</p>
-                    {% endif %}
+                        </ul>
+                        {% else %}
+                        <p class="text-gray-600">해당 기업은 금융감독원(Dart API)에서 정보를 제공받을 수 없습니다.</p>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
 
 
-
-        <div id="streamContent" class="col-span-2 flex flex-col">
+        <div id="streamContent" class="flex flex-col col-span-1 lg:col-span-2 lg:col-start-2">
             <!-- 스트리밍된 콘텐츠가 이곳에 삽입됩니다 -->
         </div>
     </div>
 
+
+
+
     <br>
     <!-- 챗봇 시작-->
     <div class="flex-1 bg-white rounded-lg shadow-lg">
-        <div class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg">
-            <h2 class="text-xl text-center font-semibold text-gray-800">AI 챗봇</h2>
+        <div class="p-3 bg-gray-100 border-b border-gray-300 rounded-t-lg">
+            <h2 class="text-xl font-semibold text-center text-gray-800">AI 챗봇</h2>
         </div>
         <div class="chat-container">
             <div id="chatMessages" class="chat-messages">
                 <div class="chat-message bot">
                     안녕하세요!<br>
-                    AI 기업금융 전문가Spoon 입니다.<br>
+                    AI 기업금융 전문가 Spoon 입니다.<br>
                     {{company_info.corp_name}}에 대해 궁금한 점이 있으신가요?
                 </div>
             </div>
@@ -358,15 +411,6 @@
         });
     });
 </script>
-<style>
-    .container {
-        max-width: 80%;
-    }
-
-    .min-h-600 {
-        min-height: 600px;
-    }
-</style>
 
 <br><br><br><br><br><br><br><br>
 

@@ -187,7 +187,7 @@ def get_sample_jurir_no(db: Session) -> List[str]:
 
 
 def get_FS2023(db: Session, jurir_no: str):
-    # Retrieve the data from the database
+    # Retrieve the data from the database2
     # print("get_FS2023 started")
     fs_data = db.query(FS2023).filter(FS2023.jurir_no == jurir_no).first()
 
