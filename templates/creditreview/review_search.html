@@ -17,6 +17,16 @@
     .responsive-table th {
       font-size: 0.75rem; /* This corresponds to Tailwind's text-xs */
         }
+    .height40 {
+        height: 40vh;
+    }
+    .hidden-below-850 {
+        display: none;
+        height: 0px;
+    }
+    .show-below-850 {
+        display: block;
+    }    
     }
 </style>
 {% endblock %}
@@ -24,20 +34,24 @@
 {% block content %}
 
 
-<div class="w-full" style="background-image: url('/static/images/home7.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 50vh;">
-    <div class="w-full max-w-screen-xl p-8 mx-auto" >
+<div class="w-full" style="background-image: url('/static/images/home7.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 40vh;">
+    <div class="w-full max-w-screen-xl p-8 mx-auto height40" >
 
-        <span class="block mb-2 text-xl text-left">
+        <span class="block mb-2 text-xl text-left ">
             <a href="/" class="mr-2 text-white ">홈  &nbsp; |</a> 
             <a href="/credit/creditReview" class="ml-2 text-white">AI심사보고서</a>
         </span>
-        <br><br><br>
-
-
-        <div class="mb-4 text-center">
-            <h1 class="text-5xl font-bold text-white">AI 기반 기업여신 심사 보고서</h1>
+        <br>
+        <div class="hidden-below-850">
+            <br><br>
         </div>
-        <br><br><br>
+        <div class="mb-4 text-center">
+            <h1 class="text-3xl font-bold text-white lg:text-5xl">AI 기반 기업여신 심사 보고서</h1>
+        </div>
+        <br>
+        <div class="hidden-below-850">
+            <br><br>
+        </div>
 
 
         <!-- 검색란 -->
@@ -73,15 +87,19 @@
                 </button>
             </div>
         </div>
-
-        <br><br><br>
+        <br><br>
+        <div class="hidden-below-850">
+            <br>
+        </div>
     </div>
 </div>
 
-
-<br><br><br>
+<br><br>
+<div class="hidden-below-850">
+    <br>
+</div>
 <div class="flex justify-center ">
-    <table class="responsive-table text-base text-left text-gray-800 w-1600 rtl:text-right dark:text-gray-600" id="company_table">
+    <table class="text-base text-left text-gray-800 responsive-table w-1600 rtl:text-right dark:text-gray-600" id="company_table">
     <!-- <table class="w-full responsive-table"> -->
         <thead
             class="text-gray-800 uppercase shadow-md sm:rounded-lg text-s bg-gray-50 dark:bg-gray-700 dark:text-gray-600">
