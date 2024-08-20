@@ -1,5 +1,9 @@
 {% include 'header.html' %}
 {% block head %}
+
+<link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/font.css">
 <link rel="stylesheet" href="/static/css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
@@ -10,6 +14,7 @@
         flex-direction: column;
         align-items: center;
     }
+
     .chat-box {
         max-width: 800px;
         width: 100%;
@@ -19,6 +24,7 @@
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         margin: 1rem;
     }
+
     .chat-log {
         height: 400px;
         overflow-y: scroll;
@@ -27,6 +33,7 @@
         padding: 1rem;
         margin-bottom: 1rem;
     }
+
     .message {
         max-width: 70%;
         padding: 10px;
@@ -34,27 +41,34 @@
         border-radius: 10px;
         clear: both;
     }
+
     .message-content {
         padding: 5px 10px;
         border-radius: 10px;
         display: inline-block;
     }
+
     .message.self {
         float: right;
     }
+
     .message.self .message-content {
         background-color: #DCF8C6;
     }
+
     .message.other {
         float: left;
     }
+
     .message.other .message-content {
         background-color: #E5E5EA;
     }
+
     .chat-input {
         display: flex;
         width: 100%;
     }
+
     .chat-input input {
         flex-grow: 1;
         padding: 0.75rem;
@@ -62,17 +76,19 @@
         border-radius: 5px 0 0 5px;
         box-sizing: border-box;
     }
+
     .chat-input button {
         padding: 0.75rem 1.5rem;
         border: none;
         border-radius: 0 5px 5px 0;
-        background-color: #555;
+        background-color: #7E22CE;
         color: white;
         font-size: 1rem;
         font-weight: 600;
         cursor: pointer;
         box-sizing: border-box;
     }
+
     .chat-input button:hover {
         background-color: #ced4da;
     }
@@ -85,7 +101,10 @@
     Swal.fire({
         title: '로그인이 필요합니다.',
         icon: 'warning',
-        confirmButtonText: '확인'
+        confirmButtonText: '확인',
+        customClass: {
+            confirmButton: 'bg-purple-600 text-white font-bold py-2 px-4 rounded hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-blue-300'
+        }
     }).then((result) => {
         if (result.isConfirmed) {
             window.location.href = "/login";
@@ -93,15 +112,35 @@
     });
 </script>
 {% else %}
+
+<div class="w-full"
+    style="background-image: url('/static/images/home8.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 40vh;">
+    <div class="w-full max-w-screen-xl p-8 mx-auto">
+        <span class="block mb-2 text-xl text-left">
+            <a href="/" class="mr-2 text-white">홈 &nbsp; |</a>
+            <a href="/contact55" class="ml-2 text-white">섭외등록 &nbsp; |</a>
+            <span class="text-white"> &nbsp; 채팅기능</span>
+        </span>
+        <br><br><br>
+
+
+        <div class="mb-4 text-center">
+            <h1 class="text-6xl font-bold text-white">단체 대화방</h1>
+        </div>
+        <br><br><br>
+    </div>
+</div>
+
 <div class="chat-container">
-    <h1>섭외등록 채팅</h1>
+    
     <div class="chat-box">
         <div class="chat-log" id="chat-log">
             <!-- Chat messages will appear here -->
         </div>
         <div class="chat-input">
             <input type="text" id="chat-input" placeholder="메시지를 입력하세요..." autofocus>
-            <button onclick="sendMessage()">보내기</button>
+            <button onclick="sendMessage()"
+            >보내기</button>
         </div>
     </div>
 </div>
@@ -146,6 +185,9 @@
             inputPlaceholder: '비밀번호',
             showCancelButton: false,
             confirmButtonText: '확인',
+            customClass: {
+                confirmButton: 'bg-purple-600 text-white font-bold py-2 px-4 rounded hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-blue-300'
+            },
             inputValidator: async (value) => {
                 if (!value) {
                     return '비밀번호를 입력하세요!';
@@ -168,18 +210,21 @@
     function initWebSocket() {
         console.log('Initializing WebSocket');
         ws = new WebSocket(`ws://${location.host}/ws/chat/${username}`);
-        
-        ws.onopen = function(event) {
+
+        ws.onopen = function (event) {
             console.log('WebSocket connection opened');
             Swal.fire({
                 title: '연결 성공!',
                 text: '채팅방에 입장했습니다.',
                 icon: 'success',
-                confirmButtonText: '확인'
+                confirmButtonText: '확인',
+                customClass: {
+                    confirmButton: 'bg-purple-600 text-white font-bold py-2 px-4 rounded hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-blue-300'
+                }
             });
         };
-    
-        ws.onmessage = function(event) {
+
+        ws.onmessage = function (event) {
             console.log('Received message:', event.data);
             try {
                 const messageData = JSON.parse(event.data);
@@ -188,47 +233,53 @@
                 console.error('Error parsing message:', error);
             }
         };
-    
-        ws.onerror = function(event) {
+
+        ws.onerror = function (event) {
             console.error('WebSocket error:', event);
             Swal.fire({
                 title: '오류 발생',
                 text: 'WebSocket 연결 중 오류가 발생했습니다.',
                 icon: 'error',
-                confirmButtonText: '확인'
+                confirmButtonText: '확인',
+                customClass: {
+                    confirmButton: 'bg-purple-600 text-white font-bold py-2 px-4 rounded hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-blue-300'
+                }
             });
         };
-    
-        ws.onclose = function(event) {
+
+        ws.onclose = function (event) {
             console.log('WebSocket connection closed:', event);
             Swal.fire({
                 title: '연결 종료',
                 text: '채팅방 연결이 종료되었습니다.',
                 icon: 'info',
-                confirmButtonText: '확인'
+                confirmButtonText: '확인',
+                customClass: {
+                    confirmButton: 'bg-purple-600 text-white font-bold py-2 px-4 rounded hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-blue-300'
+                }
             });
         };
     }
-    
+
     function displayMessage(sender, content, type) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${sender === username ? 'self' : 'other'}`;
-        
+
         const contentSpan = document.createElement('span');
         contentSpan.className = 'message-content';
-        
+
         if (type === 'whisper') {
             contentSpan.textContent = `귓속말 ${sender}: ${content}`;
             contentSpan.style.fontStyle = 'italic';
         } else {
             contentSpan.textContent = `${sender}: ${content}`;
         }
-        
+
         messageDiv.appendChild(contentSpan);
         chatLog.appendChild(messageDiv);
         chatLog.scrollTop = chatLog.scrollHeight;
     }
-    
+
     function sendMessage() {
         const message = chatInput.value.trim();
         if (message && ws && ws.readyState === WebSocket.OPEN) {
@@ -253,18 +304,21 @@
                 title: '메시지 전송 실패',
                 text: '채팅방에 연결되어 있지 않습니다.',
                 icon: 'error',
-                confirmButtonText: '확인'
+                confirmButtonText: '확인',
+                customClass: {
+                    confirmButton: 'bg-purple-600 text-white font-bold py-2 px-4 rounded hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-blue-300'
+                }
             });
         }
     }
 
-    chatInput.addEventListener('keypress', function(event) {
+    chatInput.addEventListener('keypress', function (event) {
         if (event.key === 'Enter') {
             sendMessage();
         }
     });
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         console.log('DOM content loaded, showing password modal');
         showPasswordModal();
     });
