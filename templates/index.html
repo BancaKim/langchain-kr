@@ -35,13 +35,11 @@
         <a href="/contact55" class="text-lg uui-navbar08_link w-nav-link" onclick="checkLogin(event)">섭외등록</a>
         <a href="/notices" class="text-lg uui-navbar08_link w-nav-link" onclick="checkLogin(event)">공지사항</a>
 
-        <div class="hidden-below-850">
           {% if username == 'admin' %}
 
-          <a href="/modelControl" class="text-lg uui-navbar08_link w-nav-link">신용등급 모델 관리</a>
+          <a href="/modelControl" class="text-lg uui-navbar08_link w-nav-link hidden-below-850">신용등급 모델 관리</a>
 
           {% endif %}
-        </div>
       </div>
 
       <div class="uui-navbar08_menu-right">
