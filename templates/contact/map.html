@@ -1,8 +1,15 @@
 {% include 'header.html' %}
 
 {% block head %}
-<script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_map_api_key }}&libraries=services"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/font.css">
 <link rel="stylesheet" href="/static/css/style.css">
+<script type="text/javascript"
+    src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_map_api_key }}&libraries=services"></script>
+
 <style>
     .map-container {
         display: flex;
@@ -10,28 +17,35 @@
         align-items: center;
         margin-top: 20px;
     }
+
     #map {
         width: 75%;
         height: 500px;
     }
+
     .page-title {
         text-align: center;
         margin-bottom: 20px;
     }
+
     .page-title h3 {
         font-weight: bold;
     }
+
     .custom-search-window {
         display: flex;
         justify-content: center;
         margin: 20px 0;
     }
+
     .custom-search-window .custom-search-wrap {
         position: relative;
         display: flex;
         width: 80%;
-        max-width: 800px; /* 너비를 더 넓게 설정 */
+        max-width: 800px;
+        /* 너비를 더 넓게 설정 */
     }
+
     .custom-search-window .custom-search-wrap input {
         height: 50px;
         flex-grow: 1;
@@ -40,11 +54,13 @@
         border: 1px solid #ccc;
         box-sizing: border-box;
     }
+
     .custom-search-window .custom-search-wrap input:focus {
         border-color: #333;
         outline: 0;
         border-width: 1px;
     }
+
     .custom-search-window .custom-search-wrap .btn {
         height: 50px;
         padding: 0 20px;
@@ -58,49 +74,84 @@
 {% endblock %}
 
 {% block content %}
-<section class="notice">
-    <div class="page-title">
+<div class="w-full"
+    style="background-image: url('/static/images/home8.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 50vh;">
+    <div class="w-full max-w-screen-xl p-8 mx-auto">
+        <span class="block mb-2 text-xl text-left">
+            <a href="/" class="mr-2 text-white">홈 &nbsp; |</a>
+            <a href="/contact55" class="ml-2 text-white">섭외등록 &nbsp; |</a>
+            <span class="text-white"> &nbsp; 지도조회</span>
+        </span>
+        <br><br><br>
+
+        <div class="mb-4 text-center">
+            <h1 class="text-5xl font-bold text-white">키워드/주소 기업지도 검색</h1>
+        </div>
+        <br><br><br>
+
+        <!-- 검색란 -->
+        <div class="w-full max-w-4xl mx-auto">
+            <form id="searchForm">
+                <div class="relative flex">
+                    <!-- 검색 입력 필드 -->
+                    <div class="relative w-full">
+                        <input type="search" id="searchInput" name="searchInput"
+                            class="block p-2.5 w-full text-base text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
+                            placeholder="궁금하신 기업의 키워드/주소를 입력하세요..." required />
+                    </div>
+                    <!-- 검색 버튼 -->
+                    <button type="submit" id="search_button"
+                        class="absolute top-0 end-0 p-2.5 text-sm font-medium h-full text-white bg-purple-700 rounded-lg border border-blue-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 20 20">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+
+        <br><br><br>
+    </div>
+</div>
+
+
+    <!-- <div class="page-title">
         <div class="container">
             <h3>키워드 및 주소 지도 검색</h3>
         </div>
-    </div>
+    </div> -->
 
-    <div class="custom-search-window">
-        <form id="searchForm">
-            <div class="custom-search-wrap">
-                <input type="text" id="searchInput" placeholder="키워드/주소를 입력하세요" required>
-                <button type="submit" class="btn btn-dark">검색</button>
-            </div>
-        </form>
-    </div>
-
+<br><br>
     <div class="map-container">
         <div id="map"></div>
     </div>
-</section>
+
 
 <script>
     // 카카오 맵 초기화
-    var mapContainer = document.getElementById('map'); 
-    var mapOption = { 
+    var mapContainer = document.getElementById('map');
+    var mapOption = {
         center: new kakao.maps.LatLng(37.520877, 126.927907), // 초기 중심 좌표
         level: 3 // 초기 확대 수준
     };
-    var map = new kakao.maps.Map(mapContainer, mapOption); 
+    var map = new kakao.maps.Map(mapContainer, mapOption);
 
     // 장소 검색 객체를 생성
-    var ps = new kakao.maps.services.Places(); 
+    var ps = new kakao.maps.services.Places();
     // 주소-좌표 변환 객체를 생성
-    var geocoder = new kakao.maps.services.Geocoder(); 
+    var geocoder = new kakao.maps.services.Geocoder();
 
     // 검색 완료 시 호출되는 콜백 함수 (키워드)
     function placesSearchCB(data, status, pagination) {
         if (status === kakao.maps.services.Status.OK) {
             var bounds = new kakao.maps.LatLngBounds();
             for (var i = 0; i < data.length; i++) {
-                displayMarker(data[i]);    
+                displayMarker(data[i]);
                 bounds.extend(new kakao.maps.LatLng(data[i].y, data[i].x));
-            }       
+            }
             map.setBounds(bounds);
         } else {
             alert('검색 결과가 없습니다.');
@@ -112,9 +163,9 @@
         if (status === kakao.maps.services.Status.OK) {
             var bounds = new kakao.maps.LatLngBounds();
             for (var i = 0; i < data.length; i++) {
-                displayMarker(data[i]);    
+                displayMarker(data[i]);
                 bounds.extend(new kakao.maps.LatLng(data[i].y, data[i].x));
-            }       
+            }
             map.setBounds(bounds);
         } else {
             alert('검색 결과가 없습니다.');
@@ -125,19 +176,19 @@
     function displayMarker(place) {
         var marker = new kakao.maps.Marker({
             map: map,
-            position: new kakao.maps.LatLng(place.y, place.x) 
+            position: new kakao.maps.LatLng(place.y, place.x)
         });
 
         // 마커에 클릭 이벤트를 등록
-        kakao.maps.event.addListener(marker, 'click', function() {
-            var infowindow = new kakao.maps.InfoWindow({zIndex:1});
+        kakao.maps.event.addListener(marker, 'click', function () {
+            var infowindow = new kakao.maps.InfoWindow({ zIndex: 1 });
             infowindow.setContent('<div style="padding:5px;font-size:12px;">' + (place.place_name || place.address_name) + '</div>');
             infowindow.open(map, marker);
         });
     }
 
     // 폼 제출 시 검색 수행
-    document.getElementById('searchForm').addEventListener('submit', function(event) {
+    document.getElementById('searchForm').addEventListener('submit', function (event) {
         event.preventDefault();
         var query = document.getElementById('searchInput').value;
         if (isAddress(query)) {

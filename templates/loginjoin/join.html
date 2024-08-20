@@ -35,12 +35,12 @@
             <p class="home-description">기업금융을 보다 더 쉽게!</p>
         </div>
         -->
-
-        <div class="home-right-section">
+        
+        <div class="home-right-section p-4 MB">
             <h2 class="text-3xl font-bold text-gray-800 mb-4">Spoon 회원가입</h2>
             <p class="text-lg text-gray-600 mb-8">Spoon 서비스 회원이 되어, 다양한 기능을 이용해보세요.</p>
             <form id="signupForm" onsubmit="submitSignupForm(event)" class="space-y-6">
-                <div class="flex space-x-4">
+                <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
                     <div class="flex-1 space-y-2">
                         <label for="signup_username" class="block text-gray-700 font-medium">ID:</label>
                         <input type="text" id="signup_username" name="username" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -55,8 +55,8 @@
                     <input type="email" id="signup_email" name="email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
 
-                <div class="flex space-x-4">
-                    <div class="w-1/2 space-y-2">
+                <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
+                    <div class="flex-1 space-y-2">
                         <label for="region_group" class="block text-gray-700 font-medium">지역 그룹:</label>
                         <select id="region_group" name="region_group" required onchange="updateRegionHeadquarters()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="">선택하세요</option>
@@ -64,14 +64,14 @@
                             <option value="2">경인지역그룹</option>
                         </select>
                     </div>
-                    <div class="w-1/2 space-y-2">
+                    <div class="flex-1 space-y-2">
                         <label for="region_headquarter" class="block text-gray-700 font-medium">지역 본부:</label>
                         <select id="region_headquarter" name="region_headquarter" required onchange="updateBranches()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="">선택하세요</option>
                         </select>
                     </div>
                 </div>        
-                <div class="flex space-x-4">
+                <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
                     <div class="flex-1 space-y-2">
                         <label for="branch" class="block text-gray-700 font-medium">지점:</label>
                         <select id="branch" name="branch" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -96,7 +96,6 @@
                         </select>
                     </div>
                 </div>
-                <br>
                 <div class="home-buttons">
                     <button type="submit" class="home-button">회원가입</button>
                 </div>

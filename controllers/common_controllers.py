@@ -210,17 +210,17 @@ async def get_branches(region_headquarter_id: int, db: Session = Depends(get_db)
 
 @router.get("/api/positions/{rank_id}")
 async def get_positions(rank_id: str, db: Session = Depends(get_db)):
-    logging.info(f"Fetching positions for rank_id: {rank_id}")
+    # logging.info(f"Fetching positions for rank_id: {rank_id}")
 
     rank = db.query(Rank).filter(Rank.level == rank_id).first()
     if not rank:
         logging.warning(f"Rank not found for rank_id: {rank_id}")
         raise HTTPException(status_code=404, detail="Rank not found")
 
-    logging.info(f"Found rank: {rank.id} - {rank.level}")
+    # logging.info(f"Found rank: {rank.id} - {rank.level}")
 
     positions = rank.positions
-    logging.info(f"Found {len(positions)} positions for rank_id: {rank_id}")
+    # logging.info(f"Found {len(positions)} positions for rank_id: {rank_id}")
 
     return [{"id": p.id, "name": p.name} for p in positions]
 
@@ -409,7 +409,16 @@ async def get_notice_detail(
     )
 
 
+
 # Q&A 시작
+
+class QnaUpdate(BaseModel):
+    title: str
+    content: str
+
+class ReplyUpdate(BaseModel):
+    content: str
+
 # Q&A 목록 조회
 @router.get("/qnas")
 async def list_qnas(request: Request, db: Session = Depends(get_db)):
@@ -485,48 +494,48 @@ async def create_qna(
     return RedirectResponse(url="/qnas", status_code=303)
 
 
-# Q&A 수정 페이지
-@router.get("/qnas/update/{qna_id}")
-async def update_qna_page(request: Request, qna_id: int, db: Session = Depends(get_db)):
-    qna = db.query(Qna).filter(Qna.id == qna_id).first()
-    username = request.session.get("username")
-    if not qna:
-        raise HTTPException(status_code=404, detail="Q&A를 찾을 수 없습니다.")
-    return templates.TemplateResponse(
-        "qna/qna_update.html", {"request": request, "qna": qna, "username": username}
-    )
+# # Q&A 수정 페이지
+# @router.get("/qnas/update/{qna_id}")
+# async def update_qna_page(request: Request, qna_id: int, db: Session = Depends(get_db)):
+#     qna = db.query(Qna).filter(Qna.id == qna_id).first()
+#     username = request.session.get("username")
+#     if not qna:
+#         raise HTTPException(status_code=404, detail="Q&A를 찾을 수 없습니다.")
+#     return templates.TemplateResponse(
+#         "qna/qna_update.html", {"request": request, "qna": qna, "username": username}
+#     )
 
 
-# Q&A 수정
-@router.post("/qnas/update/{qna_id}")
-async def update_qna(
-    request: Request,
-    qna_id: int,
-    title: str = Form(...),
-    content: str = Form(...),
-    username: str = Form(...),
-    db: Session = Depends(get_db),
-):
-    qna = db.query(Qna).filter(Qna.id == qna_id).first()
-    if not qna:
-        raise HTTPException(status_code=404, detail="Q&A를 찾을 수 없습니다.")
-    qna.title = title
-    qna.content = content
-    qna.username = username
-    db.commit()
-    db.refresh(qna)
-    return RedirectResponse(url="/qnas", status_code=303)
+# # Q&A 수정
+# @router.post("/qnas/update/{qna_id}")
+# async def update_qna(
+#     request: Request,
+#     qna_id: int,
+#     title: str = Form(...),
+#     content: str = Form(...),
+#     username: str = Form(...),
+#     db: Session = Depends(get_db),
+# ):
+#     qna = db.query(Qna).filter(Qna.id == qna_id).first()
+#     if not qna:
+#         raise HTTPException(status_code=404, detail="Q&A를 찾을 수 없습니다.")
+#     qna.title = title
+#     qna.content = content
+#     qna.username = username
+#     db.commit()
+#     db.refresh(qna)
+#     return RedirectResponse(url="/qnas", status_code=303)
 
 
-# Q&A 삭제
-@router.post("/qnas/delete/{qna_id}")
-async def delete_qna(request: Request, qna_id: int, db: Session = Depends(get_db)):
-    qna = db.query(Qna).filter(Qna.id == qna_id).first()
-    if not qna:
-        raise HTTPException(status_code=404, detail="Q&A를 찾을 수 없습니다.")
-    db.delete(qna)
-    db.commit()
-    return RedirectResponse(url="/qnas", status_code=303)
+# # Q&A 삭제
+# @router.post("/qnas/delete/{qna_id}")
+# async def delete_qna(request: Request, qna_id: int, db: Session = Depends(get_db)):
+#     qna = db.query(Qna).filter(Qna.id == qna_id).first()
+#     if not qna:
+#         raise HTTPException(status_code=404, detail="Q&A를 찾을 수 없습니다.")
+#     db.delete(qna)
+#     db.commit()
+#     return RedirectResponse(url="/qnas", status_code=303)
 
 
 # Q&A 상세 조회
@@ -542,6 +551,32 @@ async def qna_detail(qna_id: int, request: Request, db: Session = Depends(get_db
         {"request": request, "qna": qna, "replies": replies, "username": username},
     )
 
+@router.post("/qnas/update/{qna_id}")
+async def update_qna(
+    qna_id: int,
+    qna_update: QnaUpdate,
+    db: Session = Depends(get_db)
+):
+    qna = db.query(Qna).filter(Qna.id == qna_id).first()
+    if not qna:
+        raise HTTPException(status_code=404, detail="Q&A를 찾을 수 없습니다.")
+    qna.title = qna_update.title
+    qna.content = qna_update.content
+    db.commit()
+    db.refresh(qna)
+    return JSONResponse(content={"id": qna.id, "title": qna.title, "content": qna.content})
+
+@router.post("/qnas/delete/{qna_id}")
+async def delete_qna(
+    qna_id: int,
+    db: Session = Depends(get_db)
+):
+    qna = db.query(Qna).filter(Qna.id == qna_id).first()
+    if not qna:
+        raise HTTPException(status_code=404, detail="Q&A를 찾을 수 없습니다.")
+    db.delete(qna)
+    db.commit()
+    return {"message": "Q&A가 삭제되었습니다."}
 
 # Q&A 답글 달기
 @router.post("/qnas/{qna_id}/reply")
@@ -563,37 +598,33 @@ async def create_reply(
     db.refresh(new_reply)
     return RedirectResponse(url=f"/qnas/{qna_id}", status_code=303)
 
+# Q&A 답글 수정
+@router.post("/qnas/reply/update/{reply_id}")
+async def update_reply(
+    reply_id: int,
+    reply_update: ReplyUpdate,
+    db: Session = Depends(get_db)
+):
+    reply = db.query(Reply).filter(Reply.id == reply_id).first()
+    if not reply:
+        raise HTTPException(status_code=404, detail="답글을 찾을 수 없습니다.")
+    reply.content = reply_update.content
+    db.commit()
+    db.refresh(reply)
+    return reply
 
-# # 섭외등록 이메일 보내기 페이지
-# @router.get("/contact2")
-# async def read_contact(request: Request):
-#     username = request.session.get("username")
-#     return templates.TemplateResponse(
-#         "contact/contact2.html", {"request": request, "username": username}
-#     )
-
-
-# # 섭외등록 이메일 보내기
-# @router.post("/contact2")
-# async def submit_contact_form(
-#     request: Request,
-#     background_tasks: BackgroundTasks,
-#     name: str = Form(...),
-#     email: str = Form(...),
-#     message: str = Form(...),
-
-#     db: Session = Depends(get_db),
-# ):
-#     send_email(
-#         background_tasks,
-#         "섭외등록 내용이 도착했습니다",
-#         "sjung8009@naver.com",
-#         f"업체(키맨) 이름: {name}\n업체(키맨) 이메일: {email}\n섭외 메모: {message}",
-#     )
-#     return templates.TemplateResponse(
-#         "contact/contact2.html",
-#         {"request": request, "message": "Contact form submitted successfully"},
-#     )
+# Q&A 답글 수정
+@router.post("/qnas/reply/delete/{reply_id}")
+async def delete_reply(
+    reply_id: int,
+    db: Session = Depends(get_db)
+):
+    reply = db.query(Reply).filter(Reply.id == reply_id).first()
+    if not reply:
+        raise HTTPException(status_code=404, detail="답글을 찾을 수 없습니다.")
+    db.delete(reply)
+    db.commit()
+    return {"message": "답글이 삭제되었습니다."}
 
 
 # 섭외등록 시작
@@ -934,7 +965,7 @@ async def get_search_page(request: Request):
         "contact/map2.html",
         {"request": request, "kakao_map_api_key": kakao_map_api_key},
     )
-
+# 주소기반 지도 조회 등
 
 @router.post("/search2", response_class=HTMLResponse)
 async def search_location(request: Request):
@@ -1257,21 +1288,3 @@ async def show_cards(
     cards = db.query(BusinessCard).filter(BusinessCard.corporation_name == corporation_name).all()
     
     return templates.TemplateResponse("contact/card.html", {"request": request, "cards": cards, "username": username, "corporation_name": corporation_name})
-
-
-    cards = (
-        db.query(BusinessCard)
-        .filter(BusinessCard.corporation_name == corporation_name)
-        .all()
-    )
-
-    return templates.TemplateResponse(
-        "contact/card.html",
-        {
-            "request": request,
-            "cards": cards,
-            "username": username,
-            "corporation_name": corporation_name,
-        },
-    )
-
