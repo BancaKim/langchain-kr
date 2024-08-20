@@ -386,7 +386,7 @@
 
     <div class="hidden-below-850">
     <!-- 주가 정보 ---------------------------------------------------------------------------------------------------------------------->
-    <div class="container max-w-screen-xl p-6 mx-auto">
+    <div class="container max-w-screen-xl mx-auto">
         <h2 class="mb-6 text-2xl font-bold lg:text-4xl ">주가 정보</h2>
 
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -485,7 +485,7 @@
     </div>
     <!-- 재무 정보 ---------------------------------------------------------------------------------------------------------------------->
     <div class="hidden-below-850">
-    <div class="container max-w-screen-xl p-6 mx-auto">
+    <div class="container max-w-screen-xl mx-auto">
         <h2 class="mb-4 text-2xl font-bold lg:text-4xl">재무 정보</h2>
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
             <div class="p-6 bg-white rounded-lg shadow-md">
@@ -510,7 +510,7 @@
         </div>
     </div>
 
-    <div class="container max-w-screen-xl p-6 mx-auto">
+    <div class="container max-w-screen-xl mx-auto">
         <div class="p-6 bg-white rounded-lg shadow-md">
             <h3 class="mb-4 text-lg font-semibold lg:text-2xl">매출액·영업이익 현황</h3>
             <!-- 연도별 재무제표 비교 -->
@@ -594,33 +594,34 @@
             }
         }
     </style>
-    <div class="container max-w-screen-xl p-6 mx-auto">
+    <br>
+    <div class="container max-w-screen-xl mx-auto">
         <div class="p-6 bg-white rounded-lg shadow-md">
             <h2 class="mb-4 text-lg font-semibold lg:text-2xl">연도별 재무정보</h2>          
             <table class="w-full text-xs text-left border-collapse lg:text-lg">
                 <thead class="bg-gray-100">
                     <tr>
-                        <th class="px-4 py-2 text-center border-b">항목</th>
-                        <th class="px-4 py-2 text-center border-b hidden-below-850">2020</th>
-                        <th class="px-4 py-2 text-center border-b">2021</th>
-                        <th class="px-4 py-2 text-center border-b">2022</th>
-                        <th class="px-4 py-2 text-center border-b">2023</th>
+                        <th class="px-4 py-2 text-center border-b lg:py-4">항목</th>
+                        <th class="px-4 py-2 text-center border-b hidden-below-850 lg:py-4">2020</th>
+                        <th class="px-4 py-2 text-center border-b lg:py-4">2021</th>
+                        <th class="px-4 py-2 text-center border-b lg:py-4">2022</th>
+                        <th class="px-4 py-2 text-center border-b lg:py-4">2023</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td class="px-4 py-2 text-center border-b">총 매출</td>
-                        <td class="px-4 py-2 text-right border-b hidden-below-850">{{ "{:,}".format(fs2020.revenue2020 // 100000000) }} 억원</td>
-                        <td class="px-4 py-2 text-right border-b">{{ "{:,}".format(fs2021.revenue2021 // 100000000) }} 억원</td>
-                        <td class="px-4 py-2 text-right border-b">{{ "{:,}".format(fs2022.revenue2022 // 100000000) }} 억원</td>
-                        <td class="px-4 py-2 text-right border-b">{{ "{:,}".format(fs2023.revenue2023 // 100000000) }} 억원</td>
+                        <td class="px-4 py-2 text-center border-b lg:px-6">총 매출</td>
+                        <td class="px-4 py-2 text-right border-b hidden-below-850 lg:py-4">{{ "{:,}".format(fs2020.revenue2020 // 100000000) }} 억원</td>
+                        <td class="px-4 py-2 text-right border-b lg:px-6">{{ "{:,}".format(fs2021.revenue2021 // 100000000) }} 억원</td>
+                        <td class="px-4 py-2 text-right border-b lg:px-6">{{ "{:,}".format(fs2022.revenue2022 // 100000000) }} 억원</td>
+                        <td class="px-4 py-2 text-right border-b lg:px-6">{{ "{:,}".format(fs2023.revenue2023 // 100000000) }} 억원</td>
                     </tr>
                     <tr>
-                        <td class="px-4 py-2 text-center border-b">순이익</td>
-                        <td class="px-4 py-2 text-right border-b hidden-below-850">{{ "{:,}".format(fs2020.netIncome2020 // 100000000) }} 억원</td>
-                        <td class="px-4 py-2 text-right border-b">{{ "{:,}".format(fs2021.netIncome2021 // 100000000) }} 억원</td>
-                        <td class="px-4 py-2 text-right border-b">{{ "{:,}".format(fs2022.netIncome2022 // 100000000) }} 억원</td>
-                        <td class="px-4 py-2 text-right border-b">{{ "{:,}".format(fs2023.netIncome2023 // 100000000) }} 억원</td>
+                        <td class="px-4 py-2 text-center border-b lg:py-4">순이익</td>
+                        <td class="px-4 py-2 text-right border-b hidden-below-850 lg:py-4">{{ "{:,}".format(fs2020.netIncome2020 // 100000000) }} 억원</td>
+                        <td class="px-4 py-2 text-right border-b lg:px-6">{{ "{:,}".format(fs2021.netIncome2021 // 100000000) }} 억원</td>
+                        <td class="px-4 py-2 text-right border-b lg:px-6">{{ "{:,}".format(fs2022.netIncome2022 // 100000000) }} 억원</td>
+                        <td class="px-4 py-2 text-right border-b lg:px-6">{{ "{:,}".format(fs2023.netIncome2023 // 100000000) }} 억원</td>
                     </tr>
                     <tr>
                         <td class="px-4 py-2 text-center border-b">총 자산</td>
@@ -853,7 +854,7 @@
     </script>
 </div>
 
-
+<Br><br>
 
 {% endblock %}
 {% include 'footer.html'%}

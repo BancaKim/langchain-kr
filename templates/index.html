@@ -34,11 +34,14 @@
           onclick="checkLogin(event)">AI심사보고서</a>
         <a href="/contact55" class="text-lg uui-navbar08_link w-nav-link" onclick="checkLogin(event)">섭외등록</a>
         <a href="/notices" class="text-lg uui-navbar08_link w-nav-link" onclick="checkLogin(event)">공지사항</a>
-        {% if username == 'admin' %}
 
-        <a href="/modelControl" class="text-lg uui-navbar08_link w-nav-link">신용등급 모델 관리</a>
+        <div class="hidden-below-850">
+          {% if username == 'admin' %}
 
-        {% endif %}
+          <a href="/modelControl" class="text-lg uui-navbar08_link w-nav-link">신용등급 모델 관리</a>
+
+          {% endif %}
+        </div>
       </div>
 
       <div class="uui-navbar08_menu-right">
@@ -133,7 +136,7 @@
     </video>
     <div class="flex items-center justify-center h-full overlay-text">
       <h1 class="w-auto text-xl text-white sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
-      AI 기업금융 전문 플랫폼<br>Spoon
+        AI 기업금융 전문 플랫폼<br>Spoon
       </h1>
     </div>
   </div>
@@ -151,8 +154,10 @@
     .show-below-850 {
       display: block;
     }
+
     .spoonlogo {
-      height: 50px; /* 850px 이하일 때 이미지 크기를 60px로 줄임 */
+      height: 50px;
+      /* 850px 이하일 때 이미지 크기를 60px로 줄임 */
       width: auto;
     }
   }
@@ -483,13 +488,13 @@
             <div class="hidden show-below-850">
               <div class="uui-button-row is-reverse-mobile-landscape">
                 <div class="uui-button-wrapper max-width-full-mobile-landscape">
-                  <a href="/marketing/globalList/" class="uui-button-secondary-gray w-inline-block">
+                  <a href="/credit/creditReview/" class="uui-button-secondary-gray w-inline-block">
                     <div>바로가기</div>
                   </a>
                 </div>
               </div>
             </div>
-            </div>          
+          </div>
           <div class="hidden-below-850">
             <div class="uui-layout08_image-wrapper"><img src="images/contents3.png" loading="lazy" width="1440"
                 sizes="(max-width: 767px) 93vw, (max-width: 991px) 94vw, (max-width: 1919px) 44vw, 608.0113525390625px"
