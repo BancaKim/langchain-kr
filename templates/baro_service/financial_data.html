@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Financial Data</title>
+</head>
+<body>
+    <h1>Financial Data</h1>
+    {% for result in results %}
+        <h2>{{ result.company_name }} ({{ result.corp_code }})</h2>
+        <p>Jurir No: {{ result.jurir_no }}</p>
+        <p>Processing Time: {{ result.elapsed_time }}</p>
+
+        <h3>2023 Financial Data</h3>
+        <table border="1">
+            <tr>
+                <th>Total Asset</th>
+                <th>Total Debt</th>
+                <th>Total Equity</th>
+                <th>Capital</th>
+                <th>Revenue</th>
+                <th>Operating Income</th>
+                <th>Earning Before Tax</th>
+                <th>Net Income</th>
+            </tr>
+            <tr>
+                <td>{{ result.FS2023.totalAsset2023 }}</td>
+                <td>{{ result.FS2023.totalDebt2023 }}</td>
+                <td>{{ result.FS2023.totalEquity2023 }}</td>
+                <td>{{ result.FS2023.capital2023 }}</td>
+                <td>{{ result.FS2023.revenue2023 }}</td>
+                <td>{{ result.FS2023.operatingIncome2023 }}</td>
+                <td>{{ result.FS2023.earningBeforeTax2023 }}</td>
+                <td>{{ result.FS2023.netIncome2023 }}</td>
+            </tr>
+        </table>
+
+        <h3>2022 Financial Data</h3>
+        <table border="1">
+            <tr>
+                <th>Total Asset</th>
+                <th>Total Debt</th>
+                <th>Total Equity</th>
+                <th>Capital</th>
+                <th>Revenue</th>
+                <th>Operating Income</th>
+                <th>Earning Before Tax</th>
+                <th>Net Income</th>
+            </tr>
+            <tr>
+                <td>{{ result.FS2022.totalAsset2022 }}</td>
+                <td>{{ result.FS2022.totalDebt2022 }}</td>
+                <td>{{ result.FS2022.totalEquity2022 }}</td>
+                <td>{{ result.FS2022.capital2022 }}</td>
+                <td>{{ result.FS2022.revenue2022 }}</td>
+                <td>{{ result.FS2022.operatingIncome2022 }}</td>
+                <td>{{ result.FS2022.earningBeforeTax2022 }}</td>
+                <td>{{ result.FS2022.netIncome2022 }}</td>
+            </tr>
+        </table>
+
+        <h3>2021 Financial Data</h3>
+        <table border="1">
+            <tr>
+                <th>Total Asset</th>
+                <th>Total Debt</th>
+                <th>Total Equity</th>
+                <th>Capital</th>
+                <th>Revenue</th>
+                <th>Operating Income</th>
+                <th>Earning Before Tax</th>
+                <th>Net Income</th>
+            </tr>
+            <tr>
+                <td>{{ result.FS2021.totalAsset2021 }}</td>
+                <td>{{ result.FS2021.totalDebt2021 }}</td>
+                <td>{{ result.FS2021.totalEquity2021 }}</td>
+                <td>{{ result.FS2021.capital2021 }}</td>
+                <td>{{ result.FS2021.revenue2021 }}</td>
+                <td>{{ result.FS2021.operatingIncome2021 }}</td>
+                <td>{{ result.FS2021.earningBeforeTax2021 }}</td>
+                <td>{{ result.FS2021.netIncome2021 }}</td>
+            </tr>
+        </table>
+
+        <h3>2020 Financial Data</h3>
+        <table border="1">
+            <tr>
+                <th>Total Asset</th>
+                <th>Total Debt</th>
+                <th>Total Equity</th>
+                <th>Capital</th>
+                <th>Revenue</th>
+                <th>Operating Income</th>
+                <th>Earning Before Tax</th>
+                <th>Net Income</th>
+            </tr>
+            <tr>
+                <td>{{ result.FS2020.totalAsset2020 }}</td>
+                <td>{{ result.FS2020.totalDebt2020 }}</td>
+                <td>{{ result.FS2020.totalEquity2020 }}</td>
+                <td>{{ result.FS2020.capital2020 }}</td>
+                <td>{{ result.FS2020.revenue2020 }}</td>
+                <td>{{ result.FS2020.operatingIncome2020 }}</td>
+                <td>{{ result.FS2020.earningBeforeTax2020 }}</td>
+                <td>{{ result.FS2020.netIncome2020 }}</td>
+            </tr>
+        </table>
+    {% endfor %}
+</body>
+</html>

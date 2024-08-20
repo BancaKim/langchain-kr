@@ -23,6 +23,7 @@
 */working/*
 */convert/*
 */convert2/*
+*/saved_models/*
 working/
 
 
@@ -212,3 +213,6 @@ poetry.toml
 pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/jupyternotebooks,python
+
+# model. too big for git
+*.joblib
