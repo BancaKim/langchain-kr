@@ -38,8 +38,6 @@ def get_db():
 
 # 데이터 삽입을 위한 임시 엔드 포인트
 
-import time  # 소요 시간을 측정하기 위해 time 모듈을 import
-
 @baro.get("/baro_fs_insert")
 async def read_company_info(request: Request, db: Session = Depends(get_db)):
     jurir_no_list = get_sample_jurir_no(db)
@@ -90,7 +88,7 @@ async def read_company_info(request: Request, db: Session = Depends(get_db)):
         # 처리 완료 시간 측정 및 저장
         end_time = time.time()
         elapsed_time = end_time - start_time
-
+        
         # 결과를 리스트에 저장
         results.append({
             "company_name": company_name,
@@ -104,76 +102,6 @@ async def read_company_info(request: Request, db: Session = Depends(get_db)):
         })
 
     return templates.TemplateResponse("baro_service/financial_data.html", {"request": request, "results": results})
-
-
-
-        
-
-## 데이터 검증용 임시 엔드 포인트
-@baro.get("/baro_FScheck", response_class=HTMLResponse)
-async def read_companyList(request: Request, db: Session = Depends(get_db)):
-    jurir_no_list = get_sample_jurir_no(db)
-    
-    # HTML content를 담을 변수
-    content = "<html><body>"
-    
-    for jurir_no in jurir_no_list:
-        # 각 jurir_no에 대한 회사 정보와 재무 데이터를 가져옵니다.
-        company_info = get_company_info(db, jurir_no)
-        FS2023 = get_FS2023(db, jurir_no)
-        corp_name = company_info.corp_name
-        corp_code = company_info.corp_code
-        
-        fs_dict=FS_update(db, corp_code, company_info.corp_name, 2023)
-        
-        # FS_update 함수가 None을 반환할 경우에 대한 처리
-        if fs_dict is None:
-            content += f"<p>FS_update returned None for {corp_name}({jurir_no})({corp_code})</p>"
-            continue
-        
-        # FS2023 데이터에서 필요한 항목을 추출하여 딕셔너리 생성
-        fs_dict2 = {
-            "자산총계": FS2023.totalAsset2023,
-            "부채총계": FS2023.totalDebt2023,
-            "자본총계": FS2023.totalEquity2023,
-            "자본금": FS2023.capital2023,
-            "매출액": FS2023.revenue2023,
-            "영업이익": FS2023.operatingIncome2023,
-            "법인세차감전순이익": FS2023.earningBeforeTax2023,
-            "당기순이익": FS2023.netIncome2023
-        }
-
-        # 백만 단위로 나누고 소수점 이하 제거
-        for key in fs_dict2.keys():
-            if fs_dict2[key] is not None:
-                fs_dict2[key] = fs_dict2[key] // 1000000  # 백만으로 나눈 후 소수점 버림
-            if fs_dict.get(key) is not None:
-                fs_dict[key] = fs_dict[key] // 1000000  # 백만으로 나눈 후 소수점 버림
-        
-        # fs_dict와 fs_dict2를 HTML로 출력
-        content += f"<h3>DB: {company_info.corp_name}, FS DB  : {fs_dict2}</h3>"
-        content += f"<h3>DART: {company_info.corp_name}, FS DART: {fs_dict}</h3>"
-
-        # fs_dict와 fs_dict2가 다를 경우에 대한 처리
-        differences = {}
-        for key in fs_dict2.keys():
-            if fs_dict.get(key) != fs_dict2[key]:  # fs_dict가 None이 아닌 경우에만 비교
-                differences[key] = {
-                    "DB": fs_dict2[key],
-                    "DART": fs_dict.get(key)
-                }
-
-        if differences:
-            content += "<h4>@@@@@@@@@@@경고불일치 발생</h4>"
-            content += f"<pre>Differences for {corp_name}: {differences}</pre><BR>"
-    
-    # HTML 태그 닫기
-    content += "</body></html>"
-    
-    # HTMLResponse로 content를 반환
-    return HTMLResponse(content=content)
-
-
 
 
 # 바로 등급 검색 페이지 / 나의업체현황/ 최근조회업체 return
@@ -235,6 +163,9 @@ async def read_company_info(request: Request, jurir_no: str = Query(...), db: Se
         FS2020 = get_FS2020(db, jurir_no)
 
 
+    
+    
+    
     stock_data=get_Stock_data(db, company_info.corp_code)
     
     try:
@@ -487,11 +418,12 @@ async def read_company_info(
         # 포스트 데이터를 회사 이름으로 필터링하여 가져오기
         posts = db.query(Post).filter(Post.corporation_name == company_info.corp_name).all()
         
-        # print(company_info.corp_name)
-        # print(FS2023.totalAsset2023)
-        # print(FS2022.totalAsset2022)
-        # print(FS2021.totalAsset2021)
-        # print(FS2020.totalAsset2020)
+        print(company_info.corp_name)
+        print("jurir_no", jurir_no)
+        print(FS2023.totalAsset2023)
+        print(FS2022.totalAsset2022)
+        print(FS2021.totalAsset2021)
+        print(FS2020.totalAsset2020)
         
         # 템플릿에 필요한 데이터를 포함하여 HTML 응답을 반환
         return templates.TemplateResponse(
