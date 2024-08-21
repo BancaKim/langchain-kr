@@ -2,6 +2,10 @@
 
 {% block head %}
 <style>
+    .show-below-850 {
+        display: none;
+    }
+
     #streamContent {
         white-space: pre-wrap;
         word-break: break-word;
@@ -101,7 +105,6 @@
         justify-content: space-between;
     }
 
-
     .sticky-note-content {
         font-size: 1.1em;
         line-height: 1.4;
@@ -164,6 +167,79 @@
     .swal2-popup .swal2-styled:focus {
         box-shadow: none !important;
     }
+
+    /* 모바일 환경에서 여백 줄이기 및 가로로 꽉 차게 설정 */
+    @media (max-width: 850px) {
+        .sticky-notes-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sticky-note-row {
+            flex-direction: column;
+        }
+
+        .sticky-note {
+            width: 100%;
+            margin-bottom: 10px;
+            font-size: 14px;
+            /* 글씨 크기를 줄입니다 */
+            min-height: 150px;
+            /* 메모 섹션의 최소 높이를 늘려줍니다 */
+            padding: 20px;
+            /* 내용과의 여백을 더 줍니다 */
+        }
+
+        .sticky-note-content {
+            word-wrap: break-word;
+            /* 텍스트 줄바꿈 추가 */
+            margin-bottom: 10px;
+            /* 텍스트와 정보 사이의 여백을 추가 */
+        }
+
+        .sticky-note-info {
+            font-size: 6px;
+            /* 섭외 정보 글씨 크기를 줄입니다 */
+            line-height: 1;
+            /* 줄 간격 조정 */
+        }
+
+        .news-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .news-item-row {
+            flex-direction: column;
+        }
+
+        .news-item {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .hidden-below-850 {
+            display: none;
+        }
+
+        .show-below-850 {
+            display: block;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0;
+            padding: 16px;
+            /* p-4에 해당하는 여백 */
+        }
+
+        h2.text-xl {
+            font-size: 18px;
+            /* 섹션 제목 글씨 크기를 줄입니다 */
+        }
+    }
 </style>
 
 <meta charset="UTF-8">
@@ -192,89 +268,97 @@
     </div>
 </div>
 <br>
-<div class="container mx-auto my-8 px-6 min-h-screen flex flex-col">
+
+<div class="container mx-auto my-8 lg:px-6 sm:px-4 px-4 min-h-screen flex flex-col">
+
     <div class="flex items-center mb-5 justify-between">
         <h2 class="text-4xl font-bold">{{ company_info.corp_name }}</h2>
-
-        <div class="text-xl p-0">업체의 자세한 정보가 궁금하다면?
-            <a href="/baro_companyInfo?jurir_no={{ company_info.jurir_no }}"
-                class="px-2 py-2 text-purple-700 hover:underline">
-                바로등급
-            </a>
+        <div class="hidden-below-850">
+            <div class="text-xl p-0">업체의 자세한 정보가 궁금하다면?
+                <a href="/baro_companyInfo?jurir_no={{ company_info.jurir_no }}"
+                    class="px-2 py-2 text-purple-700 hover:underline">
+                    바로등급
+                </a>
+            </div>
         </div>
     </div>
-    <div class="flex-grow grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Left Column: Basic Info and Business Cards -->
-        <div class="col-span-1 flex flex-col space-y-6">
-            <!-- Company Info -->
-            <div class="flex-shrink-0 bg-white rounded-lg shadow-lg">
-                <div class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg">
-                    <h2 class="text-xl font-semibold text-gray-800">기본 정보</h2>
-                </div>
-                <div class="p-6">
-                    {% if company_info %}
-                    <ul class="list-disc pl-5 space-y-2">
-                        <li>
-                            <p class="text-lg font-semibold mb-4">기업명: {{ company_info.corp_name }}</p>
-                        </li>
-                        <li>
-                            <p class="text-lg font-semibold mb-4">대표: {{ company_info.ceo_nm }}</p>
-                        </li>
-                        <li>
-                            <p class="text-lg font-semibold mb-4">법인구분: {{ company_info.corp_cls }}</p>
-                        </li>
-                        <li>
-                            <p class="text-lg font-semibold mb-4">주소: {{ company_info.adres }}</p>
-                        </li>
-                        <li>
-                            <p class="text-lg font-semibold mb-4">홈페이지: {{ company_info.hm_url }}</p>
-                        </li>
-                        <li>
-                            <p class="text-lg font-semibold mb-4">H.P: {{ company_info.phn_no }}</p>
-                        </li>
-                        <li>
-                            <p class="text-lg font-semibold mb-4">Fax: {{ company_info.fax_no }}</p>
-                        </li>
-                        <li>
-                            <p class="text-lg font-semibold mb-4">산업코드: {{ company_info.induty_code }}</p>
-                        </li>
-                        <li>
-                            <p class="text-lg font-semibold mb-4">법인번호: {{ company_info.jurir_no }}</p>
-                        </li>
-                        <li>
-                            <p class="text-lg font-semibold mb-4">설립일: {{ company_info.est_dt }}</p>
-                        </li>
-                    </ul>
-                    {% else %}
-                    <p class="text-gray-600">해당 기업은 금융감독원(Dart API)에서 정보를 제공받을 수 없습니다.</p>
-                    {% endif %}
-                </div>
-            </div>
 
-            <!-- Business Card Section -->
-            <div
-                class="flex-shrink-0 bg-white rounded-lg shadow-lg flex-grow overflow-hidden flex flex-col business-card-section">
-                <div class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg flex justify-between items-center">
-                    <h2 class="text-xl font-semibold text-gray-800">주요 임직원 명함집</h2>
-                    <a href="/card?corporation_name={{ company_info.corp_name }}"
-                        class="px-2 py-1 text-white bg-purple-700 rounded-md hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300">
-                        바로가기
-                    </a>
-                </div>
-                <div class="p-6 space-y-4 overflow-y-auto flex-grow business-cards-container">
-                    <div class="grid grid-cols-1 gap-4">
-                        {% if business_cards %}
-                        {% for card in business_cards %}
-                        <div class="relative overflow-hidden transform transition duration-500 hover:scale-110">
-                            <a href="/card?corporation_name={{ company_info.corp_name }}">
-                                <img src="/static/business_cards/{{ card.filename }}" alt="Business Card"
-                                    class="w-full h-auto object-cover rounded-lg shadow-md">
-                            </a>
-                        </div>
-                        {% endfor %}
+    <div class="flex-grow grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- PC 환경에서만 보이는 섹션 -->
+        <div class="hidden-below-850">
+            <!-- Left Column: Basic Info and Business Cards -->
+            <div class="col-span-1 flex flex-col space-y-6">
+                <!-- Company Info -->
+                <div class="flex-shrink-0 bg-white rounded-lg shadow-lg">
+                    <div class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg">
+                        <h2 class="text-xl font-semibold text-gray-800">기본 정보</h2>
+                    </div>
+                    <div class="p-6">
+                        {% if company_info %}
+                        <ul class="list-disc pl-5 space-y-2">
+                            <li>
+                                <p class="text-lg font-semibold mb-4">기업명: {{ company_info.corp_name }}</p>
+                            </li>
+                            <li>
+                                <p class="text-lg font-semibold mb-4">대표: {{ company_info.ceo_nm }}</p>
+                            </li>
+                            <li>
+                                <p class="text-lg font-semibold mb-4">법인구분: {{ company_info.corp_cls }}</p>
+                            </li>
+                            <li>
+                                <p class="text-lg font-semibold mb-4">주소: {{ company_info.adres }}</p>
+                            </li>
+                            <li>
+                                <p class="text-lg font-semibold mb-4">홈페이지: {{ company_info.hm_url }}</p>
+                            </li>
+                            <li>
+                                <p class="text-lg font-semibold mb-4">H.P: {{ company_info.phn_no }}</p>
+                            </li>
+                            <li>
+                                <p class="text-lg font-semibold mb-4">Fax: {{ company_info.fax_no }}</p>
+                            </li>
+                            <li>
+                                <p class="text-lg font-semibold mb-4">산업코드: {{ company_info.induty_code }}</p>
+                            </li>
+                            <li>
+                                <p class="text-lg font-semibold mb-4">법인번호: {{ company_info.jurir_no }}</p>
+                            </li>
+                            <li>
+                                <p class="text-lg font-semibold mb-4">설립일: {{ company_info.est_dt }}</p>
+                            </li>
+                        </ul>
                         {% else %}
-                        <p class="text-gray-600">등록된 명함이 없습니다.</p>
+                        <p class="text-gray-600">해당 기업은 금융감독원(Dart API)에서 정보를 제공받을 수 없습니다.</p>
                         {% endif %}
+                    </div>
+                </div>
+
+                <!-- Business Card Section -->
+                <div
+                    class="flex-shrink-0 bg-white rounded-lg shadow-lg flex-grow overflow-hidden flex flex-col business-card-section">
+                    <div
+                        class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg flex justify-between items-center">
+                        <h2 class="text-xl font-semibold text-gray-800">주요 임직원 명함집</h2>
+                        <a href="/card?corporation_name={{ company_info.corp_name }}"
+                            class="px-2 py-1 text-white bg-purple-700 rounded-md hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300">
+                            바로가기
+                        </a>
+                    </div>
+                    <div class="p-6 space-y-4 overflow-y-auto flex-grow business-cards-container">
+                        <div class="grid grid-cols-1 gap-4">
+                            {% if business_cards %}
+                            {% for card in business_cards %}
+                            <div class="relative overflow-hidden transform transition duration-500 hover:scale-110">
+                                <a href="/card?corporation_name={{ company_info.corp_name }}">
+                                    <img src="/static/business_cards/{{ card.filename }}" alt="Business Card"
+                                        class="w-full h-auto object-cover rounded-lg shadow-md">
+                                </a>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <p class="text-gray-600">등록된 명함이 없습니다.</p>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -297,11 +381,12 @@
                     {% for p in post %}
                     <div class="sticky-note flex-1 bg-purple-50 p-4 rounded-lg shadow-md relative">
                         <p class="sticky-note-content">{{ p.content }}</p>
-                        <div class="sticky-note-info absolute bottom-4 left-4 text-base">
+                        <div class="sticky-note-info absolute bottom-2 left-4 text-sm md:text-base md:bottom-4">
                             <span>섭외유형: {{ p.contact_type }}</span><br>
                             <span>섭외방법: {{ p.contact_method }}</span>
                         </div>
-                        <div class="sticky-note-info absolute bottom-4 right-4 text-base text-right">
+                        <div
+                            class="sticky-note-info absolute bottom-2 right-4 text-sm md:text-base md:bottom-4 text-right">
                             <span>{{ p.username }}</span><br>
                             <span>{{ p.created_at.strftime('%Y-%m-%d') }}</span>
                         </div>
@@ -314,13 +399,7 @@
                 {% endif %}
             </div>
         </div>
-
-
-
-
-
     </div>
-
 
     <br>
 
@@ -339,7 +418,9 @@
                     <a href="{{ article.link }}" class="news-link" target="_blank">
                         <p class="news-title">{{ article.title | safe }}</p>
                     </a>
-                    <p class="news-description">{{ article.description | safe }}</p>
+                    <div class="hidden-below-850">
+                        <p class="news-description">{{ article.description | safe }}</p>
+                    </div>
                 </div>
                 {% endfor %}
                 {% else %}
@@ -350,6 +431,37 @@
     </div>
 
     <br>
+    <div class="show-below-850">
+
+        <!-- Business Card Section -->
+        <div
+            class="flex-shrink-0 bg-white rounded-lg shadow-lg flex-grow overflow-hidden flex flex-col business-card-section">
+            <div class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg flex justify-between items-center">
+                <h2 class="text-xl font-semibold text-gray-800">주요 임직원 명함집</h2>
+                <a href="/card?corporation_name={{ company_info.corp_name }}"
+                    class="px-2 py-1 text-white bg-purple-700 rounded-md hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300">
+                    바로가기
+                </a>
+            </div>
+            <div class="p-6 space-y-4 overflow-y-auto flex-grow business-cards-container">
+                <div class="grid grid-cols-1 gap-4">
+                    {% if business_cards %}
+                    {% for card in business_cards %}
+                    <div class="relative overflow-hidden transform transition duration-500 hover:scale-110">
+                        <a href="/card?corporation_name={{ company_info.corp_name }}">
+                            <img src="/static/business_cards/{{ card.filename }}" alt="Business Card"
+                                class="w-full h-auto object-cover rounded-lg shadow-md">
+                        </a>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-gray-600">등록된 명함이 없습니다.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Kakao Map Section -->
     <div class="box bg-white p-6 rounded-lg shadow-md">
@@ -500,14 +612,14 @@
                 form.append('contact_type', formData.contact_type);
                 form.append('contact_method', formData.contact_method);
 
-            // '예' 버튼을 눌렀을 때만 send_email_flag와 send_sms_flag를 true로 설정
-            if (result.isConfirmed) {
-                form.append('send_email_flag', 'true');
-                form.append('send_sms_flag', 'true');  // SMS 전송 플래그 추가
-            } else {
-                form.append('send_email_flag', 'false');
-                form.append('send_sms_flag', 'false');  // SMS 전송 플래그 추가
-            }
+                // '예' 버튼을 눌렀을 때만 send_email_flag와 send_sms_flag를 true로 설정
+                if (result.isConfirmed) {
+                    form.append('send_email_flag', 'true');
+                    form.append('send_sms_flag', 'true');  // SMS 전송 플래그 추가
+                } else {
+                    form.append('send_email_flag', 'false');
+                    form.append('send_sms_flag', 'false');  // SMS 전송 플래그 추가
+                }
                 // 게시글 등록
                 fetch('/contact/create', {
                     method: 'POST',
@@ -541,7 +653,6 @@
         }
 
     </script>
-
 
     {% if login_required %}
     <script>

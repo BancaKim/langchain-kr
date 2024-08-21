@@ -14,6 +14,8 @@ from models.common_models import Post
 from schemas.baro_schemas import CompanyInfoSchema
 from services_def.baro_service import  FavoriteService, add_recent_view, get_company_info, get_favorite_companies, get_recent_views,  get_stockgraph1, generate_pdf, get_username_from_session
 from services_def.baro_service import get_FS2023, get_FS2022, get_FS2021, get_FS2020, get_Stock_data,  search_company, get_company_infoFS_list, FS_update, get_sample_jurir_no
+from services_def.baro_service import fs_db_insert
+import time
 import logging
 from typing import Dict, List, Optional
 from models.baro_models import CompanyInfo
@@ -34,71 +36,72 @@ def get_db():
     finally:
         db.close()
 
+# 데이터 삽입을 위한 임시 엔드 포인트
 
-@baro.get("/baro_FScheck", response_class=HTMLResponse)
-async def read_companyList(request: Request, db: Session = Depends(get_db)):
+@baro.get("/baro_fs_insert")
+async def read_company_info(request: Request, db: Session = Depends(get_db)):
     jurir_no_list = get_sample_jurir_no(db)
-    
-    # HTML content를 담을 변수
-    content = "<html><body>"
-    
+    results = []
+
     for jurir_no in jurir_no_list:
-        # 각 jurir_no에 대한 회사 정보와 재무 데이터를 가져옵니다.
+        start_time = time.time()  # 각 jurir_no 처리 시작 시간 기록
+
         company_info = get_company_info(db, jurir_no)
-        FS2023 = get_FS2023(db, jurir_no)
-        corp_name = company_info.corp_name
-        corp_code = company_info.corp_code
-        
-        fs_dict = FS_update(db, corp_code, corp_name)
-        
-        # FS_update 함수가 None을 반환할 경우에 대한 처리
-        if fs_dict is None:
-            content += f"<p>FS_update returned None for {corp_name}({jurir_no})({corp_code})</p>"
+        if not company_info:
             continue
         
-        # FS2023 데이터에서 필요한 항목을 추출하여 딕셔너리 생성
-        fs_dict2 = {
-            "자산총계": FS2023.totalAsset2023,
-            "부채총계": FS2023.totalDebt2023,
-            "자본총계": FS2023.totalEquity2023,
-            "자본금": FS2023.capital2023,
-            "매출액": FS2023.revenue2023,
-            "영업이익": FS2023.operatingIncome2023,
-            "법인세차감전순이익": FS2023.earningBeforeTax2023,
-            "당기순이익": FS2023.netIncome2023
-        }
+        corp_code = company_info.corp_code
+        company_name = company_info.corp_name
 
-        # 백만 단위로 나누고 소수점 이하 제거
-        for key in fs_dict2.keys():
-            if fs_dict2[key] is not None:
-                fs_dict2[key] = fs_dict2[key] // 1000000  # 백만으로 나눈 후 소수점 버림
-            if fs_dict.get(key) is not None:
-                fs_dict[key] = fs_dict[key] // 1000000  # 백만으로 나눈 후 소수점 버림
+        # FS2023 최근 데이터로 업데이트 / None의 경우 0으로 리턴
+        FS2023 = get_FS2023(db, jurir_no)
+        if FS2023.totalAsset2023 == 0:
+            fs_dict = FS_update(db, corp_code, company_name, 2023)
+            fs_db_insert(db, jurir_no, fs_dict, 2023)
+            FS2023 = get_FS2023(db, jurir_no)
+            time.sleep(0.1)
+
+        # FS2022 최근 데이터로 업데이트
+        FS2022 = get_FS2022(db, jurir_no)
+        if FS2022.totalAsset2022 == 0:
+            fs_dict = FS_update(db, corp_code, company_name, 2022)
+            fs_db_insert(db, jurir_no, fs_dict, 2022)
+            FS2022 = get_FS2022(db, jurir_no)
+            time.sleep(0.1)
+
+        # FS2021 최근 데이터로 업데이트
+        FS2021 = get_FS2021(db, jurir_no)
+        if FS2021.totalAsset2021 == 0:
+            fs_dict = FS_update(db, corp_code, company_name, 2021)
+            fs_db_insert(db, jurir_no, fs_dict, 2021)
+            FS2021 = get_FS2021(db, jurir_no)
+            time.sleep(0.1)
+
+        # FS2020 최근 데이터로 업데이트
+        FS2020 = get_FS2020(db, jurir_no)
+        if FS2020.totalAsset2020 == 0:
+            fs_dict = FS_update(db, corp_code, company_name, 2020)
+            fs_db_insert(db, jurir_no, fs_dict, 2020)
+            FS2020 = get_FS2020(db, jurir_no)
+            time.sleep(0.1)
+
+        # 처리 완료 시간 측정 및 저장
+        end_time = time.time()
+        elapsed_time = end_time - start_time
         
-        # fs_dict와 fs_dict2를 HTML로 출력
-        content += f"<h3>DB: {company_info.corp_name}, FS DB  : {fs_dict2}</h3>"
-        content += f"<h3>DART: {company_info.corp_name}, FS DART: {fs_dict}</h3>"
+        # 결과를 리스트에 저장
+        results.append({
+            "company_name": company_name,
+            "corp_code": corp_code,
+            "jurir_no": jurir_no,
+            "FS2023": FS2023,
+            "FS2022": FS2022,
+            "FS2021": FS2021,
+            "FS2020": FS2020,
+            "elapsed_time": f"{elapsed_time:.2f} 초"
+        })
 
-        # fs_dict와 fs_dict2가 다를 경우에 대한 처리
-        differences = {}
-        for key in fs_dict2.keys():
-            if fs_dict.get(key) != fs_dict2[key]:  # fs_dict가 None이 아닌 경우에만 비교
-                differences[key] = {
-                    "DB": fs_dict2[key],
-                    "DART": fs_dict.get(key)
-                }
-
-        if differences:
-            content += "<h4>@@@@@@@@@@@경고불일치 발생</h4>"
-            content += f"<pre>Differences for {corp_name}: {differences}</pre><BR>"
-    
-    # HTML 태그 닫기
-    content += "</body></html>"
-    
-    # HTMLResponse로 content를 반환
-    return HTMLResponse(content=content)
-
-
+    return templates.TemplateResponse("baro_service/financial_data.html", {"request": request, "results": results})
 
 
 # 바로 등급 검색 페이지 / 나의업체현황/ 최근조회업체 return
@@ -122,31 +125,46 @@ async def read_company_info(request: Request, jurir_no: str = Query(...), db: Se
     username = request.session.get("username")
     
     company_info = get_company_info(db, jurir_no)
-    FS2023 = get_FS2023(db, jurir_no)
-    
-    
-    fs_dict = {
-        "자산총계": FS2023.totalAsset2023,
-        "부채총계": FS2023.totalDebt2023,
-        "자본총계": FS2023.totalEquity2023,
-        "자본금": FS2023.capital2023,
-        "매출액": FS2023.revenue2023,
-        "영업이익": FS2023.operatingIncome2023,
-        "법인세차감전순이익": FS2023.earningBeforeTax2023,
-        "당기순이익": FS2023.netIncome2023
-    }
-    
-    print(fs_dict)
-    
-    # if FS2023.totalAsset2023==0:
     corp_code = company_info.corp_code
-    FS_update(db, corp_code, company_info.corp_name)
+    FS2023 = get_FS2023(db, jurir_no)
+
+
+    if FS2023.totalAsset2023 == 0:
+        print("FS2023.totalAsset2023 == 0")
+        # DART API와 연동하여 최신 재무정보 업데이트 (테스트용)
+        fs_dict=FS_update(db, corp_code, company_info.corp_name, 2023)
+        fs_db_insert(db, jurir_no, fs_dict, 2023)
+        FS2023 = get_FS2023(db, jurir_no)
     
-    # FS2023 = get_FS2023(db, jurir_no)
+    # FS2022 최근 데이터로 업데이트
     FS2022 = get_FS2022(db, jurir_no)
+    
+    if FS2022.totalAsset2022 == 0:  
+        fs_dict=FS_update(db, corp_code, company_info.corp_name, 2022)
+        fs_db_insert(db, jurir_no, fs_dict, 2022)
+        FS2022 = get_FS2022(db, jurir_no)
+            
+    # FS2021 최근 데이터로 업데이트
     FS2021 = get_FS2021(db, jurir_no)
+    
+    if FS2021.totalAsset2021 == 0:
+        # DART API와 연동하여 최신 재무정보 업데이트 (테스트용)
+        fs_dict=FS_update(db, corp_code, company_info.corp_name, 2021)
+        fs_db_insert(db, jurir_no, fs_dict, 2021)
+        FS2021 = get_FS2021(db, jurir_no)
+    
+    # FS2020 최근 데이터로 업데이트
     FS2020 = get_FS2020(db, jurir_no)
-    print(company_info.corp_code)
+    
+    if FS2020.totalAsset2020 == 0:
+        # DART API와 연동하여 최신 재무정보 업데이트 (테스트용)
+        fs_dict=FS_update(db, corp_code, company_info.corp_name, 2020)
+        fs_db_insert(db, jurir_no, fs_dict, 2020)
+        FS2020 = get_FS2020(db, jurir_no)
+
+
+    
+    
     
     stock_data=get_Stock_data(db, company_info.corp_code)
     
@@ -214,7 +232,12 @@ async def read_company_info(request: Request, jurir_no: str = Query(...), db: Se
     # 포스트 데이터를 회사 이름으로 필터링하여 가져오기
     posts = db.query(Post).filter(Post.corporation_name == company_info.corp_name).all()
     
-
+    print(company_info.corp_name)
+    print("FS2023.totalAsset2023", FS2023.totalAsset2023)
+    print("FS2022.totalAsset2022", FS2022.totalAsset2022)
+    print("FS2021.totalAsset2021", FS2021.totalAsset2021)
+    print("FS2020.totalAsset2020", FS2020.totalAsset2020)
+    
     return templates.TemplateResponse("baro_service/baro_companyInfo.html", {
         "request": request,
         "username": username,
@@ -240,69 +263,94 @@ async def read_company_info(
     name: Optional[str] = Form(None),
     search_type: Optional[str] = Form(None)
 ):
+    # 세션에서 사용자 이름을 가져옴
     username = request.session.get("username")
-    print("한일섭")
+ 
     try:
+        # CompanyInfo 테이블에 대한 기본 쿼리 생성
         query = db.query(CompanyInfo)
         
         jurir_no = None
         company_info = None
         print(name)
         print(search_type)
+        
+        # name이 존재할 경우, search_type에 따라 회사 이름이나 코드로 검색
         if name:
             if search_type == "company_name":
+                # 회사 이름으로 검색하여 jurir_no를 가져옴
                 result = db.query(CompanyInfo.jurir_no).filter(func.trim(CompanyInfo.corp_name) == name).first()
                 if result:
                     jurir_no = result[0]
             elif search_type == "company_code":
+                # 회사 코드로 검색하여 jurir_no를 가져옴
                 result = db.query(CompanyInfo.jurir_no).filter(func.trim(CompanyInfo.jurir_no) == func.trim(name)).first()
                 if result:
                     jurir_no = result[0]
 
-        print("jurir_no:", jurir_no)  # Debug print to check if jurir_no is fetched
+        print("jurir_no:", jurir_no)  # jurir_no가 제대로 가져와졌는지 확인하기 위한 디버그 출력
 
+        # jurir_no가 존재할 경우, 해당 회사 정보를 가져옴
         if jurir_no:
             company_info = get_company_info(db, jurir_no)
-            print("company_info:", company_info)  # Debug print to check if company_info is fetched
+            corp_code = company_info.corp_code
+            print("company_info:", company_info)  # company_info가 제대로 가져와졌는지 확인하기 위한 디버그 출력
 
             if company_info:
-                print("company_info.corp_code:", company_info.corp_code)  # Debug print to check corp_code
-
+                print("company_info.corp_code:", company_info.corp_code)  # corp_code 확인용 디버그 출력
+                
+                # FS2023 최근 데이터로 업데이트
                 FS2023 = get_FS2023(db, jurir_no)
                 
-                # 테스트
-                corp_code = company_info.corp_code
-                FS_update(db, corp_code, company_info.corp_name)
+                if FS2023.totalAsset2023 == 0:
+                    print("FS2023.totalAsset2023 == 0")
+                    # DART API와 연동하여 최신 재무정보 업데이트 (테스트용)
+                    fs_dict=FS_update(db, corp_code, company_info.corp_name, 2023)
+                    fs_db_insert(db, jurir_no, fs_dict, 2023)
+                    FS2023 = get_FS2023(db, jurir_no)
                 
-                fs_dict = {
-                "자산총계": FS2023.totalAsset2023,
-                "부채총계": FS2023.totalDebt2023,
-                "자본총계": FS2023.totalEquity2023,
-                "자본금": FS2023.capital2023,
-                "매출액": FS2023.revenue2023,
-                "영업이익": FS2023.operatingIncome2023,
-                "법인세차감전순이익": FS2023.earningBeforeTax2023,
-                "당기순이익": FS2023.netIncome2023
-                }    
-                print("DB")
-                print(fs_dict)
-    
-                #상단 추후 삭제
+                # FS2022 최근 데이터로 업데이트
                 FS2022 = get_FS2022(db, jurir_no)
+                
+                if FS2022.totalAsset2022 == 0:  
+                    fs_dict=FS_update(db, corp_code, company_info.corp_name, 2022)
+                    fs_db_insert(db, jurir_no, fs_dict, 2022)
+                    FS2022 = get_FS2022(db, jurir_no)
+                        
+                # FS2021 최근 데이터로 업데이트
                 FS2021 = get_FS2021(db, jurir_no)
-                FS2020 = get_FS2020(db, jurir_no)                
+                
+                if FS2021.totalAsset2021 == 0:
+                    # DART API와 연동하여 최신 재무정보 업데이트 (테스트용)
+                    fs_dict=FS_update(db, corp_code, company_info.corp_name, 2021)
+                    fs_db_insert(db, jurir_no, fs_dict, 2021)
+                    FS2021 = get_FS2021(db, jurir_no)
+                
+                # FS2020 최근 데이터로 업데이트
+                FS2020 = get_FS2020(db, jurir_no)
+                
+                if FS2020.totalAsset2020 == 0:
+                    # DART API와 연동하여 최신 재무정보 업데이트 (테스트용)
+                    fs_dict=FS_update(db, corp_code, company_info.corp_name, 2020)
+                    fs_db_insert(db, jurir_no, fs_dict, 2020)
+                    FS2020 = get_FS2020(db, jurir_no)
+            
                                     
+                # 주식 관련 데이터를 가져옴
                 stock_data = get_Stock_data(db, company_info.corp_code)
+
+                # 주식 그래프 데이터를 가져옴 (비동기 호출)
                 try:
                     stockgraph = await get_stockgraph1(company_info.stock_code)  # await 사용
                 except ValueError as e:
                     print(f"Failed to retrieve stock graph: {e}")
                     stockgraph = {"stock_data": []}  # 빈 데이터를 반환하거나 적절히 처리
        
-                
+                # 회사 주소와 카카오 맵 API 키 가져오기
                 adres = company_info.adres
                 kakao_map_api_key = os.getenv("KAKAO_MAP_API_KEY")
 
+                # 신용 등급 매핑 테이블 정의
                 custom_key_mapping = {
                     'AAA_plus': 'AAA+',
                     'AAA': 'AAA',
@@ -329,6 +377,7 @@ async def read_company_info(
                     'D': 'D'
                 }
                 
+                # 가장 최신 신용 등급 정보를 가져오기 위한 SQL 쿼리
                 query1 = text("""
                         SELECT AAA_plus, AAA, AAA_minus, AA_plus, AA, AA_minus, A_plus, A, A_minus, 
                             BBB_plus, BBB, BBB_minus, BB_plus, BB, BB_minus, B_plus, B, B_minus, 
@@ -339,32 +388,44 @@ async def read_company_info(
                         LIMIT 1;
                 """)
 
+                # 쿼리를 실행하여 신용 등급 데이터를 가져옴
                 credit_rate = db.execute(query1, {"corporate_number": jurir_no}).fetchone()
     
                 if not credit_rate:
                     top3_rate = [{"key": "credit_rate", "value": "None"}]
                 else:
+                    # 신용 등급 데이터에서 상위 3개 등급을 선택하여 딕셔너리로 구성
                     ratings = {custom_key_mapping.get(k, k): v for k, v in credit_rate._mapping.items() if v is not None}
                     top3_ratings = sorted(ratings.items(), key=lambda item: item[1], reverse=True)[:3]
                     top3_rate = [{"key": column, "value": value} for column, value in top3_ratings]
                     
-                    # Ensure at least 3 entries in top3_rate with default values if less than 3 available
+                    # 최소 3개의 항목을 보장하기 위해 부족한 경우 기본 값을 추가
                     while len(top3_rate) < 3:
-                        top3_rate.append({"key": "N/A", "value": 0})  # Use "N/A" or other default key
+                        top3_rate.append({"key": "N/A", "value": 0})  # "N/A" 또는 기본 값을 사용
                 
             else:
-                print("Company info is None")
+                print("Company info is None")  # company_info가 없는 경우 디버그 출력
         else:
-            print("Jurir_no is None")
+            print("Jurir_no is None")  # jurir_no가 없는 경우 디버그 출력
 
+        # 회사 정보를 찾지 못한 경우 404 에러 발생
         if not company_info:
             raise HTTPException(status_code=404, detail="Company not found")
 
+        # 최근 본 회사 목록에 추가
         add_recent_view(db, username, company_info.corp_code)
 
         # 포스트 데이터를 회사 이름으로 필터링하여 가져오기
         posts = db.query(Post).filter(Post.corporation_name == company_info.corp_name).all()
         
+        print(company_info.corp_name)
+        print("jurir_no", jurir_no)
+        print(FS2023.totalAsset2023)
+        print(FS2022.totalAsset2022)
+        print(FS2021.totalAsset2021)
+        print(FS2020.totalAsset2020)
+        
+        # 템플릿에 필요한 데이터를 포함하여 HTML 응답을 반환
         return templates.TemplateResponse(
             "baro_service/baro_companyInfo.html",
             {
@@ -383,13 +444,15 @@ async def read_company_info(
                 "posts": posts
             }
         )
+        
     except Exception as e:
+        # 오류 발생 시 콘솔에 출력하고 500 에러 발생
         print("An error occurred:", str(e))
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-# 법인명으로 섭외등록 연결
 
+# 법인명으로 섭외등록 연결
 
 @baro.get("/baro_contact", response_class=HTMLResponse)
 async def read_company_info(request: Request, jurir_no: str = Query(...), register: bool = False, db: Session = Depends(get_db)):
