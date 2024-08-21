@@ -41,6 +41,10 @@
                 /* 850px 이하일 때 이미지 크기를 60px로 줄임 */
                 width: auto;
             }
+
+            .hidden-below-850 {
+                display: none;
+            }
         }
     </style>
     <!-- Toast 알림 함수 정의 -->
@@ -78,9 +82,13 @@
                     <a href="/contact55" class="text-lg uui-navbar08_link w-nav-link"
                         onclick="checkLogin(event)">섭외등록</a>
                     <a href="/notices" class="text-lg uui-navbar08_link w-nav-link" onclick="checkLogin(event)">공지사항</a>
+
+
                     {% if username == 'admin' %}
-                    <a href="/modelControl" class="text-lg uui-navbar08_link w-nav-link">신용등급 모델 관리</a>
+                        <a href="/modelControl" class="text-lg uui-navbar08_link w-nav-link hidden-below-850">신용등급 모델 관리</a>
                     {% endif %}
+
+
                 </div>
 
                 <div class="uui-navbar08_menu-right">

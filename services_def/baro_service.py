@@ -10,7 +10,7 @@ from jinja2 import Template
 from database import SessionLocal, crtfc_key
 from sqlalchemy import func, cast, Integer
 from sqlalchemy.orm import Session, aliased
-from sqlalchemy import text
+from sqlalchemy import text, Table, MetaData
 from models.baro_models import CompanyInfo, FS2023, FS2022, FS2021, FS2020, Favorite, RecentView, StockData
 import requests as http_requests
 import zipfile
@@ -28,11 +28,31 @@ from langchain.chains import MapReduceDocumentsChain, ReduceDocumentsChain
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_openai import ChatOpenAI
-from langchain_teddynote import logging
+from langchain_teddynote import logging as langchain_logging
 import pdfkit
 import logging
+import json
+
+import os
+from dotenv import load_dotenv
+
+# 환경 변수에서 DART_API_KEY를 가져옵니다
+GPT_API_KEY = os.getenv("OPENAI_API_KEY")
+
+# API KEY 정보로드
+load_dotenv()
+
+# langchain_teddynote의 로깅 설정
+langchain_logging.langsmith("Spoon")
+
+# LOGGING 모듈을 사용하여 일반적인 로깅 설정
+logging.basicConfig(level=logging.INFO)
 
 
+# httpx 및 requests 라이브러리의 디버그 로그를 비활성화
+logging.getLogger("httpx").setLevel(logging.CRITICAL)
+logging.getLogger("requests").setLevel(logging.CRITICAL)
+logging.getLogger("urllib3").setLevel(logging.CRITICAL)  # 추가된 부분
 
 def search_company(db: Session, keyword: str) -> List[str]:
 
@@ -126,35 +146,54 @@ def get_Stock_data(db: Session, corp_code: str):
 def get_FS2023_list(db: Session, jurir_no_list: List[str]) -> List[FS2023]:
     return db.query(FS2023).filter(FS2023.jurir_no.in_(jurir_no_list)).all()
 
-## DB의 재무 정보와 DART의 결과 임의로 비교하기 위해 임시로 만듬.
+## 총자산 크기로 뽑기
+# def get_sample_jurir_no(db: Session) -> List[str]:
+#     CompanyInfoAlias = aliased(CompanyInfo)
+#     FS2023Alias = aliased(FS2023)
+
+#     subquery = (
+#         db.query(CompanyInfoAlias.jurir_no)
+#         .join(FS2023Alias, CompanyInfoAlias.jurir_no == FS2023Alias.jurir_no)
+#         .filter(FS2023Alias.totalAsset2023 > 0)
+#         .order_by(FS2023Alias.totalAsset2023.desc())
+#         .offset(30)  # 시작점
+#         .limit(40)   # 종료점    
+#         )
+
+#     jurir_no_list = [result[0] for result in subquery.all()]
+#     return jurir_no_list
+
+## 랜덤으로 10개 뽑기 
 def get_sample_jurir_no(db: Session) -> List[str]:
-    # Alias for the tables
-    CompanyInfoAlias = aliased(CompanyInfo)
-    FS2023Alias = aliased(FS2023)
+    # SQL 쿼리를 직접 실행하기 위해 text() 함수를 사용
+    query = text("""
+        SELECT a.jurir_no 
+        FROM FS2023_backup a
+        LEFT OUTER JOIN companyInfo b
+        ON a.jurir_no = b.jurir_no
+        WHERE a.totalAsset2023 > 0
+        and a.jurir_no not in 
+        (select jurir_no from FS2023)
+        ORDER BY a.totalAsset2023 DESC
+        LIMIT 10;
+    """)
 
-    # Create the query
-    subquery = (
-        db.query(CompanyInfoAlias.jurir_no)
-        .join(FS2023Alias, CompanyInfoAlias.jurir_no == FS2023Alias.jurir_no)
-        .filter(FS2023Alias.totalAsset2023 > 0)
-        .order_by(FS2023Alias.totalAsset2023.desc())
-        .offset(30)  # 시작점
-        .limit(40)   # 종료점    
-        )
-
-    # Execute the query and get the jurir_no list
-    jurir_no_list = [result[0] for result in subquery.all()]
+    # 쿼리를 실행하고 결과를 리스트로 변환
+    result = db.execute(query)
+    jurir_no_list = [row[0] for row in result]  # 튜플의 첫 번째 요소로 접근
 
     return jurir_no_list
 
 
 
 def get_FS2023(db: Session, jurir_no: str):
-    # Retrieve the data from the database
+    # Retrieve the data from the database2
+    # print("get_FS2023 started")
     fs_data = db.query(FS2023).filter(FS2023.jurir_no == jurir_no).first()
 
-    if fs_data and fs_data.totalAsset2023 > 0:
+    if fs_data:
         # If totalAsset2023 is greater than 0, return the actual data
+        # print("get_FS2023 started")
         return fs_data
     else:
         # Return a new FS2023 object with default values
@@ -184,7 +223,7 @@ def get_FS2022(db: Session, jurir_no: str):
     # Retrieve the data from the database
     fs_data = db.query(FS2022).filter(FS2022.jurir_no == jurir_no).first()
 
-    if fs_data and fs_data.totalAsset2022 > 0:
+    if fs_data:
         # If totalAsset2023 is greater than 0, return the actual data
         return fs_data
     else:
@@ -215,7 +254,7 @@ def get_FS2021(db: Session, jurir_no: str):
     # Retrieve the data from the database
     fs_data = db.query(FS2021).filter(FS2021.jurir_no == jurir_no).first()
 
-    if fs_data and fs_data.totalAsset2021 > 0:
+    if fs_data:
         # If totalAsset2023 is greater than 0, return the actual data
         return fs_data
     else:
@@ -247,7 +286,7 @@ def get_FS2020(db: Session, jurir_no: str):
     # Retrieve the data from the database
     fs_data = db.query(FS2020).filter(FS2020.jurir_no == jurir_no).first()
 
-    if fs_data and fs_data.totalAsset2020 > 0:
+    if fs_data:
         # If totalAsset2023 is greater than 0, return the actual data
         return fs_data
     else:
@@ -553,62 +592,156 @@ def get_recent_views(db: Session, username: str):
                 "capital2023": financial_info.capital2023 // 100000000 if financial_info else None,
                 "revenue2023": financial_info.revenue2023 // 100000000 if financial_info else None,
                 "netIncome2023": financial_info.netIncome2023 // 100000000 if financial_info else None,
+                
             })
     return recent_views_companies
 
 
-import os
-from dotenv import load_dotenv
-from langchain_teddynote import logging
-# 환경 변수에서 DART_API_KEY를 가져옵니다
-GPT_API_KEY = os.getenv("OPENAI_API_KEY")
-
-# API KEY 정보로드
-load_dotenv()
-
-logging.langsmith("Spoon")
-# 데이터베이스 설정
 
 
-def FS_update(db: Session, corp_code: str, corp_name: str):
-    print(corp_name)
+def FS_update(db: Session, corp_code: str, corp_name: str, baseYear):
+    # FS 업데이트 시작 로그
+    print(f"FS update started for {corp_name} (corp_code: {corp_code}, year: {baseYear})")
+    
     # Step 1: DART 공시 보고서 번호를 받아옵니다.
     report_list = get_dart_report_list(corp_code)
-    
-    # Step 2: 2023년 기준의 최신 보고서 접수번호를 가져옵니다.
-    FSSreport2023 = get_latest_report_receipt_no(report_list, 2023)
-    print(f"Latest report for 2023: {FSSreport2023}")
-    
-    # Step 3: 보고서 번호로 DART 사이트에서 필요한 데이터를 추출합니다.
-    soup = fetch_and_create_urls(FSSreport2023, 1)
- 
+    print(f"Report list fetched for {corp_name}: {report_list}")
+
+    valid_receipt_no = None
+    for i in range(2):  # 2번 반복
+        # Step 2: 기준 연도의 최신 보고서 접수번호를 가져옵니다.
+        FSSreport = get_latest_report_receipt_no(report_list, baseYear, valid_receipt_no)
+        print(f"Latest report receipt number for {baseYear}: {FSSreport}")
+
+        # Step 3: 보고서 번호로 DART 사이트에서 필요한 데이터를 추출합니다.
+        soup, url = fetch_and_create_urls(FSSreport, 1)
+        
+        if soup: break
+        else: valid_receipt_no = FSSreport
+        
+    print(f"Processing URL for {corp_name}: {url}")
+    # print(f"Processing soup {soup}")
     # Step 4: 추출된 데이터에서 계정 정보와 당기 금액을 정리합니다.
     extracted_data = None
     if soup:
+        # 첫 번째 시도 로그
+        # print(f"First attempt to extract data for {corp_name}")
         extracted_data = extract_account_data(soup)
-        print(f"Extracted Data 1st try: {extracted_data}")
-    
-        if extracted_data == []:
-            soup = fetch_and_create_urls(FSSreport2023, 2)
-            extracted_data = extract_account_data(soup)
-            print(f"Extracted Data 2nd try: {extracted_data}")
-    
-    if not extracted_data:
-        print("Failed to retrieve or parse the report.")
-        return None  # 또는 적절한 기본값을 반환
+        print(f"Extracted Data (1st try) for {corp_name}: {extracted_data}")
 
-    # Step 5: 요약된 재무 데이터를 처리 (이 단계는 추가적으로 필요에 따라 구현)
-    fs_dict = FSmaker(extracted_data)
-    print("DART")
-    print(fs_dict)
+        if extracted_data == []:
+            # print(f"First extraction attempt failed, trying again for {corp_name}")
+            soup, url = fetch_and_create_urls(FSSreport, 2)
+            extracted_data = extract_account_data(soup)
+            # print(f"Extracted Data (2nd try) for {corp_name}: {extracted_data}")
+        
+    if not extracted_data:
+        print(f"Failed to retrieve or parse the report for {corp_name}")
+        print(soup)
+        # fs_dict 초기화
+        fs_dict = {
+            "자산총계": 0,
+            "부채총계": 0,
+            "자본총계": 0,
+            "자본금": 0,
+            "매출액": 0,
+            "영업이익": 0,
+            "법인세차감전순이익": 0,
+            "당기순이익": 0,
+            "재무제표url" : url,
+            "재무제표상세" : None
+        }
+        print(f"Returning default fs_dict for {corp_name}")
+        return fs_dict  # 기본 값을 반환하여 에러 방지
+    
+    # Step 5: 요약된 재무 데이터를 처리
+    fs_dict = FSmaker(extracted_data, url)
+    
+    
+    # Step 5: fs_dict에 None 값이 있는지 확인하고, 있을 경우 GPT로 업데이트
+    # 예를 들어 국민은행 2020~2021 재무제표 양식이 완전히 달라 스크래핑 할 수 없음. 
+    # if any(value is None for value in fs_dict.values()):
+    #     print(f"Some values are missing in fs_dict for {corp_name}, updating with GPT")
+    #     # HTML과 기존 재무 정보를 gpt에 넘긴다. 
+    #     extracted_data = extract_account_data_with_gpt(soup.text)
+    #     print(f"fs_dict after GPT update for {corp_name}: {extracted_data}")
+        
+        
+
+    
+    print(f"Final financial statement dictionary for {corp_name}: {fs_dict}")
+
+
+
+    # FS 업데이트 완료 로그
+    # print(f"FS update completed for {corp_name} (corp_code: {corp_code}, year: {baseYear})")
     return fs_dict
+
+
+from langchain_openai import ChatOpenAI
+import json
+
+def extract_account_data_with_gpt(extracted_text: str) -> List[dict]:
+    llm = ChatOpenAI(api_key=GPT_API_KEY, model_name="gpt-4o-mini-2024-07-18", temperature=0.0)
+
+    # 프롬프트를 텍스트로 정의합니다.
+    prompt = f"""
+    아래는 기업의 재무제표와 관련된 텍스트 데이터입니다. 이 데이터를 바탕으로 계정 이름과 금액을 추출하여 다음 형식의 리스트로 반환하십시오:
+    [
+        {{"account_name": "<계정 이름>", "current_amount": <금액>}},
+        ...
+    ]
+    금액은 숫자만 포함하고, 단위는 계산해서 원단위로 환산해주세요. 
+    만약 값이 음수라면, '-' 기호를 포함하여 반환해주세요.
+    
+    자산총계, 부채총계, 자본총계, 자본금, 매출액, 영업이익, 법인세차감전순이익, 당기순이익은 꼭 포함해주세요.
+    매출액이 없을 경우 이자수익과 수수료수익 또는 보험영업수익과 투자영업수익을 꼭 포함해주세요. 
+    
+    각각의 계정은 아래와 같이 매핑될 수 있습니다.
+    
+    자산총계는 "자산총계", "자산"으로 불릴 수 있습니다.
+    부채총계는 "부채총계", "부채"로 불릴 수 있습니다.
+    자본총계는 "자본총계", "자본", "순자산", "자본계"로 불릴 수 있습니다.
+    자본금은 "자본금", "보통주자본금", "납입자본"으로 불릴 수 있습니다.
+    매출액은 "외부고객으로부터의수익", "매출액", "영업수익", "수익매출액", "매출", "영업수익매출액", "매출액주석", "매출및지분법손익"으로 불릴 수 있습니다.
+    영업이익은 "영업이익", "영업이익손실", "영업손실"로 불릴 수 있습니다.
+    법인세차감전순이익은 "법인세차감전계속영업이익", "계속영업법인세비용차감전순이익", "법인세비용차감전계속사업이익", "법인세비용차감전계속영업이익", "법인세비용차감전손익", "법인세비용차감전순이익", "법인세차감전순이익", "법인세비용차감전순손실", "법인세비용차감전순손익", "법인세비용차감전당기순이익", "법인세비용차감전계속영업순이익", "법인세비용차감전이익", "법인세차감전순손실"로 불릴 수 있습니다.
+    당기순이익은 "당기순이익", "연결당기순이익", "당기순손실", "당기순손익", "당기연결순이익"으로 불릴 수 있습니다.
+
+    텍스트 데이터:
+    {extracted_text}
+    """
+
+    try:
+        # GPT-4 모델에게 직접 프롬프트를 보내고 응답을 받습니다.
+        response = llm(prompt)
+
+        # 응답이 코드 블록으로 감싸져 있을 수 있으므로 이를 제거합니다.
+        response_text = response.content.strip('```json').strip('```').strip()
+
+        # 응답을 JSON 형태로 파싱하여 리스트로 반환합니다.
+        extracted_data = json.loads(response_text)
+    except json.JSONDecodeError as e:
+        print(f"GPT 응답 파싱 실패: {response_text}, 에러: {e}")
+        extracted_data = []
+    except Exception as e:
+        print(f"오류가 발생했습니다: {e}")
+        extracted_data = []
+
+    return extracted_data
+
+
+
+
+
 
 # Step 1: DART 공시 보고서 리스트를 리턴하는 함수
 def get_dart_report_list(corp_code: str):
     # API 요청 URL
+    # print("get_dart_report_list def start")
     url = 'https://opendart.fss.or.kr/api/list.json'
     all_reports = []
-    pblntf_types = ['A', 'E', 'F']
+    pblntf_types = ['A','B','C','D','E','F','G','H','I','J',]
     start_date = datetime(2020, 1, 1)
     end_date = datetime(2026, 12, 31)
 
@@ -644,6 +777,7 @@ def get_dart_report_list(corp_code: str):
                             'rcept_dt': report.get('rcept_dt')
                         }
                         all_reports.append(report_info)
+                # print(all_reports)
             else:
                 print(f"HTTP 요청 실패: {response.status_code}")
 
@@ -656,48 +790,55 @@ def get_dart_report_list(corp_code: str):
     return all_reports
 
 # Step 2: 최신 보고서 접수번호를 리턴하는 함수
-def get_latest_report_receipt_no(all_reports, baseYear):
+def get_latest_report_receipt_no(all_reports, baseYear, valid_receipt_no):
     latest_receipt_no = None
     secondary_receipt_no = None
+    
 
-    business_report_name = f"사업보고서 ({baseYear}.12)"
-    consolidated_audit_report_name = f"연결감사보고서 ({baseYear}.12)"
-    audit_report_name = f"감사보고서 ({baseYear}.12)"
+    if valid_receipt_no is not None:
+        all_reports = [report for report in all_reports if report['rcept_no'] != valid_receipt_no]
+
+    
+    # 보고서 이름에 기재정정 여부를 제외한 기본 패턴 정의
+    business_report_name_pattern = f"사업보고서.*{baseYear}.*12"
+    consolidated_audit_report_name_pattern = f"연결감사보고서.*{baseYear}.*12"
+    audit_report_name_pattern = f"감사보고서.*{baseYear}.*12"
 
     for report in all_reports:
-        report_name = report['report_nm']
-        if report_name in [business_report_name, consolidated_audit_report_name]:
+        # 대괄호로 둘러싸인 접두어 제거 및 공백 제거
+        report_name = re.sub(r'\[.*?\]', '', report['report_nm']).replace(' ', '').strip()
+        print(f"Checking report_name: {report_name}")  # 디버깅을 위한 출력
+
+        if re.search(business_report_name_pattern, report_name) or re.search(consolidated_audit_report_name_pattern, report_name):
             if latest_receipt_no is None or report['rcept_no'] > latest_receipt_no:
                 latest_receipt_no = report['rcept_no']
-        elif report_name == audit_report_name:
+        elif re.search(audit_report_name_pattern, report_name):
             if secondary_receipt_no is None or report['rcept_no'] > secondary_receipt_no:
                 secondary_receipt_no = report['rcept_no']
 
     return latest_receipt_no if latest_receipt_no else secondary_receipt_no
+
 
 # Step 3: DART 사이트에서 보고서를 추출하는 함수
 def fetch_and_create_urls(report_numbers, tryNum):
     url_base = 'https://dart.fss.or.kr/dsaf001/main.do?rcpNo='
 
 
-    url = f"{url_base}{report_numbers}"
-    print(f"Processing URL: {url}")
+    Processingurl = f"{url_base}{report_numbers}"
+    # print(f"Processing URL: {Processingurl}")
 
-    response = http_requests.get(url)
+    response = http_requests.get(Processingurl)
     if response.status_code == 200:
 
-        return create_report_url(response.text, report_numbers, tryNum)
+        return create_report_url(response.text, report_numbers, tryNum), Processingurl
     else:
         print(f"HTTP 요청 실패: {response.status_code}")
         return None
-    
-    
-    
-
 
 def extract_account_data(soup):
     extracted_data = []
     unit = 1  # 기본 단위를 원으로 초기화
+    unit_found = False  # 단위가 추출되었는지 확인하는 플래그
 
     # 모든 테이블을 처리
     tables = soup.find_all('table')
@@ -720,9 +861,31 @@ def extract_account_data(soup):
                     if len(td_tags) > annotation_index:
                         td_tags[annotation_index].decompose()  # 주석 열 태그를 실제로 HTML에서 제거
 
-
         for tr in table.find_all('tr'):
             td_tags = tr.find_all('td')
+
+            # "단위:"라는 키워드가 포함된 <td> 태그에서 단위를 한 번만 추출
+            if not unit_found:
+                for td in td_tags:
+                    td_text = td.get_text(strip=True)
+                    if '단위' in td_text:
+                        if '십억원' in td_text:
+                            unit = 1000000000
+                        elif '억원' in td_text:
+                            unit = 100000000
+                        elif '백만원' in td_text:
+                            unit = 1000000
+                        elif '천원' in td_text:
+                            unit = 1000
+                        elif '원' in td_text:
+                            unit = 1
+                        unit_found = True
+                        break  # 단위를 찾았으므로 더 이상 반복할 필요 없음
+
+            # <TD> 태그 안에 텍스트나 숫자 없이 태그 정보만 있는 경우 해당 태그 삭제
+            for td in td_tags:
+                if not td.get_text(strip=True):  # 텍스트가 없으면
+                    td.decompose()  # 태그를 삭제
 
             # 모든 <td> 값이 비어있거나 ' ' 또는 특수문자(예: '-')로만 이루어진 경우, 해당 <td>를 삭제
             td_tags = [td for td in td_tags if re.sub(r'[\s\-]+', '', td.get_text(strip=True)) != '']
@@ -731,54 +894,26 @@ def extract_account_data(soup):
             if not td_tags:
                 continue
 
-            # "단위:"라는 키워드가 포함된 <td> 태그에서 단위를 추출
-            for td in td_tags:
-                td_text = td.get_text(strip=True)
-                if '단위' in td_text:
-                    if '십억원' in td_text:
-                        unit = 1000000000
-                    elif '억원' in td_text:
-                        unit = 100000000
-                    elif '백만원' in td_text:
-                        unit = 1000000
-                    elif '천원' in td_text:
-                        unit = 1000
-                    elif '원' in td_text:
-                        unit = 1
-                    break  # 단위를 찾았으므로 더 이상 반복할 필요 없음
-
             current_amount = None  # 초기값 설정
             account_name = None
 
             # "자본의 변동" 또는 "현금 흐름" 키워드가 등장하면 중단하고 데이터 반환
             tr_text = tr.get_text(strip=True).replace(' ', '')
-            if re.search(r'자본의변동|현금흐름표', tr_text):
+            if re.search(r'자본의변동|현금흐름표|자본변동표', tr_text):
                 return extracted_data
 
-            # 계정과목과 금액 값을 추출
-            if len(td_tags) >= 2:
-                # 괄호 안에 "주"로 시작하고 숫자가 뒤따르는 패턴 제거 (숫자가 여러 자리일 수 있음)
-                account_name = re.sub(r'\(주\d{1,3}(,\d{1,3})*\)', '', td_tags[0].get_text(strip=True))
+            tdIndex = 0
+            # 첫 번째 <td>에서 계정명을 추출
+            if len(td_tags) >= tdIndex + 1:
+                account_name = clean_account_name(td_tags[tdIndex].get_text(strip=True))
+            
+            # 첫 번째 <td>가 공란이면 두 번째 <td>에서 계정명을 추출
+            if not account_name and len(td_tags) > tdIndex + 1:
+                account_name = clean_account_name(td_tags[tdIndex + 1].get_text(strip=True))
 
-                # 괄호 안에 "주석"과 숫자가 포함된 패턴 제거
-                account_name = re.sub(r'\(주석\s*\d{1,3}(,\s*\d{1,3})*\)', '', account_name)
-
-                # "(손실)" 텍스트가 있을 경우 괄호 포함 제거
-                account_name = re.sub(r'\(손실\)', '', account_name)
-                
-                # "(손실)" 텍스트가 있을 경우 괄호 포함 제거
-                account_name = re.sub(r'\(순손실\)', '', account_name)
-                
-                # "(이익)" 텍스트가 있을 경우 괄호 포함 제거
-                account_name = re.sub(r'\(이익\)', '', account_name)
-
-                # 한글 이외의 모든 문자 제거
-                account_name = re.sub(r'[^가-힣]', '', account_name)
-
-                # 모든 텍스트를 결합하여 current_amount로 설정
-                current_amount = ''.join(list(td_tags[1].stripped_strings)).replace(',', '').replace('=', '')
-                if not current_amount and len(td_tags) > 2:
-                    current_amount = ''.join(list(td_tags[2].stripped_strings)).replace(',', '').replace('=', '')
+            # current_amount를 안전하게 설정
+            if len(td_tags) > tdIndex + 2:
+                current_amount = ''.join(list(td_tags[tdIndex + 2].stripped_strings)).replace(',', '').replace('=', '')
 
             # 금액에서 괄호를 제거하고 음수로 변환
             if current_amount:
@@ -800,10 +935,20 @@ def extract_account_data(soup):
 
     return extracted_data
 
+def clean_account_name(name: str) -> str:
+    # 계정명 정제를 위한 공통 함수
+    name = re.sub(r'\(주\d{1,3}(,\d{1,3})*\)', '', name)
+    name = re.sub(r'\(주석\s*\d{1,3}(,\s*\d{1,3})*\)', '', name)
+    name = re.sub(r'\((손실|순손실|이익)\)', '', name)
+    name = re.sub(r'\(단위\s*:\s*[가-힣]+\)', '', name)
+    name = re.sub(r'[^가-힣]', '', name)
+    return name
+
+
 # 기타 함수들
 def create_report_url(html_content, rcp_no, tryNum):
     # 우선순위에 따라 키워드 목록을 정의합니다.
-    
+    # print(html_content)
     if tryNum == 1:
         keyword_patterns = [
             r"연\s*결\s*재\s*무\s*제\s*표",
@@ -833,7 +978,10 @@ def create_report_url(html_content, rcp_no, tryNum):
                 node_data = extract_node_data(lines, i)
                 if node_data:
                     report_url = format_report_url(node_data, rcp_no)
-                    return fetch_and_save_report_details(report_url)
+                    print(f"report_url detail: {report_url}")
+                    
+                    
+                    return fetch_and_save_report_details(report_url) #report_url을 바탕으로 SOUP리턴
 
     return None
 
@@ -865,17 +1013,17 @@ def format_report_url(data, rcp_no):
     
 def fetch_and_save_report_details(report_url):
     response = http_requests.get(report_url)
-    print(f"report_url: {report_url}")
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, 'html.parser')
-        # print(soup)
+
+        # print(f"fetch_and_save_report_details SOUP: {soup}")
         return soup
     else:
         print(f"HTTP 요청 실패: {response.status_code}")
         return None
 
 
-def FSmaker(extracted_data):
+def FSmaker(extracted_data, url):
     fs_dict = {
         "자산총계": None,
         "부채총계": None,
@@ -885,6 +1033,8 @@ def FSmaker(extracted_data):
         "영업이익": None,
         "법인세차감전순이익": None,
         "당기순이익": None,
+        "재무제표url" : url,
+        "재무제표상세" : extracted_data
     }
     
     # 필요한 항목 이름 매핑 (복수의 항목이 매핑될 수 있음)
@@ -896,7 +1046,7 @@ def FSmaker(extracted_data):
         "매출액": ["외부고객으로부터의수익", "매출액", "영업수익", "수익매출액", "매출", "영업수익매출액","매출액주석","매출및지분법손익"],
         "영업이익": ["영업이익", "영업이익손실", "영업손실"],
         "법인세차감전순이익": ["법인세차감전계속영업이익","계속영업법인세비용차감전순이익","법인세비용차감전계속사업이익","법인세비용차감전계속영업이익","법인세비용차감전손익", "법인세비용차감전순이익", "법인세차감전순이익", "법인세비용차감전순손실", "법인세비용차감전순손익", "법인세비용차감전당기순이익","법인세비용차감전계속영업순이익","법인세비용차감전이익","법인세차감전순손실"],
-        "당기순이익": ["당기순이익", "당기순이익", "연결당기순이익", "당기순손실","당기순손익","당기연결순이익"]
+        "당기순이익": ["당기순이익", "당기순이익", "연결당기순이익", "당기순손실","당기순손익","당기연결순이익", "당기연결총포괄이익"]
     }
 
     # 매출액 관련 항목
@@ -950,3 +1100,73 @@ def FSmaker(extracted_data):
             )
 
     return fs_dict
+
+
+
+def fs_db_insert(db: Session, jurir_no: str, fs_dict: dict, baseYear: int):
+    try:
+        # 테이블 이름을 연도에 따라 동적으로 설정
+        table_name = f"FS{baseYear}"
+
+        # MetaData를 생성하고 테이블을 동적으로 참조
+        metadata = MetaData()
+        fs_table = Table(table_name, metadata, autoload_with=db.bind)
+        
+        # 먼저 해당 jurir_no의 데이터를 삭제
+        db.execute(fs_table.delete().where(fs_table.c.jurir_no == jurir_no))
+
+        # 계산된 필드들
+        total_asset = fs_dict.get("자산총계")
+        total_debt = fs_dict.get("부채총계")
+        total_equity = fs_dict.get("자본총계")
+        revenue = fs_dict.get("매출액")
+        net_income = fs_dict.get("당기순이익")
+        capital = fs_dict.get("자본금")
+        operating_income = fs_dict.get("영업이익")
+        earning_before_tax = fs_dict.get("법인세차감전순이익")
+        fs_url = fs_dict.get("재무제표url")
+        # fs_detail을 JSON 문자열로 변환
+        fs_detail = json.dumps(fs_dict.get("재무제표상세"))
+
+        debt_ratio = round(total_debt / total_equity * 100, 2) if total_debt and total_equity else 0
+        margin = round(net_income / revenue, 3) if net_income and revenue else 0
+        turnover = round(revenue / total_asset, 3) if revenue and total_asset else 0
+        leverage = round(total_asset / total_equity, 3) if total_asset and total_equity else 0
+        
+        base_date = datetime(baseYear, 12, 31)  # baseYear + 12 + 31을 날짜 형식으로
+
+        # 삽입할 데이터 생성
+        insert_data = {
+            'baseDate': base_date,  # baseDate
+            'bizYear': baseYear,  # bizYear
+            'jurir_no': jurir_no,  # jurir_no
+            'currency': 'KRW',  # currency
+            'fsCode': fs_dict.get("fsCode"),  # fsCode
+            'fsName': fs_dict.get("fsName"),  # fsName
+            f'totalAsset{baseYear}': total_asset,  # totalAsset{baseYear}
+            f'totalDebt{baseYear}': total_debt,  # totalDebt{baseYear}
+            f'totalEquity{baseYear}': total_equity,  # totalEquity{baseYear}
+            f'capital{baseYear}': capital,  # capital{baseYear}
+            f'revenue{baseYear}': revenue,  # revenue{baseYear}
+            f'operatingIncome{baseYear}': operating_income,  # operatingIncome{baseYear}
+            f'earningBeforeTax{baseYear}': earning_before_tax,  # earningBeforeTax{baseYear}
+            f'netIncome{baseYear}': net_income,  # netIncome{baseYear}
+            f'debtRatio{baseYear}': debt_ratio,  # debtRatio{baseYear}
+            f'margin{baseYear}': margin,  # margin{baseYear}
+            f'turnover{baseYear}': turnover,  # turnover{baseYear}
+            f'leverage{baseYear}': leverage,  # leverage{baseYear}
+            'created_at': datetime.now(),  # created_at (timestamp)
+            'FS_url': fs_url,  # FS_url
+            'FS_detail': fs_detail  # FS_detail
+        }
+
+        # 새로운 레코드 삽입
+        db.execute(fs_table.insert().values(insert_data))
+
+        # 변경 사항을 커밋하여 DB에 반영
+        db.commit()
+
+    except Exception as e:
+        db.rollback()  # 오류가 발생한 경우 롤백
+        print(f"An error occurred while inserting/updating {table_name}: {str(e)}")
+        raise
