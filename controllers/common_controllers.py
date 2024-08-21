@@ -26,7 +26,7 @@ from fastapi import (
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, HTMLResponse
 from pydantic import BaseModel
-from sqlalchemy import func, or_
+from sqlalchemy import desc, func, or_
 from sqlalchemy.orm import Session
 from database import SessionLocal
 from models.baro_models import CompanyInfo
@@ -1080,15 +1080,77 @@ async def search_contacts(
     )
 
 
-# 세부정보
+# # 세부정보
+# @router.get("/contact5")
+# async def read_contact(
+#     request: Request, jurir_no: str = Query(...), db: Session = Depends(get_db)
+# ):
+#     username = request.session.get("username")
+#     company_info = (
+#         db.query(CompanyInfo).filter(CompanyInfo.jurir_no == jurir_no).first()
+#     )
+#     if not company_info:
+#         raise HTTPException(status_code=404, detail="Company not found")
+
+#     kakao_map_api_key = os.getenv("KAKAO_MAP_API_KEY")
+#     if not kakao_map_api_key:
+#         raise HTTPException(status_code=500, detail="Kakao Map API key is not set")
+
+#     # 명함 데이터를 회사 이름으로 필터링하여 가져오기
+#     business_cards = (
+#         db.query(BusinessCard)
+#         .filter(BusinessCard.corporation_name == company_info.corp_name)
+#         .all()
+#     )
+
+#     # # 명함 데이터를 가져오기
+#     # business_cards = db.query(BusinessCard).all()
+
+#     # 포스트 데이터를 가져오기
+#     # posts = db.query(Post).all()
+
+#     # 포스트 데이터를 회사 이름으로 필터링하여 가져오기
+#     posts = db.query(Post).filter(Post.corporation_name == company_info.corp_name).all()
+
+#     # 뉴스 기사 가져오기
+#     try:
+#         news_articles = fetch_naver_news(company_info.corp_name)
+#     except HTTPException as e:
+#         news_error = str(e)
+
+#     # logging.info(f"Address: {company_info.adres}")  # 디버깅을 위해 주소 출력
+#     # logging.info(f"API Key: {kakao_map_api_key}")  # API 키 확인
+#     # logging.info(f"Username: {username}")  # 사용자명 확인
+
+#     return templates.TemplateResponse(
+#         "contact/contact5.html",
+#         {
+#             "request": request,
+#             "username": username,
+#             "company_info": company_info,
+#             "kakao_map_api_key": kakao_map_api_key,
+#             "news": news_articles,
+#             "adres": company_info.adres,
+#             "business_cards": business_cards,  # (필터링된) 명함 데이터를 템플릿으로 전달
+#             "posts": posts,  # (필터링된) 포스트 데이터를 템플릿으로 전달
+#         },
+#     )
+
 @router.get("/contact5")
 async def read_contact(
-    request: Request, jurir_no: str = Query(...), db: Session = Depends(get_db)
+    request: Request, 
+    db: Session = Depends(get_db),
+    name: str = Query(None), 
+    search_type: str = Query(None)
 ):
     username = request.session.get("username")
-    company_info = (
-        db.query(CompanyInfo).filter(CompanyInfo.jurir_no == jurir_no).first()
-    )
+    
+    company_info = None
+    if search_type == "company_name":
+        company_info = db.query(CompanyInfo).filter(func.trim(CompanyInfo.corp_name) == name).first()
+    elif search_type == "company_code":
+        company_info = db.query(CompanyInfo).filter(func.trim(CompanyInfo.corp_code) == name).first()
+    
     if not company_info:
         raise HTTPException(status_code=404, detail="Company not found")
 
@@ -1096,31 +1158,16 @@ async def read_contact(
     if not kakao_map_api_key:
         raise HTTPException(status_code=500, detail="Kakao Map API key is not set")
 
-    # 명함 데이터를 회사 이름으로 필터링하여 가져오기
-    business_cards = (
-        db.query(BusinessCard)
-        .filter(BusinessCard.corporation_name == company_info.corp_name)
-        .all()
-    )
+    business_cards = db.query(BusinessCard).filter(BusinessCard.corporation_name == company_info.corp_name).all()
 
-    # # 명함 데이터를 가져오기
-    # business_cards = db.query(BusinessCard).all()
+    posts = db.query(Post).filter(Post.corporation_name == company_info.corp_name).order_by(desc(Post.created_at)).all()
 
-    # 포스트 데이터를 가져오기
-    # posts = db.query(Post).all()
-
-    # 포스트 데이터를 회사 이름으로 필터링하여 가져오기
-    posts = db.query(Post).filter(Post.corporation_name == company_info.corp_name).all()
-
-    # 뉴스 기사 가져오기
+    news_articles = []
+    news_error = None
     try:
         news_articles = fetch_naver_news(company_info.corp_name)
     except HTTPException as e:
         news_error = str(e)
-
-    # logging.info(f"Address: {company_info.adres}")  # 디버깅을 위해 주소 출력
-    # logging.info(f"API Key: {kakao_map_api_key}")  # API 키 확인
-    # logging.info(f"Username: {username}")  # 사용자명 확인
 
     return templates.TemplateResponse(
         "contact/contact5.html",
@@ -1128,11 +1175,13 @@ async def read_contact(
             "request": request,
             "username": username,
             "company_info": company_info,
-            "kakao_map_api_key": kakao_map_api_key,
             "news": news_articles,
+            "corporation_name": company_info.corp_name,
+            "error": news_error if news_error else None,
+            "kakao_map_api_key": kakao_map_api_key,
             "adres": company_info.adres,
-            "business_cards": business_cards,  # (필터링된) 명함 데이터를 템플릿으로 전달
-            "posts": posts,  # (필터링된) 포스트 데이터를 템플릿으로 전달
+            "business_cards": business_cards,
+            "posts": posts,
         },
     )
 
@@ -1174,7 +1223,9 @@ async def show_company_details(
 
         
         business_cards = db.query(BusinessCard).filter(BusinessCard.corporation_name == company_info.corp_name).all()
-        posts = db.query(Post).filter(Post.corporation_name == company_info.corp_name).all()
+        # Post 데이터를 최신 순으로 정렬하여 가져옵니다.
+        posts = db.query(Post).filter(Post.corporation_name == company_info.corp_name).order_by(desc(Post.created_at)).all()
+
         
 
         return templates.TemplateResponse(
@@ -1189,7 +1240,7 @@ async def show_company_details(
                 "kakao_map_api_key": kakao_map_api_key,
                 "adres": company_info.adres,
                 "business_cards": business_cards,  # 명함 데이터를 템플릿으로 전달
-                "posts": posts,  # 포스트 데이터를 템플릿으로 전달
+                "posts": posts,  # 최신 순으로 정렬된 포스트 데이터를 템플릿으로 전달
             },
         )
     except Exception as e:
