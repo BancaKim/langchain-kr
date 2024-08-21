@@ -131,17 +131,63 @@
         margin-right: 5px;
     }
 
+    @media (max-width: 850px) {
+        .qna-question, .qna-reply-item, .qna-form-group {
+            width: 100%;
+            max-width: 100%;
+            float: none;
+            margin-right: 0;
+        }
+
+        .qna-actions, .reply-actions, .qna-form-actions {
+            width: 100%;
+            text-align: center;
+            font-size: small;
+        }
+
+        .qna-actions button, .reply-actions button {
+            margin: 5px 0;
+            width: 15%;
+        }
+
+        .qna-form-actions button {
+            margin: 5px 0;
+            width: 20%;
+        }
+
+        .qna-container {
+            padding: 10px;
+        }
+
+        .qna-page-title {
+            font-size: 1.5rem;
+        }
+
+        .qna-title {
+            font-size: 1.25rem;
+        }
+
+        .qna-content, .reply-content {
+            font-size: 1rem;
+        }
+        
+        .qna-meta {
+            font-size: 0.75rem; 
+        }
+    }
+
 </style>
 {% endblock %}
 
 {% block content %}
 
 <div class="w-full"
-    style="background-image: url('/static/images/home9.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 40vh;">
+    style="background-image: url('/static/images/home8.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 40vh;">
 
     <div class="p-8 w-full max-w-screen-xl mx-auto">
         <span class="block text-left text-xl mb-2">
             <a href="/" class="mr-2 text-white">홈 &nbsp; |</a>
+            <a href="/contact55" class="ml-2 text-white">섭외등록 &nbsp; |</a>
             <a href="/qnas" class="ml-2 text-white">Q&A &nbsp; |</a>
             <span class="ml-2 text-white">상세</span>
         </span>
@@ -161,8 +207,8 @@
         <h3 class="text-4xl qna-title" id="qna-title">{{ qna.title }}</h3>
         <br><br>
         <div class="qna-question bg-red-50 rounded-lg" id="qna-question">
-            <p><strong>작성자:</strong> {{ qna.username }}</p>
-            <p><strong>등록일:</strong> {{ qna.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+            <p class="qna-meta"><strong>작성자:</strong> {{ qna.username }}</p>
+            <p class="qna-meta"><strong>등록일:</strong> {{ qna.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
             <br>
             <h4 class="qna-content">{{ qna.content }}</h4>
             <br />
@@ -188,8 +234,8 @@
             <br>
             {% for reply in replies %}
             <div class="qna-reply-item" id="reply-{{ reply.id }}">
-                <p><strong>작성자:</strong> {{ reply.username }}</p>
-                <p><strong>등록일:</strong> {{ reply.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                <p class="qna-meta"><strong>작성자:</strong> {{ reply.username }}</p>
+                <p class="qna-meta"><strong>등록일:</strong> {{ reply.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
                 <br>
                 <h4 class="reply-content">{{ reply.content }}</h4>
                 <br />
@@ -217,14 +263,14 @@
 
             <div class="qna-form-actions">
                 <button type="submit"
-                    class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-800 inline-block">답글 등록</button>
+                    class="px-3 py-2 bg-purple-600 text-white rounded hover:bg-purple-800 inline-block">답글 등록</button>
             </div>
         </form>
     </div>
 </section>
 <div class="container mx-auto mt-6 text-center px-4 sm:px-6 lg:px-8 max-w-3xl">
     <button onclick="location.href='/qnas'"
-        class="px-6 py-3 bg-purple-600 text-white rounded hover:bg-purple-800 inline-block">목록으로</button>
+        class="px-3 py-2 bg-purple-600 text-white rounded hover:bg-purple-800 inline-block text-sm md:text-base">목록으로</button>
 </div>
 <br><br>
 

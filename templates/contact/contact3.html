@@ -13,16 +13,17 @@
         justify-content: center;
         flex-direction: column;
         align-items: center;
+        padding: 0 1rem; /* 모바일에서 좌우 패딩 추가 */
     }
 
     .chat-box {
         max-width: 800px;
         width: 100%;
-        padding: 2rem;
+        padding: 1rem; /* 패딩 줄임 */
         background-color: #fff;
         border-radius: 10px;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        margin: 1rem;
+        margin: 1rem 0; /* 상하 마진만 유지 */
     }
 
     .chat-log {
@@ -46,6 +47,7 @@
         padding: 5px 10px;
         border-radius: 10px;
         display: inline-block;
+        word-break: break-word; /* 긴 단어 줄바꿈 */
     }
 
     .message.self {
@@ -67,6 +69,7 @@
     .chat-input {
         display: flex;
         width: 100%;
+        box-sizing: border-box;
     }
 
     .chat-input input {
@@ -75,24 +78,48 @@
         border: 1px solid #ced4da;
         border-radius: 5px 0 0 5px;
         box-sizing: border-box;
+        min-width: 0; /* 입력 필드가 너무 작아지지 않도록 */
     }
 
     .chat-input button {
-        padding: 0.75rem 1.5rem;
+        padding: 0.75rem;
         border: none;
-        border-radius: 0 5px 5px 0;
         background-color: #7E22CE;
         color: white;
         font-size: 1rem;
         font-weight: 600;
         cursor: pointer;
-        box-sizing: border-box;
+        border-radius: 0 5px 5px 0;
+        white-space: nowrap; /* 버튼 텍스트 줄바꿈 방지 */
     }
 
     .chat-input button:hover {
-        background-color: #ced4da;
+        background-color: #6B21A8;
+    }
+
+    @media (max-width: 850px) {
+        .chat-box {
+            padding: 0.5rem; /* 모바일에서 패딩 더 줄임 */
+        }
+
+        .chat-input {
+            flex-direction: column; /* 모바일에서 세로로 배치 */
+        }
+
+        .chat-input input {
+            width: 100%;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .chat-input button {
+            width: 100%;
+            border-radius: 5px;
+        }
     }
 </style>
+
+
 {% endblock %}
 
 {% block content %}
@@ -123,7 +150,6 @@
         </span>
         <br><br><br>
 
-
         <div class="mb-4 text-center">
             <h1 class="text-6xl font-bold text-white">단체 대화방</h1>
         </div>
@@ -139,8 +165,7 @@
         </div>
         <div class="chat-input">
             <input type="text" id="chat-input" placeholder="메시지를 입력하세요..." autofocus>
-            <button onclick="sendMessage()"
-            >보내기</button>
+            <button onclick="sendMessage()">보내기</button>
         </div>
     </div>
 </div>
