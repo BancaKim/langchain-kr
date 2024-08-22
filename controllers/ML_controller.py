@@ -1,14 +1,15 @@
 import os
 import shutil
-from fastapi import APIRouter, HTTPException, Request, Depends, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, HTTPException, Request, Depends, Body
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi import UploadFile, File
 from sqlalchemy.orm import Session
 from database import SessionLocal
 from services_def.ML_service import train_model, insert_predictions_into_db, generate_predictions, generate_predictions_dictionary, get_db_predictions
-from services_def.ML_service import save_model_info_to_db, get_all_model_info, get_model_info_by_id, custmomized_train_model, set_default_model
+from services_def.ML_service import save_model_info_to_db, get_all_model_info, get_model_info_by_id, custmomized_train_model, set_default_model, get_default_model
 import logging
+from fastapi.responses import RedirectResponse
 
 import time
 from datetime import datetime
@@ -34,6 +35,7 @@ model_store = {
     "class_report": None,
     "conf_matrix": None,
     "model_info": None,
+    
 }
 
 # Global variable to store predictions
@@ -93,7 +95,9 @@ def get_db():
 #         "username": username
 #     })
     
-    
+
+
+# 모델 게시판에서 클릭을 하면 모델 세부정보 확인 가능
 @machineLearning.get("/model_detail/{model_id}", response_class=HTMLResponse)
 async def view_model_detail(request: Request, model_id: str, db: Session = Depends(get_db)):
     username = request.session.get("username")
@@ -107,7 +111,7 @@ async def view_model_detail(request: Request, model_id: str, db: Session = Depen
     class_report = json.loads(model_info['class_report'])
     conf_matrix = json.loads(model_info['conf_matrix'])
     credit_ratings = ['A', 'A+', 'A-', 'AA', 'AA+', 'AA-', 'AAA', 'B', 'B+', 'B-', 'BB', 'BB+', 'BB-', 'BBB', 'BBB+', 'BBB-']
-
+    
     # Load the model and scaler if necessary
     model_filepath = model_info['model_filepath']
     model_store["model"] = joblib.load(model_filepath)
@@ -116,8 +120,10 @@ async def view_model_detail(request: Request, model_id: str, db: Session = Depen
     model_store["class_report"] = class_report
     model_store["conf_matrix"] = conf_matrix
     model_store["model_info"] = {**model_info, "feature_importances": model_info['feature_importances']}
-
-    return templates.TemplateResponse("ML_template/ML_view.html", {
+    
+    logger.debug(model_id)
+    
+    return templates.TemplateResponse("ML_template/ML_modelDetail.html", {
         "request": request,
         "accuracy": round(accuracy, 2),
         "class_report": class_report,
@@ -133,11 +139,36 @@ async def view_model_detail(request: Request, model_id: str, db: Session = Depen
 
 
 
-
+## 100건에 대해서 신용평가를 수행
 @machineLearning.get("/predict_all/", response_class=HTMLResponse)
-async def predict_all(request: Request, db: Session = Depends(get_db)):
+async def predict_all(request: Request, model_id: str, db: Session = Depends(get_db)):
+    model_id = request.query_params.get("model_id")
+    logger.info(f"Received model_id: {model_id}")
     username = request.session.get("username")
     start_time = time.time()
+    
+    
+    model_info = get_model_info_by_id(db, model_id)
+
+    if not model_info:
+        return HTMLResponse(content="Model not found", status_code=404)
+
+    # Parse JSON fields from the database
+    accuracy = model_info['accuracy']
+    class_report = json.loads(model_info['class_report'])
+    conf_matrix = json.loads(model_info['conf_matrix'])
+    credit_ratings = ['A', 'A+', 'A-', 'AA', 'AA+', 'AA-', 'AAA', 'B', 'B+', 'B-', 'BB', 'BB+', 'BB-', 'BBB', 'BBB+', 'BBB-']
+    
+    # Load the model and scaler if necessary
+    model_filepath = model_info['model_filepath']
+    model_store["model"] = joblib.load(model_filepath)
+    model_store["scaler"] = pickle.loads(model_info['scaler'])
+    model_store["accuracy"] = accuracy
+    model_store["class_report"] = class_report
+    model_store["conf_matrix"] = conf_matrix
+    model_store["model_info"] = {**model_info, "feature_importances": model_info['feature_importances']}
+        
+    
     if model_store["model"] is None or model_store["scaler"] is None:
         raise HTTPException(status_code=400, detail="Model not trained yet. Please train the model first.")
     
@@ -154,7 +185,6 @@ async def predict_all(request: Request, db: Session = Depends(get_db)):
         "max_features": model_store["model_info"]["max_features"],
         "n_samples": model_store["model_info"]["n_samples"]
     }
-    # logger.info(predictions)
     return templates.TemplateResponse("/ML_template/ML_creditViewHTML.html", {
         "request": request,
         "predictions": predictions,
@@ -162,12 +192,15 @@ async def predict_all(request: Request, db: Session = Depends(get_db)):
         "elapsed_time": elapsed_time,
         "count": len(predictions),
         "show_db_button": True,
-        "username": username 
+        "username": username,
+        "model_id": model_id
     })
 
 
-@machineLearning.post("/insert_predictions/", response_class=JSONResponse)
-async def insert_predictions(request: Request, db: Session = Depends(get_db)):
+# 생성된 신용등급 DB삽입
+@machineLearning.get("/insert_predictions/", response_class=JSONResponse)
+async def insert_predictions(request: Request, model_id: str, db: Session = Depends(get_db)):
+
     username = request.session.get("username")    
     if model_store["model"] is None or model_store["scaler"] is None:
         return JSONResponse(content={"error": "Model not trained yet. Please train the model first."}, status_code=400)
@@ -176,14 +209,15 @@ async def insert_predictions(request: Request, db: Session = Depends(get_db)):
     
     if error:
         return JSONResponse(content=error, status_code=400)
-
-    model_info = model_store["model_info"]
-    creation_date = datetime.strptime(model_info['creation_date'], "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d")
-    model_reference = f"{round(model_store['accuracy'], 2)}_{model_info['model_name']}_{creation_date}"
-    # logger.info(predictions)
     
+    model_info = get_model_info_by_id(db, model_id)
+   
+    if model_info is None:
+        return JSONResponse(content={"error": "Model not found."}, status_code=404)
+    
+    model_info = model_store["model_info"]
+
     for prediction in predictions:
-        # sorted_probabilities를 class 기준으로 정렬
         sorted_probabilities = sorted(prediction['sorted_probabilities'], key=lambda x: x['class'])
         probabilities_dict = {prob['class']: prob['probability'] for prob in sorted_probabilities}
         
@@ -214,16 +248,17 @@ async def insert_predictions(request: Request, db: Session = Depends(get_db)):
             "CCC_minus": probabilities_dict.get('CCC-', 0.0),
             "C": probabilities_dict.get('C', 0.0),
             "D": probabilities_dict.get('D', 0.0),
-            "model_reference": model_reference,
+            "model_reference": model_id,
             "username": username
         }
-        insert_predictions_into_db(db, result, model_reference)
-
-    return JSONResponse(content={"message": "ML로 생성한 신용등급 추정치가 DB에 입력되었습니다."}, status_code=200)
-
-
+        insert_predictions_into_db(db, result, model_id)
+    
+    return JSONResponse(content={"message": "ML로 생성한 신용등급 추정치가 DB에 입력되었습니다."}, status_code=200) 
 
 
+
+
+# 모델 메인 화면 
 @machineLearning.get("/modelControl/", response_class=HTMLResponse)
 async def view_DB_predict(request: Request, db: Session = Depends(get_db)):
     username = request.session.get("username")
@@ -311,7 +346,9 @@ async def train(request: Request, file_upload: UploadFile = File(...), db: Sessi
         
     # Save model info to DB
     logger.info('Save model info to DB start')
-    save_model_info_to_db(
+    
+    ## 아래 save_model_info_to_db 에서 모델 ID가 생성된다. 
+    model_id = save_model_info_to_db(
         model_info=model_info,
         accuracy=accuracy,
         model=model,
@@ -323,7 +360,7 @@ async def train(request: Request, file_upload: UploadFile = File(...), db: Sessi
     )
 
     # 결과 반환
-    return templates.TemplateResponse("ML_template/ML_view.html", {
+    return templates.TemplateResponse("ML_template/ML_modelDetail.html", {
         "request": request,
         "accuracy": round(accuracy, 2),
         "class_report": class_report,
@@ -331,13 +368,15 @@ async def train(request: Request, file_upload: UploadFile = File(...), db: Sessi
         "model_info": model_info,
         "credit_ratings": credit_ratings,
         "show_predict_button": True,
-        "username": request.session.get("username")
+        "username": request.session.get("username"), 
+        "model_id" : model_id
     })
     
     
 @machineLearning.post("/default_model_pick/{model_id}")
 async def default_model_pick(model_id: str, db: Session = Depends(get_db)):
     logger.info(model_id)
+    
     success = set_default_model(db, model_id)
     
     
@@ -363,3 +402,24 @@ async def default_model_pick(model_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Model not found or could not be set as default.")
     
     return {"success": True, "message": f"Model {model_id}이 디폴트 모델로 설정되었습니다."}
+
+
+@machineLearning.get("/ML_all_credits/", response_class=HTMLResponse)
+async def ML_pretrain(request: Request, db: Session = Depends(get_db)):
+    username = request.session.get("username")
+    
+    # db 세션을 전달
+    defaultModelId = get_default_model(db)
+    model_info = get_model_info_by_id(db, defaultModelId)
+    
+    print(defaultModelId)
+    
+    all_credit_info = get_db_predictions(db, defaultModelId)
+    
+    # HTML에 필요한 데이터를 전달
+    return templates.TemplateResponse("ML_template/ML_credit_view.html", {
+        "request": request,
+        "predictions": all_credit_info,  # HTML에서 result 대신 predictions로 변경
+        "model_info": model_info,
+        "username": username
+    })

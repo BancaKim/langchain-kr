@@ -6,18 +6,20 @@
     <title>Database Predictions</title>
     <style>
 
-        .container {
-            display: flex;
-            margin: 0 auto;
-        }
+.container {
+    display: flex;
+    width: 100%; /* 전체 너비 */
+    margin: 0 auto;
+}
 
-        .main-content {
-            width: 80%;
-            padding: 20px;
-            margin: 0 auto;
-            max-width: 1600px; /* 원하는 최대 너비 */
-
-        }
+.main-content {
+    width: 100%; /* 가로로 전체 영역 차지 */
+    padding: 20px;
+    margin: 0; /* 여백 제거 */
+    flex-grow: 1; /* 화면 크기에 맞춰 확장 */
+    box-sizing: border-box; /* padding과 border를 포함하여 너비 계산 */
+    overflow-y: auto; /* 필요한 경우 세로 스크롤 가능 */
+}
 
         .button {
             flex: 1; /* 버튼이 같은 비율로 확장 */
@@ -77,20 +79,49 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            max-width: 1600px; /* 원하는 최대 너비 */
+        .table-container {
+    margin-top: 20px;
+    width: 100%;
+    overflow-x: auto; /* 테이블이 화면을 넘어갈 경우 스크롤 가능하도록 설정 */
+    border-radius: 5px; /* 테두리 모서리 둥글게 */
+}
 
-        }
-        table, th, td {
-            border: 1px solid black;
-        }
-        th, td {
-            padding: 8px;
-            text-align: left;
-        }
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #f8f9fa; /* 테이블 배경색을 밝은 회색으로 */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* 테이블에 그림자 추가 */
+    border-radius: 5px; /* 테이블의 모서리를 둥글게 */
+    overflow: hidden; /* 테이블의 둥근 모서리가 보이도록 설정 */
+    text-align: center; /* 테이블 안의 모든 글자를 가운데 정렬 */
+}
+
+th, td {
+    padding: 12px 15px; /* 셀 내의 여백을 충분히 설정 */
+    border-bottom: 1px solid #dee2e6; /* 셀 간의 구분을 위해 연한 테두리 추가 */
+    color: #495057; /* 텍스트 색상 */
+    text-align: center; /* 셀 내의 텍스트 가운데 정렬 */
+}
+
+th {
+    background-color: #495057; /* 테이블 헤더 배경색을 짙은 회색으로 */
+    color: white; /* 헤더 텍스트 색상을 흰색으로 */
+    text-transform: uppercase; /* 텍스트를 대문자로 변환 */
+    letter-spacing: 0.1em; /* 글자 사이 간격을 조금 넓힘 */
+}
+
+tr:nth-child(even) {
+    background-color: #f1f3f5; /* 짝수 행의 배경색을 연한 회색으로 설정 */
+}
+
+tr:hover {
+    background-color: #e9ecef; /* 행에 마우스를 올렸을 때 배경색을 약간 짙은 회색으로 변경 */
+}
+
+tr.clickable-row {
+    cursor: pointer;
+}
         h1 {
             margin-top: 20px;
         }
@@ -165,14 +196,21 @@
     <!-- DataTables JS -->
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
     <script>
+
+        // 머신러닝 실행
         function startMachineLearning() {
             document.getElementById('modal').style.display = 'block';
-           
-                window.location.href = "/ML_pretrain/";
+            window.location.href = "/ML_pretrain/";
                 // window.location.href = "/train/";
-           
         }
         
+        // 신용등급 가지고 오기
+        function getCreditRates() {
+            document.getElementById('modal').style.display = 'block';
+            window.location.href = "/ML_all_credits/";
+                // window.location.href = "/train/";
+        }
+
         $(document).ready(function() {
             $('#resultsTable').DataTable();
         });
@@ -244,52 +282,58 @@
             <h1>바로등급 개요</h1>
             <div class="summary-cards">
                 <div class="card">
-                    <h3>ML 신용평가 모델 개요</h3>
+                    <h3>기본 신용평가 모델</h3>
                     <p>적용 모델: RandomForestClassifier</p>
                     <p>생성일 : 2024-08-01 10:31:52</p>
                     <p>평가 업체 수 : 5,360</p>
                     <p>모델 적합도 : 0.86</p>
                 </div>
                 <div class="card">
-                    <h3>기업정보 개요</h3>
+                    <h3>기업정보 현황</h3>
                     <p>자료 출처 : Open DART API</p>
                     <p>주요 내용 : 법인번호, 주소, 상장여부 등</p>
                     <p>등재 업체 수 : 104,574개</p>
                 </div>
                 <div class="card">
-                    <h3>기업 재무정보 개요</h3>
+                    <h3>기업 재무정보 현황</h3>
                     <p>자료 출처 : 금융위원회_기업 재무정보 API</p>
                     <p>주요 내용 : 주요 재무정보 8개 항목</p>
                     <p>등재 업체 수 : 10,277개 </p>
                     <p>가용 연도 : 2023, 2022, 2021, 2020</p>
                 </div>
                 <div class="card">
-                    <h3>주가 정보 개요</h3>
+                    <h3>주가 정보 현황</h3>
                     <p>자료 출처 : FinanceDataReader 등</p>
                     <p>주요 내용 : 기간별 수익률 등 12개 항목 </p>
                     <p>등재 업체 수 : 2,680개 </p>
                 </div>
             </div>
             <div class="summary-cards">
-                <button class="bu" onclick="startMachineLearning()">신용평가 모델 바로가기</button>
-                <button class="bu">기업정보 업데이트<button>
-                <button class="bu">주가정보 업데이트</button>
-                <button class="bu">재무정보 업데이트</button>
+                <button class="bu" onclick="getCreditRates()">평가 등급 보기</button>
+                <button class="bu">기업정보 보기<button>
+                <button class="bu">주가정보 보기</button>
+                <button class="bu">재무정보 보기</button>
             </div>
             <br><br>
+         
+            <div>
 
+
+            </div>
+
+            <h1>바로등급 모델 명세</h1>   <button class="bu" onclick="startMachineLearning()">머신러닝 실행</button>
             <table border="1">
                 <thead>
                     <tr>
-                        <th>Model ID</th>
-                        <th>Model Name</th>
-                        <th>Creation Date</th>
-                        <th>Number of Estimators</th>
-                        <th>Max Features</th>
-                        <th>Accuracy</th>
-                        <th>Number of Samples</th>
-                        <th>Model Filepath</th>
-                        <th>Default Model</th> <!-- 디폴트 모델 여부 컬럼 -->
+                        <th>모델 ID</th>
+                        <th>모델 이름</th>
+                        <th>생성 날짜</th>
+                        <th>추정기 수</th>
+                        <th>최대 피처 수</th>
+                        <th>정확도</th>
+                        <th>샘플 수</th>
+                        <!-- <th>모델 파일 경로</th> -->
+                        <th>기본 모델 여부</th> <!-- 디폴트 모델 여부 컬럼 -->
                     </tr>
                 </thead>
                 <tbody>
@@ -302,7 +346,7 @@
                         <td>{{ model.max_features }}</td>
                         <td>{{ model.accuracy }}</td>
                         <td>{{ model.n_samples }}</td>
-                        <td>{{ model.model_filepath }}</td>
+                        <!-- <td>{{ model.model_filepath }}</td> -->
                         <td>{{ "Yes" if model.is_default}}</td> <!-- 디폴트 여부 표시 -->
                     </tr>
                     {% endfor %}

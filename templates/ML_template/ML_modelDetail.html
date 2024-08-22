@@ -63,6 +63,9 @@
                     <h2 class="text-2xl font-bold mb-4">기본 정보</h2>
                     <ul class="list-disc pl-5 space-y-2">
                         <li>
+                            <p class="text-lg font-semibold">model_id: {{ model_id }}</p>
+                        </li>
+                        <li>
                             <p class="text-lg font-semibold">분석 모델: {{ model_info.model_name }}</p>
                         </li>
                         <li>
@@ -92,6 +95,8 @@
                         {% if show_predict_button %}
                         <div class="flex items-center justify-center mt-8" style="margin: 0 auto;">
                             <form action="/predict_all/" method="get" class="mr-4">
+                                <!-- form의 action 속성에 model_id를 직접 포함 -->
+                                <input type="hidden" name="model_id" value="{{ model_id }}">
                                 <button type="submit" class="px-6 py-3 bg-gray-800 text-white rounded hover:bg-gray-900">
                                     바로등급 산출
                                 </button>
@@ -382,9 +387,9 @@
             .then(data => {
                 if (data.success) {
                     alert(data.message);
-                    location.reload(); // Reload the page to reflect changes
+                    window.location.href = '/modelControl/'; // Redirect to /modelControl/ endpoint
                 } else {
-                    alert('Failed to set model as default.');
+                    alert('Failed to set model as default.'); 
                 }
             })
             .catch(error => {
