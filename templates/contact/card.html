@@ -10,43 +10,67 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto my-8 px-6">
-    <h1 class="text-3xl font-bold mb-4">명함 목록</h1>
+<div class="w-full"
+    style="background-image: url('/static/images/home8.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; min-height: 40vh;">
+    <div class="w-full max-w-screen-xl p-8 mx-auto">
+        <span class="block mb-2 text-xl text-left">
+            <a href="/" class="mr-2 text-white">홈 &nbsp; |</a>
+            <a href="/contact55" class="ml-2 text-white">마케팅기회 &nbsp; |</a>
+            <span class="text-white"> &nbsp; 명함집</span>
+        </span>
+        <br><br><br>
 
-
-<!-- 명함 업로드 모달 트리거 -->
-<button class="bg-purple-500 text-white py-2 px-4 rounded" data-modal-target="uploadModal">명함 업로드</button>
-
-<!-- 명함 업로드 모달 -->
-<div id="uploadModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
-    <div class="bg-white p-6 rounded-lg shadow-lg">
-        <form action="/upload-business-card" method="post" enctype="multipart/form-data">
-            <!-- 사용자 이름을 쿼리 파라미터로 전달 -->
-            <input type="hidden" name="username" value="{{ username }}">
-            <input type="hidden" name="corporation_name" value="{{ corporation_name }}"> <!-- 회사명 필드 추가 -->
-
-            <!-- 파일 업로드 필드 -->
-            <div class="mb-4">
-                <label for="businessCard" class="block text-lg font-semibold text-gray-800">명함 파일 첨부</label>
-                <input type="file" id="businessCard" name="file" class="mt-2 p-2 border rounded-md w-full" required>
-            </div>
-
-            <!-- 등록 버튼 -->
-            <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-md">명함 저장</button>
-        </form>
-
-        <!-- 모달 닫기 버튼 -->
-        <button class="mt-4 text-gray-500" data-modal-close>닫기</button>
+        <div class="mb-4 text-center">
+            <h1 class="text-6xl font-bold text-white">명함집</h1>
+        </div>
+        <br><br><br>
     </div>
 </div>
 
 
+<!-- 기존 코드 유지 -->
+
+<div class="container mx-auto my-8 px-6">
+    <h1 class="text-3xl font-bold mb-4">명함 목록</h1>
+
+    <!-- 명함 업로드 모달 트리거 -->
+    <button class="bg-purple-500 text-white py-2 px-4 rounded" data-modal-target="uploadModal">명함 업로드</button>
+
+    <!-- 명함 업로드 모달 -->
+    <div id="uploadModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <form action="/upload-business-card" method="post" enctype="multipart/form-data">
+                <!-- 사용자 이름을 쿼리 파라미터로 전달 -->
+                <input type="hidden" name="username" value="{{ username }}">
+                <input type="hidden" name="corporation_name" value="{{ corporation_name }}"> <!-- 회사명 필드 추가 -->
+
+                <!-- 파일 업로드 필드 -->
+                <div class="mb-4">
+                    <label for="businessCard" class="block text-lg font-semibold text-gray-800">명함 파일 첨부</label>
+                    <input type="file" id="businessCard" name="file" class="mt-2 p-2 border rounded-md w-full" required>
+                </div>
+
+                <!-- 등록 버튼 -->
+                <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-md">명함 저장</button>
+            </form>
+
+            <!-- 모달 닫기 버튼 -->
+            <button class="mt-4 text-gray-500" data-modal-close>닫기</button>
+        </div>
+    </div>
+
+    <!-- 명함 확대 모달 -->
+    <div id="imageModal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-20 p-4">
+        <img id="modalImage" class="max-w-full max-h-full object-contain">
+        <!-- 모달 닫기 버튼 -->
+        <button class="absolute top-4 right-4 text-white bg-black rounded-full p-2" data-modal-close>X</button>
+    </div>
 
     <!-- 명함 목록 -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
         {% for card in cards %}
         <div class="bg-white rounded-lg shadow-lg p-4">
-            <img src="/static/business_cards/{{ card.filename }}" alt="Business Card" class="w-full h-48 object-cover">
+            <img src="/static/business_cards/{{ card.filename }}" alt="Business Card" class="w-full h-48 object-cover cursor-pointer" data-image-open>
             <div class="mt-2">
                 <p class="text-lg font-bold">작성자: {{ card.username }}</p>
                 <p class="text-sm text-gray-500">등록일: {{ card.created_at.strftime('%Y-%m-%d') }}</p>
@@ -60,6 +84,9 @@
     document.addEventListener('DOMContentLoaded', function () {
         const openModalButtons = document.querySelectorAll('[data-modal-target]');
         const closeModalButtons = document.querySelectorAll('[data-modal-close]');
+        const imageOpenButtons = document.querySelectorAll('[data-image-open]');
+        const modalImage = document.getElementById('modalImage');
+        const imageModal = document.getElementById('imageModal');
 
         openModalButtons.forEach(button => {
             button.addEventListener('click', () => {
@@ -72,6 +99,13 @@
             button.addEventListener('click', () => {
                 const modal = button.closest('.fixed');
                 closeModal(modal);
+            });
+        });
+
+        imageOpenButtons.forEach(image => {
+            image.addEventListener('click', () => {
+                modalImage.src = image.src;
+                openModal(imageModal);
             });
         });
 
@@ -88,6 +122,7 @@
         }
     });
 </script>
+
 {% endblock %}
 
 {% include 'footer.html' %}
