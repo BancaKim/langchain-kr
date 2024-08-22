@@ -23,7 +23,7 @@ from io import BytesIO
 import pandas as pd
 from typing import Dict, List
 import numpy as np  # numpy를 import 해야 합니다
-
+from typing import Union
 import logging
 import os
 import joblib
@@ -190,6 +190,9 @@ def save_model_info_to_db(model_info: Dict, accuracy: float, model, scaler, clas
         logger.error(f"모델 파일 저장 중 오류 발생: {e}")
         raise e
     
+    return model_id
+
+    
     
     
     
@@ -347,7 +350,12 @@ def get_new_data_from_db(db: Session, jurir_no_list: list):
         "LEFT OUTER JOIN companyInfo a ON a.jurir_no = b.jurir_no "
         "LEFT OUTER JOIN FS2022 c ON a.jurir_no = c.jurir_no "
         "LEFT OUTER JOIN FS2021 d ON a.jurir_no = d.jurir_no "
-        "WHERE b.totalAsset2023 > 0 limit 100;"
+        "WHERE b.totalAsset2023 > 0 "
+        "AND a.corp_name NOT LIKE '%은행%' "
+        "AND a.corp_name NOT LIKE '%금융지주%' "
+        "AND a.corp_name NOT LIKE '%보험%' "
+        "ORDER BY b.totalAsset2023 DESC;"
+        
     )
 
     result = db.execute(query)
@@ -490,31 +498,24 @@ def generate_predictions_dictionary(db: Session, model, scaler):
 
 
 # view_DB_predict 에서 사용
-def get_db_predictions(db: Session):
-    query = text("""
+def get_db_predictions(db: Session, model_info: str):
+    query = text(f"""
     SELECT *
     FROM predict_ratings pr
     WHERE pr.corporate_number IN (
-    SELECT jurir_no 
-    FROM (
-    SELECT DISTINCT a.jurir_no, b.totalAsset2023
-    FROM companyInfo a
-    LEFT JOIN FS2023 b ON a.jurir_no = b.jurir_no
-    WHERE b.totalAsset2023 > 0
-    ORDER BY b.totalAsset2023 DESC
-
-    ) AS subquery
+        SELECT jurir_no 
+        FROM (
+            SELECT DISTINCT a.jurir_no, b.totalAsset2023
+            FROM companyInfo a
+            LEFT JOIN FS2023 b ON a.jurir_no = b.jurir_no
+            WHERE b.totalAsset2023 > 0
+            ORDER BY b.totalAsset2023 DESC
+        ) AS subquery
     )
-    AND model_reference = (
-        SELECT model_reference
-        FROM spoon.predict_ratings
-        WHERE base_year = '2023'
-        ORDER BY timestamp DESC
-        LIMIT 1
-    )
-
+    AND pr.model_reference = :model_info
     """)
-    result = db.execute(query)
+    
+    result = db.execute(query, {"model_info": model_info})
     predictions = result.fetchall()
     columns = result.keys()
     predictions_dict = [dict(zip(columns, row)) for row in predictions]
@@ -614,6 +615,20 @@ def set_default_model(db: Session, model_id: str):
             return True
         else:
             return False
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise e
+    
+    
+    
+def get_default_model(db: Session) -> Union[str, None]:
+    try:
+        # 기본값으로 설정된 모델을 조회
+        model = db.query(ModelStorage).filter(ModelStorage.is_default == True).first()
+        if model:
+            return model.model_id
+        else:
+            return None
     except SQLAlchemyError as e:
         db.rollback()
         raise e
