@@ -946,14 +946,16 @@ async def download_file(file_name: str):
 @router.get("/search", response_class=HTMLResponse)
 async def get_search_page(request: Request):
     kakao_map_api_key = os.getenv("KAKAO_MAP_API_KEY")
+    username = request.session.get("username")
     return templates.TemplateResponse(
-        "contact/map.html", {"request": request, "kakao_map_api_key": kakao_map_api_key}
+        "contact/map.html", {"request": request, "kakao_map_api_key": kakao_map_api_key, "username": username}
     )
 
 
 @router.post("/search", response_class=HTMLResponse)
 async def search_location(request: Request):
-    return templates.TemplateResponse("contact/map.html", {"request": request})
+    username = request.session.get("username")
+    return templates.TemplateResponse("contact/map.html", {"request": request, "username": username})
 
 
 # 지도기능 - 키워드
@@ -1140,13 +1142,16 @@ async def search_contacts(
 async def read_contact(
     request: Request, 
     db: Session = Depends(get_db),
+    jurir_no: str = Query(None),
     name: str = Query(None), 
     search_type: str = Query(None)
 ):
     username = request.session.get("username")
     
     company_info = None
-    if search_type == "company_name":
+    if jurir_no:
+        company_info = db.query(CompanyInfo).filter(CompanyInfo.jurir_no == jurir_no).first()
+    elif search_type == "company_name":
         company_info = db.query(CompanyInfo).filter(func.trim(CompanyInfo.corp_name) == name).first()
     elif search_type == "company_code":
         company_info = db.query(CompanyInfo).filter(func.trim(CompanyInfo.corp_code) == name).first()
