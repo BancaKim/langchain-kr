@@ -2,12 +2,14 @@ from datetime import date, datetime
 from email.mime.text import MIMEText
 import json
 import os
+from pathlib import Path
 import shutil
 import smtplib
 import logging
 import sys
 import time
 from typing import Optional
+import uuid
 from dotenv import load_dotenv
 from fastapi import (
     APIRouter,
@@ -1344,3 +1346,58 @@ async def show_cards(
     cards = db.query(BusinessCard).filter(BusinessCard.corporation_name == corporation_name).all()
     
     return templates.TemplateResponse("contact/card.html", {"request": request, "cards": cards, "username": username, "corporation_name": corporation_name})
+
+# 명함 수정 기능
+@router.post("/edit-business-card/{card_id}")
+async def edit_business_card(
+    request: Request,
+    card_id: int,
+    file: UploadFile = File(...),
+    username: str = Form(...),
+    corporation_name: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    card = db.query(BusinessCard).filter(BusinessCard.id == card_id).first()
+
+    if not card:
+        raise HTTPException(status_code=404, detail="Business card not found")
+
+    # 파일 덮어쓰기 로직
+    new_filename = f"{uuid.uuid4()}_{file.filename}"
+    file_path = f"static/business_cards/{new_filename}"
+
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    # 기존 파일 삭제 (옵션)
+    os.remove(f"static/business_cards/{card.filename}")
+
+    # 새로운 파일명으로 업데이트1
+    card.filename = new_filename
+    db.commit()
+
+    # 명함 목록 페이지로 리디렉션
+    return RedirectResponse(url=f"/card?corporation_name={corporation_name}", status_code=303)
+
+
+# 명함 삭제 기능
+@router.post("/delete-business-card/{card_id}")
+async def delete_business_card(
+    card_id: int,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    card = db.query(BusinessCard).filter(BusinessCard.id == card_id).first()
+
+    if not card:
+        raise HTTPException(status_code=404, detail="Business card not found")
+
+    # 파일 삭제
+    os.remove(f"static/business_cards/{card.filename}")
+
+    db.delete(card)
+    db.commit()
+
+    # 명함 목록 페이지로 리디렉션
+    return RedirectResponse(url=f"/card?corporation_name={card.corporation_name}", status_code=303)
+
