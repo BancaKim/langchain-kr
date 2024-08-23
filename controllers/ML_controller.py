@@ -273,13 +273,13 @@ async def view_DB_predict(request: Request, db: Session = Depends(get_db)):
 
 @machineLearning.get("/ML_pretrain/", response_class=HTMLResponse)
 async def ML_pretrain(request: Request, db: Session = Depends(get_db)):
-    # username = request.session.get("username")
+    username = request.session.get("username")
     # all_model_info = get_all_model_info(db)
     # # logger.info(predictions_dict)
     return templates.TemplateResponse("ML_template/ML_pretrain.html", {
         "request": request,
         # "all_model_info" : all_model_info,
-        # "username": username
+        "username": username
     })
     
 
