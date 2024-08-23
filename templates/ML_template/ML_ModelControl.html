@@ -298,7 +298,7 @@ tr.clickable-row {
                     <h3>기업 재무정보 현황</h3>
                     <p>자료 출처 : 금융위원회_기업 재무정보 API</p>
                     <p>주요 내용 : 주요 재무정보 8개 항목</p>
-                    <p>등재 업체 수 : 10,277개 </p>
+                    <!-- <p>등재 업체 수 : 10,277개 </p> -->
                     <p>가용 연도 : 2023, 2022, 2021, 2020</p>
                 </div>
                 <div class="card">
@@ -311,8 +311,8 @@ tr.clickable-row {
             <div class="summary-cards">
                 <button class="bu" onclick="getCreditRates()">평가 등급 보기</button>
                 <button class="bu">기업정보 보기<button>
-                <button class="bu">주가정보 보기</button>
                 <button class="bu">재무정보 보기</button>
+                <button class="bu">주가정보 보기</button>
             </div>
             <br><br>
          
@@ -321,7 +321,12 @@ tr.clickable-row {
 
             </div>
 
-            <h1>바로등급 모델 명세</h1>   <button class="bu" onclick="startMachineLearning()">머신러닝 실행</button>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h1>바로등급 모델 명세</h1>
+                <button class="bu" style="padding: 10px 20px; max-width: 200px;" onclick="startMachineLearning()">신용평가 모델 추가</button>
+            </div>
+            
+            
             <table border="1">
                 <thead>
                     <tr>
