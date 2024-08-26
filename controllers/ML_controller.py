@@ -172,7 +172,7 @@ async def predict_all(request: Request, model_id: str, db: Session = Depends(get
     if model_store["model"] is None or model_store["scaler"] is None:
         raise HTTPException(status_code=400, detail="Model not trained yet. Please train the model first.")
     
-    error, predictions = generate_predictions_dictionary(db, model_store["model"], model_store["scaler"])
+    error, predictions = generate_predictions_dictionary(db, model_store["model"], model_store["scaler"], None)
     
     if error:
         raise HTTPException(status_code=400, detail=error)
