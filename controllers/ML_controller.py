@@ -1,6 +1,6 @@
 import os
 import shutil
-from fastapi import APIRouter, HTTPException, Request, Depends, Body
+from fastapi import APIRouter, HTTPException, Request, Depends, Query
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi import UploadFile, File
@@ -405,21 +405,32 @@ async def default_model_pick(model_id: str, db: Session = Depends(get_db)):
 
 
 @machineLearning.get("/ML_all_credits/", response_class=HTMLResponse)
-async def ML_pretrain(request: Request, db: Session = Depends(get_db)):
+async def ML_pretrain(
+    request: Request,
+    db: Session = Depends(get_db),
+    page: int = Query(1, ge=1),  # Pagination starts at page 1
+    page_size: int = Query(100, ge=1),  # Default 100 items per page
+    search_query: str = Query(None)  # Optional search query
+):
     username = request.session.get("username")
-    
+
     # db 세션을 전달
     defaultModelId = get_default_model(db)
     model_info = get_model_info_by_id(db, defaultModelId)
-    
-    print(defaultModelId)
-    
-    all_credit_info = get_db_predictions(db, defaultModelId)
-    
+
+    # Retrieve the data with pagination and search
+    all_credit_info, total_items = get_db_predictions(db, defaultModelId, page, page_size, search_query)
+
+    total_pages = (total_items + page_size - 1) // page_size  # Calculate total pages
+
     # HTML에 필요한 데이터를 전달
     return templates.TemplateResponse("ML_template/ML_credit_view.html", {
         "request": request,
-        "predictions": all_credit_info,  # HTML에서 result 대신 predictions로 변경
+        "predictions": all_credit_info,
         "model_info": model_info,
-        "username": username
+        "username": username,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": total_pages,
+        "search_query": search_query
     })

@@ -18,7 +18,7 @@ from services_def.baro_service import fs_db_insert, FS_update_DB_base, generate_
 import time
 import logging
 from typing import Dict, List, Optional
-from models.baro_models import CompanyInfo
+from models.baro_models import CompanyInfo, UpdateRequest, FS2023, FS2022, FS2021, FS2020
 import requests
 from services_def.news import fetch_naver_news
 
@@ -37,6 +37,36 @@ def get_db():
         db.close()
 
 # 데이터 삽입을 위한 임시 엔드 포인트
+
+
+@baro.post("/fs_check_request/")
+async def update_fsname(request: UpdateRequest, db: Session = Depends(get_db)):
+    # 요청받은 ID를 기준으로 각각의 FS 테이블에서 fsName을 "check_need"로 업데이트합니다.
+    if request.fs2020_id:
+        fs2020 = db.query(FS2020).filter(FS2020.id == request.fs2020_id).first()
+        if fs2020:
+            fs2020.fsName = "check_need"
+    
+    if request.fs2021_id:
+        fs2021 = db.query(FS2021).filter(FS2021.id == request.fs2021_id).first()
+        if fs2021:
+            fs2021.fsName = "check_need"
+    
+    if request.fs2022_id:
+        fs2022 = db.query(FS2022).filter(FS2022.id == request.fs2022_id).first()
+        if fs2022:
+            fs2022.fsName = "check_need"
+    
+    if request.fs2023_id:
+        fs2023 = db.query(FS2023).filter(FS2023.id == request.fs2023_id).first()
+        if fs2023:
+            fs2023.fsName = "check_need"
+    
+    # 변경사항을 DB에 커밋
+    db.commit()
+
+    return {"status": "success", "message": "재무이상 신고가 완료되었습니다."}
+
 
 
 # 바로 등급 검색 페이지 / 나의업체현황/ 최근조회업체 return
@@ -172,6 +202,8 @@ async def read_company_info(request: Request, jurir_no: str = Query(...), db: Se
     # print("FS2022.totalAsset2022", FS2022.totalAsset2022)
     # print("FS2021.totalAsset2021", FS2021.totalAsset2021)
     # print("FS2020.totalAsset2020", FS2020.totalAsset2020)
+    
+    print(FS2023.FS_url)
     
     return templates.TemplateResponse("baro_service/baro_companyInfo.html", {
         "request": request,
