@@ -144,6 +144,16 @@
 
 <div class="w-full max-w-screen-xl lg:p-8 sm:p-4 p-4 mx-auto">
     <div class="flex-shrink-0 bg-white rounded-lg shadow-lg">
+
+        <!-- 섭외 통계 펼치기 문구 위에 문구 추가 -->
+        {% set user_post_count = posts | selectattr('username', 'equalto', username) | list | length %}
+        {% if user_post_count > 0 %}
+        <div class="text-right text-xl font-semibold text-gray-800 mb-2">
+            {{ username }}님의 총 섭외 건수는 {{ user_post_count }}개 입니다.
+        </div>
+        {% endif %}
+
+
         <div class="flex p-3 bg-gray-100 rounded-t-lg cursor-pointer" onclick="toggleContent('allStatsContent')">
             <h3 id="toggleText" class="text-xl sm:text-2xl font-bold text-gray-800">섭외 통계 펼치기 ▼</h3>
         </div>

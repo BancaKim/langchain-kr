@@ -27,9 +27,6 @@
     </div>
 </div>
 
-
-<!-- 기존 코드 유지 -->
-
 <div class="container mx-auto my-8 px-6">
     <h1 class="text-3xl font-bold mb-4">명함 목록</h1>
 
@@ -51,7 +48,9 @@
                 </div>
 
                 <!-- 등록 버튼 -->
-                <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-md">명함 저장</button>
+                <button type="submit"
+                    class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-md">명함
+                    저장</button>
             </form>
 
             <!-- 모달 닫기 버튼 -->
@@ -66,14 +65,57 @@
         <button class="absolute top-4 right-4 text-white bg-black rounded-full p-2" data-modal-close>X</button>
     </div>
 
+
     <!-- 명함 목록 -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
         {% for card in cards %}
         <div class="bg-white rounded-lg shadow-lg p-4">
-            <img src="/static/business_cards/{{ card.filename }}" alt="Business Card" class="w-full h-48 object-cover cursor-pointer" data-image-open>
-            <div class="mt-2">
-                <p class="text-lg font-bold">작성자: {{ card.username }}</p>
-                <p class="text-sm text-gray-500">등록일: {{ card.created_at.strftime('%Y-%m-%d') }}</p>
+            <img src="/static/business_cards/{{ card.filename }}" alt="Business Card"
+                class="w-full h-48 object-cover cursor-pointer" data-image-open>
+            <div class="mt-2 flex justify-between items-center">
+                <div>
+                    <p class="text-lg font-bold">작성자: {{ card.username }}</p>
+                    <p class="text-sm text-gray-500">등록일: {{ card.created_at.strftime('%Y-%m-%d') }}</p>
+                </div>
+                {% if card.username == username %}
+                <div class="flex space-x-2">
+                    <!-- 수정 버튼 -->
+                    <button class="bg-purple-500 text-white py-2 px-4 rounded"
+                        data-modal-target="editModal{{ card.id }}">수정</button>
+                    <!-- 삭제 버튼 -->
+                    <form action="/delete-business-card/{{ card.id }}" method="POST">
+                        <button type="submit" class="bg-gray-500 text-white py-2 px-4 rounded">삭제</button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 명함 수정 모달 -->
+        <div id="editModal{{ card.id }}"
+            class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <form action="/edit-business-card/{{ card.id }}" method="post" enctype="multipart/form-data">
+                    <!-- 기존 정보 유지 -->
+                    <input type="hidden" name="username" value="{{ card.username }}">
+                    <input type="hidden" name="corporation_name" value="{{ card.corporation_name }}">
+
+                    <!-- 파일 업로드 필드 -->
+                    <div class="mb-4">
+                        <label for="editBusinessCard{{ card.id }}" class="block text-lg font-semibold text-gray-800">새로운
+                            명함 파일 첨부</label>
+                        <input type="file" id="editBusinessCard{{ card.id }}" name="file"
+                            class="mt-2 p-2 border rounded-md w-full">
+                    </div>
+
+                    <!-- 저장 버튼 -->
+                    <button type="submit"
+                        class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-md">명함
+                        수정</button>
+                </form>
+
+                <!-- 모달 닫기 버튼 -->
+                <button class="mt-4 text-gray-500" data-modal-close>닫기</button>
             </div>
         </div>
         {% endfor %}
@@ -107,6 +149,18 @@
                 modalImage.src = image.src;
                 openModal(imageModal);
             });
+        });
+
+        // 모달 외부를 클릭하면 모달 닫기
+        imageModal.addEventListener('click', function (event) {
+            if (event.target === imageModal) {
+                closeModal(imageModal);
+            }
+        });
+
+        // 모달 이미지 클릭 시 모달이 닫히지 않도록 버블링 방지
+        modalImage.addEventListener('click', function (event) {
+            event.stopPropagation();
         });
 
         function openModal(modal) {
