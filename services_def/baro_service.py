@@ -32,6 +32,8 @@ from langchain_teddynote import logging as langchain_logging
 import pdfkit
 import logging
 import json
+import joblib
+import pickle
 
 import os
 from dotenv import load_dotenv
@@ -54,6 +56,101 @@ logging.getLogger("httpx").setLevel(logging.CRITICAL)
 logging.getLogger("requests").setLevel(logging.CRITICAL)
 logging.getLogger("urllib3").setLevel(logging.CRITICAL)  # 추가된 부분
 
+# 로거 설정
+logger = logging.getLogger(__name__)  # 현재 모듈의 이름을 로거 이름으로 사용
+logging.basicConfig(level=logging.INFO)  # 기본 로그 레벨을 INFO로 설정
+
+model_store = {
+    "model": None,
+    "scaler": None,
+    "accuracy": None,
+    "class_report": None,
+    "conf_matrix": None,
+    "model_info": None,
+    
+}
+
+
+
+
+from services_def.ML_service import get_default_model, get_model_info_by_id, generate_predictions_dictionary, insert_predictions_into_db
+
+def generate_credit(db: Session, jurir_no):
+
+    model_id = get_default_model(db)
+    model_info = get_model_info_by_id(db, model_id)
+
+    # Parse JSON fields from the database
+    accuracy = model_info['accuracy']
+    class_report = json.loads(model_info['class_report'])
+    conf_matrix = json.loads(model_info['conf_matrix'])
+    credit_ratings = ['A', 'A+', 'A-', 'AA', 'AA+', 'AA-', 'AAA', 'B', 'B+', 'B-', 'BB', 'BB+', 'BB-', 'BBB', 'BBB+', 'BBB-']
+    
+    # Load the model and scaler if necessary
+    model_filepath = model_info['model_filepath']
+    model_store["model"] = joblib.load(model_filepath)
+    model_store["scaler"] = pickle.loads(model_info['scaler'])
+    model_store["accuracy"] = accuracy
+    model_store["class_report"] = class_report
+    model_store["conf_matrix"] = conf_matrix
+    model_store["model_info"] = {**model_info, "feature_importances": model_info['feature_importances']}
+        
+    if model_store["model"] is None or model_store["scaler"] is None:
+        raise HTTPException(status_code=400, detail="Model not trained yet. Please train the model first.")
+    
+    error, predictions = generate_predictions_dictionary(db, model_store["model"], model_store["scaler"], jurir_no)
+    
+    if error:
+        logger.error(f"Failed to generate predictions: {error}")
+        return False
+
+    model_info = model_store["model_info"]
+
+    for prediction in predictions:
+        if isinstance(prediction, dict):  # prediction이 딕셔너리인지 확인
+            probabilities_dict = prediction['sorted_probabilities']
+
+            result = {
+                "jurir_no": prediction["jurir_no"],
+                "corp_name": prediction["corp_name"],
+                "base_year": 2023,
+                "AAA_plus": probabilities_dict.get('AAA+', 0.0),
+                "AAA": probabilities_dict.get('AAA', 0.0),
+                "AAA_minus": probabilities_dict.get('AAA-', 0.0),
+                "AA_plus": probabilities_dict.get('AA+', 0.0),
+                "AA": probabilities_dict.get('AA', 0.0),
+                "AA_minus": probabilities_dict.get('AA-', 0.0),
+                "A_plus": probabilities_dict.get('A+', 0.0),
+                "A": probabilities_dict.get('A', 0.0),
+                "A_minus": probabilities_dict.get('A-', 0.0),
+                "BBB_plus": probabilities_dict.get('BBB+', 0.0),
+                "BBB": probabilities_dict.get('BBB', 0.0),
+                "BBB_minus": probabilities_dict.get('BBB-', 0.0),
+                "BB_plus": probabilities_dict.get('BB+', 0.0),
+                "BB": probabilities_dict.get('BB', 0.0),
+                "BB_minus": probabilities_dict.get('BB-', 0.0),
+                "B_plus": probabilities_dict.get('B+', 0.0),
+                "B": probabilities_dict.get('B', 0.0),
+                "B_minus": probabilities_dict.get('B-', 0.0),
+                "CCC_plus": probabilities_dict.get('CCC+', 0.0),
+                "CCC": probabilities_dict.get('CCC', 0.0),
+                "CCC_minus": probabilities_dict.get('CCC-', 0.0),
+                "C": probabilities_dict.get('C', 0.0),
+                "D": probabilities_dict.get('D', 0.0),
+                "model_reference": model_id,
+                "username": None
+            }
+            insert_predictions_into_db(db, result, model_id)
+        else:
+            logger.error("Error: prediction is not a dictionary.")
+    
+    logger.info(f"Result: {result}")
+    return True
+
+
+
+
+
 def search_company(db: Session, keyword: str) -> List[str]:
 
     keyword_pattern = f"%{keyword}%"
@@ -71,38 +168,26 @@ def search_company(db: Session, keyword: str) -> List[str]:
     return jurir_nos
 
 
-def FS_update(db: Session, corp_code: str, corp_name: str, baseYear):
+def FS_update_DB_base(db: Session, corp_code: str, corp_name: str, baseYear):
     # FS 업데이트 시작 로그
     print(f"FS update started for {corp_name} (corp_code: {corp_code}, year: {baseYear})")
     
-    # Step 1: DART 공시 보고서 번호를 받아옵니다.
-    report_list = get_dart_report_list(corp_code)
-    # print(f"Report list fetched for {corp_name}: {report_list}")
-
     valid_receipt_no = None
     for i in range(2):  # 2번 반복
-              
-        # Step 2: 기준 연도의 최신 보고서 접수번호를 가져옵니다.
-        FSSreport = get_latest_report_receipt_no(report_list, baseYear, valid_receipt_no)
-        print(f"Latest report receipt number for {baseYear}: {FSSreport}")
-
-        # Step 3: 보고서 번호로 DART 사이트에서 필요한 데이터를 추출합니다.
+        # DB에서 보고서 번호를 가지고 온다.       
+        FSSreport = get_latest_report_receipt_no_from_db(db, corp_code, baseYear, valid_receipt_no)
+        
+        # 보고서 번호로 url을 생성하고 DART 사이트에서 필요한 영역을 스크래핑 해온다. 
         soup, url = fetch_and_create_urls(FSSreport, 1)
         
         if soup: break
         else: valid_receipt_no = FSSreport
     
-    
-    print(f"Processing URL for {corp_name}: {url}")
-    # print(f"Processing soup {soup}")
-    # Step 4: 추출된 데이터에서 계정 정보와 당기 금액을 정리합니다.
     extracted_data = None
     if soup:
-        # 첫 번째 시도 로그
-        # print(f"First attempt to extract data for {corp_name}")
+        # 스크래핑이 성공한 경우 해당 soup을 정제한다. 
         extracted_data = extract_account_data(soup)
-        # print(f"Extracted Data (1st try) for {corp_name}: {extracted_data}")
-
+        
         if extracted_data == []:
             # print(f"First extraction attempt failed, trying again for {corp_name}")
             soup, url = fetch_and_create_urls(FSSreport, 2)
@@ -110,6 +195,7 @@ def FS_update(db: Session, corp_code: str, corp_name: str, baseYear):
             # print(f"Extracted Data (2nd try) for {corp_name}: {extracted_data}")
         
     if not extracted_data:
+        # 정제된 값을 생성 못하면 전체 항목을 0으로 반환한다. 
         print(f"Failed to retrieve or parse the report for {corp_name}")
         # print(soup)
         # fs_dict 초기화
@@ -128,173 +214,91 @@ def FS_update(db: Session, corp_code: str, corp_name: str, baseYear):
         print(f"Returning default fs_dict for {corp_name}")
         return fs_dict  # 기본 값을 반환하여 에러 방지
     
-    # Step 5: 요약된 재무 데이터를 처리
+    # 정제된 재무데이터를 DB에 삽입할 수 있는 dictionary 형태로 가공
     fs_dict = FSmaker(extracted_data, url)
     
-    
-    # Step 5: fs_dict에 None 값이 있는지 확인하고, 있을 경우 GPT로 업데이트
-    # 예를 들어 국민은행 2020~2021 재무제표 양식이 완전히 달라 스크래핑 할 수 없음. 
-    # if any(value is None for value in fs_dict.values()):
-    #     print(f"Some values are missing in fs_dict for {corp_name}, updating with GPT")
-    #     # HTML과 기존 재무 정보를 gpt에 넘긴다. 
-    #     extracted_data = extract_account_data_with_gpt(soup.text)
-    #     print(f"fs_dict after GPT update for {corp_name}: {extracted_data}")
-        
-        
-    
-    
-    # print(f"Final financial statement dictionary for {corp_name}: {fs_dict}")
     print(f"Processing URL for {corp_name}: {url}")
 
-
     # FS 업데이트 완료 로그
-    # print(f"FS update completed for {corp_name} (corp_code: {corp_code}, year: {baseYear})")
     return fs_dict
 
 
-from langchain_openai import ChatOpenAI
-import json
-
-def extract_account_data_with_gpt(extracted_text: str) -> List[dict]:
-    llm = ChatOpenAI(api_key=GPT_API_KEY, model_name="gpt-4o-mini-2024-07-18", temperature=0.0)
-
-    # 프롬프트를 텍스트로 정의합니다.
-    prompt = f"""
-    아래는 기업의 재무제표와 관련된 텍스트 데이터입니다. 이 데이터를 바탕으로 계정 이름과 금액을 추출하여 다음 형식의 리스트로 반환하십시오:
-    [
-        {{"account_name": "<계정 이름>", "current_amount": <금액>}},
-        ...
-    ]
-    금액은 숫자만 포함하고, 단위는 계산해서 원단위로 환산해주세요. 
-    만약 값이 음수라면, '-' 기호를 포함하여 반환해주세요.
-    
-    자산총계, 부채총계, 자본총계, 자본금, 매출액, 영업이익, 법인세차감전순이익, 당기순이익은 꼭 포함해주세요.
-    매출액이 없을 경우 이자수익과 수수료수익 또는 보험영업수익과 투자영업수익을 꼭 포함해주세요. 
-    
-    각각의 계정은 아래와 같이 매핑될 수 있습니다.
-    
-    자산총계는 "자산총계", "자산"으로 불릴 수 있습니다.
-    부채총계는 "부채총계", "부채"로 불릴 수 있습니다.
-    자본총계는 "자본총계", "자본", "순자산", "자본계"로 불릴 수 있습니다.
-    자본금은 "자본금", "보통주자본금", "납입자본"으로 불릴 수 있습니다.
-    매출액은 "외부고객으로부터의수익", "매출액", "영업수익", "수익매출액", "매출", "영업수익매출액", "매출액주석", "매출및지분법손익"으로 불릴 수 있습니다.
-    영업이익은 "영업이익", "영업이익손실", "영업손실"로 불릴 수 있습니다.
-    법인세차감전순이익은 "법인세차감전계속영업이익", "계속영업법인세비용차감전순이익", "법인세비용차감전계속사업이익", "법인세비용차감전계속영업이익", "법인세비용차감전손익", "법인세비용차감전순이익", "법인세차감전순이익", "법인세비용차감전순손실", "법인세비용차감전순손익", "법인세비용차감전당기순이익", "법인세비용차감전계속영업순이익", "법인세비용차감전이익", "법인세차감전순손실"로 불릴 수 있습니다.
-    당기순이익은 "당기순이익", "연결당기순이익", "당기순손실", "당기순손익", "당기연결순이익"으로 불릴 수 있습니다.
-
-    텍스트 데이터:
-    {extracted_text}
+def get_latest_report_receipt_no_from_db(db: Session, corp_code: str, baseYear: int, valid_receipt_no: Union[str, None] = None) -> Union[str, None]:
     """
-
+    주어진 corp_code와 baseYear에 해당하는 최신 보고서 접수번호를 데이터베이스에서 검색하여 반환하는 함수입니다.
+    
+    :param db: SQLAlchemy 세션 객체
+    :param corp_code: 회사 코드
+    :param baseYear: 기준 연도
+    :param valid_receipt_no: 이미 사용된 보고서 접수번호 (옵션)
+    :return: 최신 보고서 접수번호 (문자열) 또는 None (없을 경우)
+    """
     try:
-        # GPT-4 모델에게 직접 프롬프트를 보내고 응답을 받습니다.
-        response = llm(prompt)
+        # baseYear을 사용하여 연도 패턴을 생성 (예: '%2023%')
+        year_pattern = f"%{baseYear}%"
 
-        # 응답이 코드 블록으로 감싸져 있을 수 있으므로 이를 제거합니다.
-        response_text = response.content.strip('```json').strip('```').strip()
+        # '연결' 키워드를 우선적으로 검색하는 쿼리
+        query_with_keyword = text("""
+            SELECT rcept_no
+            FROM fss_report
+            WHERE corp_code = :corp_code
+            AND report_nm LIKE :year_pattern
+            AND report_nm LIKE '%연결%'
+        """)
 
-        # 응답을 JSON 형태로 파싱하여 리스트로 반환합니다.
-        extracted_data = json.loads(response_text)
-    except json.JSONDecodeError as e:
-        print(f"GPT 응답 파싱 실패: {response_text}, 에러: {e}")
-        extracted_data = []
+        # '연결' 키워드가 포함된 보고서 검색
+        if valid_receipt_no is not None:
+            query_with_keyword = text("""
+                SELECT rcept_no
+                FROM fss_report
+                WHERE corp_code = :corp_code
+                AND report_nm LIKE :year_pattern
+                AND report_nm LIKE '%연결%'
+                AND rcept_no != :valid_receipt_no
+            """)
+
+        result = db.execute(query_with_keyword, {
+            "corp_code": corp_code,
+            "year_pattern": year_pattern,
+            "valid_receipt_no": valid_receipt_no
+        }).fetchone()
+
+        # '연결' 키워드가 포함된 보고서가 없을 경우, 기존 쿼리로 검색
+        if not result:
+            query = text("""
+                SELECT rcept_no
+                FROM fss_report
+                WHERE corp_code = :corp_code
+                AND report_nm LIKE :year_pattern
+            """)
+
+            if valid_receipt_no is not None:
+                query = text("""
+                    SELECT rcept_no
+                    FROM fss_report
+                    WHERE corp_code = :corp_code
+                    AND report_nm LIKE :year_pattern
+                    AND rcept_no != :valid_receipt_no
+                """)
+
+            result = db.execute(query, {
+                "corp_code": corp_code,
+                "year_pattern": year_pattern,
+                "valid_receipt_no": valid_receipt_no
+            }).fetchone()
+
+        if result:
+            return result[0]  # rcept_no를 반환
+        else:
+            return None  # 해당 조건에 맞는 보고서가 없을 경우
     except Exception as e:
-        print(f"오류가 발생했습니다: {e}")
-        extracted_data = []
-
-    return extracted_data
+        print(f"An error occurred while retrieving the latest report receipt number: {str(e)}")
+        return None
 
 
 
 
 
-
-# Step 1: DART 공시 보고서 리스트를 리턴하는 함수
-def get_dart_report_list(corp_code: str):
-    # API 요청 URL
-    # print("get_dart_report_list def start")
-    url = 'https://opendart.fss.or.kr/api/list.json'
-    all_reports = []
-    pblntf_types = ['A','E','F']
-    start_date = datetime(2020, 1, 1)
-    end_date = datetime(2026, 12, 31)
-
-    while start_date < end_date:
-        bgn_de = start_date.strftime('%Y%m%d')
-        end_de = (start_date + timedelta(days=2*365)).strftime('%Y%m%d')
-        if end_de > end_date.strftime('%Y%m%d'):
-            end_de = end_date.strftime('%Y%m%d')
-
-        for pblntf_ty in pblntf_types:
-            params = {
-                'crtfc_key': crtfc_key,
-                'corp_code': corp_code,
-                'bgn_de': bgn_de,
-                'end_de': end_de,
-                'pblntf_ty': pblntf_ty,
-                'page_no': '1',
-                'page_count': '100',
-                'sort': 'date',
-                'sort_mth': 'desc'
-            }
-
-            response = http_requests.get(url, params=params)
-            if response.status_code == 200:
-                data = response.json()
-                if data['status'] == '000':
-                    for report in data['list']:
-                        report_info = {
-                            'corp_code': report.get('corp_code'),
-                            'report_nm': report.get('report_nm'),
-                            'rcept_no': report.get('rcept_no'),
-                            'flr_nm': report.get('flr_nm'),
-                            'rcept_dt': report.get('rcept_dt')
-                        }
-                        all_reports.append(report_info)
-                # print(all_reports)
-            else:
-                print(f"HTTP 요청 실패: {response.status_code}")
-
-        start_date += timedelta(days=2*365)
-
-    # print("조회된 보고서 목록:")
-    # for report in all_reports:
-        # print(f"회사코드: {report['corp_code']}, 보고서명: {report['report_nm']}, 접수번호: {report['rcept_no']}, 제출인명: {report['flr_nm']}, 접수일자: {report['rcept_dt']}")
-        
-    return all_reports
-
-
-# Step 2: 최신 보고서 접수번호를 리턴하는 함수
-def get_latest_report_receipt_no(all_reports, baseYear, valid_receipt_no):
-    latest_receipt_no = None
-    secondary_receipt_no = None
-    
-
-    if valid_receipt_no is not None:
-        all_reports = [report for report in all_reports if report['rcept_no'] != valid_receipt_no]
-
-    
-    # 보고서 이름에 기재정정 여부를 제외한 기본 패턴 정의
-    business_report_name_pattern = f"사업보고서.*{baseYear}.*12"
-    consolidated_audit_report_name_pattern = f"연결감사보고서.*{baseYear}.*12"
-    audit_report_name_pattern = f"감사보고서.*{baseYear}.*12"
-
-    for report in all_reports:
-        # 대괄호로 둘러싸인 접두어 제거 및 공백 제거
-        report_name = re.sub(r'\[.*?\]', '', report['report_nm']).replace(' ', '').strip()
-        print(f"Checking report_name: {report_name}")  # 디버깅을 위한 출력
-
-        if re.search(business_report_name_pattern, report_name) or re.search(consolidated_audit_report_name_pattern, report_name):
-            if latest_receipt_no is None or report['rcept_no'] > latest_receipt_no:
-                latest_receipt_no = report['rcept_no']
-        elif re.search(audit_report_name_pattern, report_name):
-            if secondary_receipt_no is None or report['rcept_no'] > secondary_receipt_no:
-                secondary_receipt_no = report['rcept_no']
-
-    return latest_receipt_no if latest_receipt_no else secondary_receipt_no
-
-
-# Step 3: DART 사이트에서 보고서를 추출하는 함수
 def fetch_and_create_urls(report_numbers, tryNum):
     url_base = 'https://dart.fss.or.kr/dsaf001/main.do?rcpNo='
 
@@ -384,13 +388,13 @@ def extract_account_data(soup):
                     print(f"Keyword '{td_text}' found. Stopping the process.")
                     return extracted_data
 
-            # 각 TD의 내용을 출력
-            td1 = td_tags[0].get_text(strip=True) if len(td_tags) > 0 else None
-            td2 = td_tags[1].get_text(strip=True) if len(td_tags) > 1 else None
-            td3 = td_tags[2].get_text(strip=True) if len(td_tags) > 2 else None
-            td4 = td_tags[3].get_text(strip=True) if len(td_tags) > 3 else None
+            # # 각 TD의 내용을 출력
+            # td1 = td_tags[0].get_text(strip=True) if len(td_tags) > 0 else None
+            # td2 = td_tags[1].get_text(strip=True) if len(td_tags) > 1 else None
+            # td3 = td_tags[2].get_text(strip=True) if len(td_tags) > 2 else None
+            # td4 = td_tags[3].get_text(strip=True) if len(td_tags) > 3 else None
 
-            print(f"TD1: {td1}, TD2: {td2}, TD3: {td3}, TD4: {td4}")
+            # print(f"TD1: {td1}, TD2: {td2}, TD3: {td3}, TD4: {td4}")
 
             # 첫 번째 <td>에서 계정명을 추출
             if len(td_tags) >= 1:
