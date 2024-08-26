@@ -520,9 +520,35 @@ def generate_predictions_dictionary(db: Session, model, scaler, jurir_no=None):
     return None, predictions
 
 # view_DB_predict 에서 사용
-def get_db_predictions(db: Session, model_info: str):
+def get_db_predictions(db: Session, model_info: str, page: int, page_size: int, search_query: str):
+    if search_query == "None" or not search_query:
+        search_query = ""  # 빈 문자열로 설정
+    offset = (page - 1) * page_size
+
+    search_filter = ""
+    if search_query:
+        search_filter = f"AND (pr.company_name LIKE :search_query OR pr.corporate_number LIKE :search_query)"
+
     query = text(f"""
-    SELECT *
+    SELECT 
+        pr.corporate_number AS "corporate_number", 
+        pr.company_name AS "company_name", 
+        pr.AAA AS "AAA", 
+        pr.AA_plus AS "AA+", 
+        pr.AA AS "AA", 
+        pr.AA_minus AS "AA-", 
+        pr.A_plus AS "A+", 
+        pr.A AS "A", 
+        pr.A_minus AS "A-", 
+        pr.BBB_plus AS "BBB+", 
+        pr.BBB AS "BBB", 
+        pr.BBB_minus AS "BBB-", 
+        pr.BB_plus AS "BB+", 
+        pr.BB AS "BB", 
+        pr.BB_minus AS "BB-", 
+        pr.B_plus AS "B+", 
+        pr.B AS "B", 
+        pr.B_minus AS "B-" 
     FROM predict_ratings pr
     WHERE pr.corporate_number IN (
         SELECT jurir_no 
@@ -535,14 +561,36 @@ def get_db_predictions(db: Session, model_info: str):
         ) AS subquery
     )
     AND pr.model_reference = :model_info
+    {search_filter}
+    ORDER BY pr.company_name
+    LIMIT :limit OFFSET :offset
     """)
-    
-    result = db.execute(query, {"model_info": model_info})
+
+    total_query = text(f"""
+    SELECT COUNT(*) FROM predict_ratings pr
+    WHERE pr.corporate_number IN (
+        SELECT jurir_no 
+        FROM (
+            SELECT DISTINCT a.jurir_no, b.totalAsset2023
+            FROM companyInfo a
+            LEFT JOIN FS2023 b ON a.jurir_no = b.jurir_no
+            WHERE b.totalAsset2023 > 0
+        ) AS subquery
+    )
+    AND pr.model_reference = :model_info
+    {search_filter}
+    """)
+
+    result = db.execute(query, {"model_info": model_info, "limit": page_size, "offset": offset, "search_query": f"%{search_query}%"})
     predictions = result.fetchall()
     columns = result.keys()
+
+    # Fetch the total number of items
+    total_items_result = db.execute(total_query, {"model_info": model_info, "search_query": f"%{search_query}%"}).fetchone()
+    total_items = total_items_result[0] if total_items_result else 0
+
     predictions_dict = [dict(zip(columns, row)) for row in predictions]
-    
-    return predictions_dict
+    return predictions_dict, total_items
 
 
 
