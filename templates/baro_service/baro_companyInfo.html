@@ -15,12 +15,51 @@
             display: none;
             height: 0px;
         }
-
+        .news-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
         .show-below-850 {
             display: block;
         }
 
     }
+    
+    .news-list {
+        margin-top: 20px;
+        width: 100%;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+    }
+
+    .news-item {
+        margin-bottom: 20px;
+        padding: 15px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .news-title {
+
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 8px;
+    }
+
+    .news-description {
+        margin-top: 5px;
+        font-size: 16px;
+        color: #555;
+    }
+
+    .news-link {
+        color: #007bff;
+        text-decoration: none;
+    }
+
 </style>
 
 {% endblock %}
@@ -789,6 +828,35 @@
                     </tr>
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <br/><br/>
+
+    <!-- 뉴스 섹션 -->
+    <div class="flex-1 bg-white rounded-lg shadow-lg mb-6">
+        <div class="bg-gray-100 border-b border-gray-300 p-3 rounded-t-lg">
+            <h2 class="text-xl font-semibold text-gray-800">{{ corporation_name }} 관련 뉴스</h2>
+        </div>
+        <div class="p-6">
+            <div class="news-list">
+                {% if error %}
+                <p style="color: red;">{{ error }}</p>
+                {% elif news %}
+                {% for article in news %}
+                <div class="news-item">
+                    <a href="{{ article.link }}" class="news-link" target="_blank">
+                        <p class="news-title">{{ article.title | safe }}</p>
+                    </a>
+                    <div class="hidden-below-850">
+                        <p class="news-description">{{ article.description | safe }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p>관련 뉴스가 없습니다.</p>
+                {% endif %}
+            </div>
         </div>
     </div>
 
