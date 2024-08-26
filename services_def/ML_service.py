@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 logger = logging.getLogger('uvicorn.error')
 logger.setLevel(logging.DEBUG)
 
+
 def train_model():
     # file_path = r'C:\01DevelopKits\FinalProject\exel\fssDown\aa_fs2022_fs2023_1526.csv'
     file_path = r'C:\01DevelopKits\FinalProject\exel\fssDown\aa_fs2022_fs2023_07310945.csv'
@@ -335,6 +336,9 @@ def preprocess_and_predict_proba(new_data, model, scaler):
         
 # 예측을 위한 데이터 추출
 def get_new_data_from_db(db: Session, jurir_no_list: list):
+    # jurir_no_list를 SQL IN 조건에 사용할 수 있는 문자열로 변환
+    jurir_no_tuple = tuple(jurir_no_list)
+    
     query = text(
         "SELECT a.corp_name, a.jurir_no,"
         "b.totalAsset2023, b.totalDebt2023, b.totalEquity2023, "
@@ -354,16 +358,15 @@ def get_new_data_from_db(db: Session, jurir_no_list: list):
         "AND a.corp_name NOT LIKE '%은행%' "
         "AND a.corp_name NOT LIKE '%금융지주%' "
         "AND a.corp_name NOT LIKE '%보험%' "
+        "AND a.jurir_no IN :jurir_no_list "
         "ORDER BY b.totalAsset2023 DESC;"
-        
     )
-
-    result = db.execute(query)
+    
+    # 쿼리 실행 시 파라미터로 jurir_no_list 전달
+    result = db.execute(query, {'jurir_no_list': jurir_no_tuple})
     data = result.fetchall()
     columns = result.keys()
     new_data = pd.DataFrame(data, columns=columns)
-    
-    # logger.debug(new_data)
     
     return new_data
 
@@ -424,7 +427,8 @@ def get_jurir_no_list(db: Session):
 
 # 재무정보 존재하는 법인번호 리스트 받아서 신용등급 산출 insert_predictions에서 사용
 def generate_predictions(db: Session, model, scaler):
-    jurir_no_list = get_jurir_no_list(db)
+    jurir_no_list = get_jurir_no_list(db) # select jurir_no from FS2023 where totalAsset2023 > 0 limit 100;
+    
     logger.debug(f"Size of jurir_no_list: {len(jurir_no_list)}")
     if not jurir_no_list:
         return {"error": "No data found in database for prediction"}, []
@@ -463,19 +467,35 @@ def generate_predictions(db: Session, model, scaler):
 
     return None, predictions
 
-# predict all에서 사용
-def generate_predictions_dictionary(db: Session, model, scaler):
-    jurir_no_list = get_jurir_no_list(db)
+# predict all에서 사용 모든 기업의 등급을 산출하므로 수정필요. 
+def generate_predictions_dictionary(db: Session, model, scaler, jurir_no=None):
+    logger.info("Starting generate_predictions_dictionary function")
+    logger.info(f"Received jurir_no: {jurir_no}")
+
+    # 만약 jurir_no가 제공되지 않으면, 데이터베이스에서 jurir_no_list를 가져옵니다.
+    if jurir_no:
+        jurir_no_list = [jurir_no]
+        logger.info(f"Using provided jurir_no: {jurir_no_list}")
+    else:
+        jurir_no_list = get_jurir_no_list(db)
+        logger.info(f"Retrieved jurir_no_list from database: {jurir_no_list}")
+    
+    # 새로운 데이터를 데이터베이스에서 가져옵니다.
     new_data = get_new_data_from_db(db, jurir_no_list)
     if new_data.empty:
+        logger.error("No data found for the provided jurir_no list")
         return {"error": "Data not found for the given jurir_no list"}, []
-            # 중복된 jurir_no 제거
-    # new_data = new_data.drop_duplicates(subset=['jurir_no'])
+
+    logger.info(f"Retrieved new data from database. Number of records: {len(new_data)}")
 
     predictions = []
     for _, row in new_data.iterrows():
+        logger.debug(f"Processing row for jurir_no: {row['jurir_no']}")
+        
         data = row.to_frame().T
         probabilities = preprocess_and_predict_proba(data, model, scaler)
+        logger.debug(f"Generated probabilities for jurir_no: {row['jurir_no']}")
+        
         class_probabilities = list(zip(model.classes_, probabilities[0]))
         class_probabilities.sort(key=lambda x: x[1], reverse=True)
 
@@ -490,12 +510,14 @@ def generate_predictions_dictionary(db: Session, model, scaler):
         }
 
         predictions.append(result)
-    
-    
+        logger.info(f"Prediction generated for jurir_no: {row['jurir_no']}")
+
     logger.debug(f"Size of jurir_no_list: {len(jurir_no_list)}")
     logger.debug(f"Size of predictions: {len(predictions)}")
-    return None, predictions
+    logger.debug(f"Generated predictions: {predictions}")
 
+    logger.info("Completed generate_predictions_dictionary function")
+    return None, predictions
 
 # view_DB_predict 에서 사용
 def get_db_predictions(db: Session, model_info: str):
@@ -632,3 +654,4 @@ def get_default_model(db: Session) -> Union[str, None]:
     except SQLAlchemyError as e:
         db.rollback()
         raise e
+    
