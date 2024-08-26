@@ -1,6 +1,6 @@
 from datetime import datetime
 from sqlalchemy import Column, DateTime, Integer, Numeric, String, Float, Date, BigInteger, TIMESTAMP, Text
-
+from pydantic import BaseModel
 from database import Base
 
 ## dart 기준 회사 정보
@@ -140,6 +140,14 @@ class StockData(Base):
 #     turnover2023 = Column(Numeric(20, 3))
 #     leverage2023 = Column(Numeric(20, 3))
 #     created_at = Column(TIMESTAMP)
+
+
+# Pydantic 모델을 사용하여 요청 데이터를 검증합니다.
+class UpdateRequest(BaseModel):
+    fs2020_id: int = None
+    fs2021_id: int = None
+    fs2022_id: int = None
+    fs2023_id: int = None
 
 class FS2023(Base):
     __tablename__ = 'FS2023'
