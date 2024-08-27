@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 import base64
 import os
 from fastapi import APIRouter, Form, HTTPException, Request, Depends, Query
@@ -85,133 +83,108 @@ async def read_companyList(request: Request, db: Session = Depends(get_db)):
             "recent_views_companies" : recent_views_companies
         }
     )
-
 # 하단 검색
 @baro.get("/baro_companyInfo", response_class=HTMLResponse)
 async def read_company_info(request: Request, jurir_no: str = Query(...), db: Session = Depends(get_db)):
     username = request.session.get("username")
-    
     company_info = get_company_info(db, jurir_no)
     corp_code = company_info.corp_code
     FS2023 = get_FS2023(db, jurir_no)
-
+    
     news_articles = []
     news_error = None
     try:
         news_articles = fetch_naver_news(company_info.corp_name)
     except HTTPException as e:
         news_error = str(e)
-
+    
     if FS2023.totalAsset2023 == 0:
         print("FS2023.totalAsset2023 == 0")
         # DART API와 연동하여 최신 재무정보 업데이트 (테스트용)
-        fs_dict = FS_update(db, corp_code, company_info.corp_name, 2023)
+        fs_dict=FS_update_DB_base(db, corp_code, company_info.corp_name, 2023)
         fs_db_insert(db, jurir_no, fs_dict, 2023)
         FS2023 = get_FS2023(db, jurir_no)
-
     # FS2022 최근 데이터로 업데이트
     FS2022 = get_FS2022(db, jurir_no)
-
     if FS2022.totalAsset2022 == 0:
-        fs_dict = FS_update(db, corp_code, company_info.corp_name, 2022)
+        fs_dict=FS_update_DB_base(db, corp_code, company_info.corp_name, 2022)
         fs_db_insert(db, jurir_no, fs_dict, 2022)
         FS2022 = get_FS2022(db, jurir_no)
-
     # FS2021 최근 데이터로 업데이트
     FS2021 = get_FS2021(db, jurir_no)
-
     if FS2021.totalAsset2021 == 0:
         # DART API와 연동하여 최신 재무정보 업데이트 (테스트용)
-        fs_dict = FS_update(db, corp_code, company_info.corp_name, 2021)
+        fs_dict=FS_update_DB_base(db, corp_code, company_info.corp_name, 2021)
         fs_db_insert(db, jurir_no, fs_dict, 2021)
         FS2021 = get_FS2021(db, jurir_no)
-
     # FS2020 최근 데이터로 업데이트
     FS2020 = get_FS2020(db, jurir_no)
-
     if FS2020.totalAsset2020 == 0:
         # DART API와 연동하여 최신 재무정보 업데이트 (테스트용)
-        fs_dict = FS_update(db, corp_code, company_info.corp_name, 2020)
+        fs_dict=FS_update_DB_base(db, corp_code, company_info.corp_name, 2020)
         fs_db_insert(db, jurir_no, fs_dict, 2020)
         FS2020 = get_FS2020(db, jurir_no)
-
-    stock_data = get_Stock_data(db, company_info.corp_code)
-
+    stock_data=get_Stock_data(db, company_info.corp_code)
     try:
         stockgraph = await get_stockgraph1(company_info.stock_code)  # await 사용
     except ValueError as e:
         print(f"Failed to retrieve stock graph: {e}")
         stockgraph = {"stock_data": []}  # 빈 데이터를 반환하거나 적절히 처리
-
     adres = company_info.adres
     kakao_map_api_key = os.getenv("KAKAO_MAP_API_KEY")
-
     custom_key_mapping = {
-        'AAA_plus': 'AAA+',
-        'AAA': 'AAA',
-        'AAA_minus': 'AAA-',
-        'AA_plus': 'AA+',
-        'AA': 'AA',
-        'AA_minus': 'AA-',
-        'A_plus': 'A+',
-        'A': 'A',
-        'A_minus': 'A-',
-        'BBB_plus': 'BBB+',
-        'BBB': 'BBB',
-        'BBB_minus': 'BBB-',
-        'BB_plus': 'BB+',
-        'BB': 'BB',
-        'BB_minus': 'BB-',
-        'B_plus': 'B+',
-        'B': 'B',
-        'B_minus': 'B-',
-        'CCC_plus': 'CCC+',
-        'CCC': 'CCC',
-        'CCC_minus': 'CCC-',
-        'C': 'C',
-        'D': 'D'
+    'AAA_plus': 'AAA+',
+    'AAA': 'AAA',
+    'AAA_minus': 'AAA-',
+    'AA_plus': 'AA+',
+    'AA': 'AA',
+    'AA_minus': 'AA-',
+    'A_plus': 'A+',
+    'A': 'A',
+    'A_minus': 'A-',
+    'BBB_plus': 'BBB+',
+    'BBB': 'BBB',
+    'BBB_minus': 'BBB-',
+    'BB_plus': 'BB+',
+    'BB': 'BB',
+    'BB_minus': 'BB-',
+    'B_plus': 'B+',
+    'B': 'B',
+    'B_minus': 'B-',
+    'CCC_plus': 'CCC+',
+    'CCC': 'CCC',
+    'CCC_minus': 'CCC-',
+    'C': 'C',
+    'D': 'D'
     }
-
     query1 = text("""
-    SELECT AAA_plus, AAA, AAA_minus, AA_plus, AA, AA_minus, A_plus, A, A_minus, 
-        BBB_plus, BBB, BBB_minus, BB_plus, BB, BB_minus, B_plus, B, B_minus, 
+    SELECT AAA_plus, AAA, AAA_minus, AA_plus, AA, AA_minus, A_plus, A, A_minus,
+        BBB_plus, BBB, BBB_minus, BB_plus, BB, BB_minus, B_plus, B, B_minus,
         CCC_plus, CCC, CCC_minus, C, D
     FROM spoon.predict_ratings
     WHERE base_year = '2023' AND corporate_number = :corporate_number
     ORDER BY timestamp DESC
     LIMIT 1;
     """)
-
     credit_rate = db.execute(query1, {"corporate_number": jurir_no}).fetchone()
-
     if not credit_rate:
-        top3_rate = [{"key": "credit_rate", "value": "None"}]
+                        top3_rate = [{"key": "credit_rate", "value": "None"}]
     else:
-        ratings = {custom_key_mapping.get(
-            k, k): v for k, v in credit_rate._mapping.items() if v is not None}
-        top3_ratings = sorted(
-            ratings.items(), key=lambda item: item[1], reverse=True)[:3]
-        top3_rate = [{"key": column, "value": value}
-                     for column, value in top3_ratings]
-
-        # Ensure at least 3 entries in top3_rate with default values if less than 3 available
-        while len(top3_rate) < 3:
-            # Use "N/A" or other default key
-            top3_rate.append({"key": "N/A", "value": 0})
-
+                        ratings = {custom_key_mapping.get(k, k): v for k, v in credit_rate._mapping.items() if v is not None}
+                        top3_ratings = sorted(ratings.items(), key=lambda item: item[1], reverse=True)[:3]
+                        top3_rate = [{"key": column, "value": value} for column, value in top3_ratings]
+                        # Ensure at least 3 entries in top3_rate with default values if less than 3 available
+                        while len(top3_rate) < 3:
+                            top3_rate.append({"key": "N/A", "value": 0})  # Use "N/A" or other default key
     add_recent_view(db, username, company_info.corp_code)
-
     # 포스트 데이터를 회사 이름으로 필터링하여 가져오기
     posts = db.query(Post).filter(Post.corporation_name == company_info.corp_name).all()
-    
     # print(company_info.corp_name)
     # print("FS2023.totalAsset2023", FS2023.totalAsset2023)
     # print("FS2022.totalAsset2022", FS2022.totalAsset2022)
     # print("FS2021.totalAsset2021", FS2021.totalAsset2021)
     # print("FS2020.totalAsset2020", FS2020.totalAsset2020)
-    
     print(FS2023.FS_url)
-    
     return templates.TemplateResponse("baro_service/baro_companyInfo.html", {
         "request": request,
         "username": username,
@@ -231,7 +204,6 @@ async def read_company_info(request: Request, jurir_no: str = Query(...), db: Se
         "posts": posts
     })
 
-
 # 상단 검색
 @baro.post("/baro_companyInfo2")
 async def read_company_info(
@@ -242,99 +214,74 @@ async def read_company_info(
 ):
     # 세션에서 사용자 이름을 가져옴
     username = request.session.get("username")
- 
     try:
         # CompanyInfo 테이블에 대한 기본 쿼리 생성
         query = db.query(CompanyInfo)
-
         jurir_no = None
         company_info = None
         print(name)
         print(search_type)
-
         # name이 존재할 경우, search_type에 따라 회사 이름이나 코드로 검색
         if name:
             if search_type == "company_name":
                 # 회사 이름으로 검색하여 jurir_no를 가져옴
-                result = db.query(CompanyInfo.jurir_no).filter(
-                    func.trim(CompanyInfo.corp_name) == name).first()
+                result = db.query(CompanyInfo.jurir_no).filter(func.trim(CompanyInfo.corp_name) == name).first()
                 if result:
                     jurir_no = result[0]
             elif search_type == "company_code":
                 # 회사 코드로 검색하여 jurir_no를 가져옴
-                result = db.query(CompanyInfo.jurir_no).filter(
-                    func.trim(CompanyInfo.jurir_no) == func.trim(name)).first()
+                result = db.query(CompanyInfo.jurir_no).filter(func.trim(CompanyInfo.jurir_no) == func.trim(name)).first()
                 if result:
                     jurir_no = result[0]
-
         print("jurir_no:", jurir_no)  # jurir_no가 제대로 가져와졌는지 확인하기 위한 디버그 출력
 
+        
         # jurir_no가 존재할 경우, 해당 회사 정보를 가져옴
         if jurir_no:
             company_info = get_company_info(db, jurir_no)
             corp_code = company_info.corp_code
-            # company_info가 제대로 가져와졌는지 확인하기 위한 디버그 출력
-            print("company_info:", company_info)
-
+            print("company_info:", company_info)  # company_info가 제대로 가져와졌는지 확인하기 위한 디버그 출력
             if company_info:
-                # corp_code 확인용 디버그 출력
-                print("company_info.corp_code:", company_info.corp_code)
-
+                print("company_info.corp_code:", company_info.corp_code)  # corp_code 확인용 디버그 출력
                 # FS2023 최근 데이터로 업데이트
                 FS2023 = get_FS2023(db, jurir_no)
-
-                if FS2023.totalAsset2023 == 0:
+                if FS2023.totalAsset2023 == 0: # null일 경우 0 으로 리턴
                     print("FS2023.totalAsset2023 == 0")
                     # DART API와 연동하여 최신 재무정보 업데이트 (테스트용)
-                    fs_dict = FS_update(
-                        db, corp_code, company_info.corp_name, 2023)
+                    fs_dict=FS_update_DB_base(db, corp_code, company_info.corp_name, 2023)
                     fs_db_insert(db, jurir_no, fs_dict, 2023)
                     FS2023 = get_FS2023(db, jurir_no)
-
                 # FS2022 최근 데이터로 업데이트
                 FS2022 = get_FS2022(db, jurir_no)
-
                 if FS2022.totalAsset2022 == 0:
-                    fs_dict = FS_update(
-                        db, corp_code, company_info.corp_name, 2022)
+                    fs_dict=FS_update_DB_base(db, corp_code, company_info.corp_name, 2022)
                     fs_db_insert(db, jurir_no, fs_dict, 2022)
                     FS2022 = get_FS2022(db, jurir_no)
-
                 # FS2021 최근 데이터로 업데이트
                 FS2021 = get_FS2021(db, jurir_no)
-
                 if FS2021.totalAsset2021 == 0:
                     # DART API와 연동하여 최신 재무정보 업데이트 (테스트용)
-                    fs_dict = FS_update(
-                        db, corp_code, company_info.corp_name, 2021)
+                    fs_dict=FS_update_DB_base(db, corp_code, company_info.corp_name, 2021)
                     fs_db_insert(db, jurir_no, fs_dict, 2021)
                     FS2021 = get_FS2021(db, jurir_no)
-
                 # FS2020 최근 데이터로 업데이트
                 FS2020 = get_FS2020(db, jurir_no)
-
                 if FS2020.totalAsset2020 == 0:
                     # DART API와 연동하여 최신 재무정보 업데이트 (테스트용)
-                    fs_dict = FS_update(
-                        db, corp_code, company_info.corp_name, 2020)
+                    fs_dict=FS_update_DB_base(db, corp_code, company_info.corp_name, 2020)
                     fs_db_insert(db, jurir_no, fs_dict, 2020)
                     FS2020 = get_FS2020(db, jurir_no)
-
                 # 주식 관련 데이터를 가져옴
                 stock_data = get_Stock_data(db, company_info.corp_code)
-
                 # 주식 그래프 데이터를 가져옴 (비동기 호출)
                 try:
-                    # await 사용
-                    stockgraph = await get_stockgraph1(company_info.stock_code)
+                    stockgraph = await get_stockgraph1(company_info.stock_code)  # await 사용
                 except ValueError as e:
                     print(f"Failed to retrieve stock graph: {e}")
                     stockgraph = {"stock_data": []}  # 빈 데이터를 반환하거나 적절히 처리
-
                 # 회사 주소와 카카오 맵 API 키 가져오기
                 adres = company_info.adres
                 kakao_map_api_key = os.getenv("KAKAO_MAP_API_KEY")
-
                 # 신용 등급 매핑 테이블 정의
                 custom_key_mapping = {
                     'AAA_plus': 'AAA+',
@@ -361,68 +308,56 @@ async def read_company_info(
                     'C': 'C',
                     'D': 'D'
                 }
-
                 # 가장 최신 신용 등급 정보를 가져오기 위한 SQL 쿼리
                 query1 = text("""
-                        SELECT AAA_plus, AAA, AAA_minus, AA_plus, AA, AA_minus, A_plus, A, A_minus, 
-                            BBB_plus, BBB, BBB_minus, BB_plus, BB, BB_minus, B_plus, B, B_minus, 
+                        SELECT AAA_plus, AAA, AAA_minus, AA_plus, AA, AA_minus, A_plus, A, A_minus,
+                            BBB_plus, BBB, BBB_minus, BB_plus, BB, BB_minus, B_plus, B, B_minus,
                             CCC_plus, CCC, CCC_minus, C, D
                         FROM spoon.predict_ratings
                         WHERE base_year = '2023' AND corporate_number = :corporate_number
                         ORDER BY timestamp DESC
                         LIMIT 1;
                 """)
-
                 # 쿼리를 실행하여 신용 등급 데이터를 가져옴
-                credit_rate = db.execute(
-                    query1, {"corporate_number": jurir_no}).fetchone()
-
+                credit_rate = db.execute(query1, {"corporate_number": jurir_no}).fetchone()
+                if not credit_rate:
+                    generate_credit(db,jurir_no)
+                    credit_rate = db.execute(query1, {"corporate_number": jurir_no}).fetchone()
                 if not credit_rate:
                     top3_rate = [{"key": "credit_rate", "value": "None"}]
                 else:
                     # 신용 등급 데이터에서 상위 3개 등급을 선택하여 딕셔너리로 구성
-                    ratings = {custom_key_mapping.get(
-                        k, k): v for k, v in credit_rate._mapping.items() if v is not None}
-                    top3_ratings = sorted(
-                        ratings.items(), key=lambda item: item[1], reverse=True)[:3]
-                    top3_rate = [{"key": column, "value": value}
-                                 for column, value in top3_ratings]
-
+                    ratings = {custom_key_mapping.get(k, k): v for k, v in credit_rate._mapping.items() if v is not None}
+                    top3_ratings = sorted(ratings.items(), key=lambda item: item[1], reverse=True)[:3]
+                    top3_rate = [{"key": column, "value": value} for column, value in top3_ratings]
                     # 최소 3개의 항목을 보장하기 위해 부족한 경우 기본 값을 추가
                     while len(top3_rate) < 3:
-                        # "N/A" 또는 기본 값을 사용
-                        top3_rate.append({"key": "N/A", "value": 0})
-
+                        top3_rate.append({"key": "N/A", "value": 0})  # "N/A" 또는 기본 값을 사용
             else:
                 print("Company info is None")  # company_info가 없는 경우 디버그 출력
         else:
             print("Jurir_no is None")  # jurir_no가 없는 경우 디버그 출력
-
+                            
         news_articles = []
         news_error = None
         try:
             news_articles = fetch_naver_news(company_info.corp_name)
         except HTTPException as e:
-            news_error = str(e)
-
+            news_error = str(e)            
+            
         # 회사 정보를 찾지 못한 경우 404 에러 발생
         if not company_info:
             raise HTTPException(status_code=404, detail="Company not found")
-
         # 최근 본 회사 목록에 추가
         add_recent_view(db, username, company_info.corp_code)
-
         # 포스트 데이터를 회사 이름으로 필터링하여 가져오기
-        posts = db.query(Post).filter(
-            Post.corporation_name == company_info.corp_name).all()
-
+        posts = db.query(Post).filter(Post.corporation_name == company_info.corp_name).all()
         print(company_info.corp_name)
         print("jurir_no", jurir_no)
         print(FS2023.totalAsset2023)
         print(FS2022.totalAsset2022)
         print(FS2021.totalAsset2021)
         print(FS2020.totalAsset2020)
-
         # 템플릿에 필요한 데이터를 포함하여 HTML 응답을 반환
         return templates.TemplateResponse(
             "baro_service/baro_companyInfo.html",
@@ -445,7 +380,6 @@ async def read_company_info(
                 "posts": posts
             }
         )
-
     except Exception as e:
         # 오류 발생 시 콘솔에 출력하고 500 에러 발생
         print("An error occurred:", str(e))
@@ -522,7 +456,7 @@ async def search_news_by_jurir_no(request: Request, jurir_no: str = Query(...), 
 async def autocomplete(
     query: str,
     search_type: str = Query("company_name", enum=[
-                             "company_name", "company_code"]),
+                            "company_name", "company_code"]),
 ):
     db = SessionLocal()
     print(search_type)
@@ -721,5 +655,3 @@ async def read_favorites(request: Request, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal Server Error")
     
-    
->>>>>>> 87321894ce65eeb63ce935fecd7305573a4a5d13
