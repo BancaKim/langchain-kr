@@ -1063,6 +1063,9 @@ async def search_contacts(
                 Post.content.contains(search_query),
                 Post.username.contains(search_query),
                 Post.corporation_name.contains(search_query),
+                Post.region_group_name.contains(search_query),
+                Post.region_headquarter_name.contains(search_query),
+                Post.branch_office_name.contains(search_query),
             )
         )
 
