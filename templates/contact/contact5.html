@@ -274,14 +274,24 @@
     <div class="flex items-center mb-5 justify-between">
         <h2 class="text-4xl font-bold">{{ company_info.corp_name }}</h2>
         <div class="hidden-below-850">
-            <div class="text-xl p-0">업체의 자세한 정보가 궁금하다면?
+            {% if username == '김대리' %}
+            <div class="text-right">
+                <a href="/static/images/mobile1.mp4" class="px-2 py-2 text-purple-700 hover:underline">참고자료1</a>
+                <a href="/static/images/mobile2.mp4" class="px-2 py-2 text-purple-700 hover:underline">참고자료2</a>
+            </div>
+            {% endif %}
+            <div class="text-xl p-0">업체의 자세한 정보가 궁금하다면?                
                 <a href="/baro_companyInfo?jurir_no={{ company_info.jurir_no }}"
                     class="px-2 py-2 text-purple-700 hover:underline">
                     BizInfo
                 </a>
+
             </div>
         </div>
     </div>
+
+    
+    
 
     <div class="flex-grow grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- PC 환경에서만 보이는 섹션 -->
