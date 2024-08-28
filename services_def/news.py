@@ -33,7 +33,7 @@ def fetch_naver_news(corporation_name: str) -> List[Dict]:
     
     params = {
         'query': processed_name,
-        'display': 30,  # 30개 뉴스를 가져와 필터링
+        'display': 100,  # 100개 뉴스를 가져와 필터링
         'sort': 'date'  # 최신 뉴스부터 정렬
     }
     
