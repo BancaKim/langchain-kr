@@ -7,6 +7,8 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
 <link rel="stylesheet" href="/static/css/font.css">
 <script src="/static/js/AI_search.js" defer></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <style>
     .modal {
         display: none;
@@ -490,33 +492,67 @@
 <script>
     async function searchCompanies(event) {
         event.preventDefault(); // 기본 폼 제출 방지
-
+    
         const name = document.getElementById('company_name').value;
         const searchType = document.getElementById('search_type').value;
-
+    
         // 동적으로 폼 생성
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = '/baro_companyInfo2';
-
+    
         // 폼에 필요한 입력 필드 추가
         const nameField = document.createElement('input');
         nameField.type = 'hidden';
         nameField.name = 'name';
         nameField.value = name;
         form.appendChild(nameField);
-
+    
         const searchTypeField = document.createElement('input');
         searchTypeField.type = 'hidden';
         searchTypeField.name = 'search_type';
         searchTypeField.value = searchType;
         form.appendChild(searchTypeField);
-
-        // 폼을 문서에 추가하고 제출
-        document.body.appendChild(form);
-        form.submit();
+    
+        try {
+            // 서버에 폼 데이터를 비동기로 전송
+            const response = await fetch(form.action, {
+                method: form.method,
+                body: new URLSearchParams(new FormData(form))
+            });
+    
+            if (response.status === 404) {
+                // 404 오류 시 Toastify 팝업 노출하고 화면 유지
+                Toastify({
+                    text: "업체를 찾을 수 없습니다. 다른 업체를 입력해주세요.",
+                    duration: 5000,
+                    close: true,
+                    gravity: "bottom",
+                    position: "right",
+                    backgroundColor: "#dc2626",
+                }).showToast();
+            } else if (response.ok) {
+                // 성공 시 응답 내용을 페이지에 적용
+                const text = await response.text();
+                document.open();
+                document.write(text);
+                document.close();
+            } else {
+                // 기타 오류 처리
+                Toastify({
+                    text: "업체를 찾을 수 없습니다. 다른 업체를 입력해주세요.",
+                    duration: 5000,
+                    close: true,
+                    gravity: "bottom",
+                    position: "right",
+                    backgroundColor: "#dc2626",
+                }).showToast();
+            }
+        } catch (error) {
+            console.error('검색 중 오류 발생:', error);
+            alert('검색 중 오류가 발생했습니다.');
+        }
     }
-
     document.getElementById('search_button').addEventListener('click', searchCompanies);
 
 
