@@ -16,10 +16,50 @@
             height: 0px;
         }
 
+        .news-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
         .show-below-850 {
             display: block;
         }
 
+    }
+
+    .news-list {
+        margin-top: 20px;
+        width: 100%;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+    }
+
+    .news-item {
+        margin-bottom: 20px;
+        padding: 15px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .news-title {
+
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 8px;
+    }
+
+    .news-description {
+        margin-top: 5px;
+        font-size: 16px;
+        color: #555;
+    }
+
+    .news-link {
+        color: #007bff;
+        text-decoration: none;
     }
 </style>
 
@@ -88,7 +128,12 @@
         </h2>
 
         <button onclick="downloadPDF()" class="ml-auto text-xl text-purple-500 lg:text-2xl hover:underline">
-            PDF 다운로드
+            PDF 다운로드 
+        </button>&nbsp;&nbsp;
+
+        <button onclick="window.open('/static/images/PDF2.mp4')"
+            class="ml-auto text-purple-500 lg:text-2xl hover:underline hidden-below-850">
+            | 활용 가이드
         </button>&nbsp;&nbsp;&nbsp;
         </h2>
         <script>
@@ -591,47 +636,47 @@
     });
 
 
-    function sendFeedback() {
-        // FS ID들을 가져옵니다. ID 값이 없을 수도 있으므로 예외 처리.
-        const fs2020_id = "{{ fs2020.id }}" || null;
-        const fs2021_id = "{{ fs2021.id }}" || null;
-        const fs2022_id = "{{ fs2022.id }}" || null;
-        const fs2023_id = "{{ fs2023.id }}" || null;
+        function sendFeedback() {
+            // FS ID들을 가져옵니다. ID 값이 없을 수도 있으므로 예외 처리.
+            const fs2020_id = "{{ fs2020.id }}" || null;
+            const fs2021_id = "{{ fs2021.id }}" || null;
+            const fs2022_id = "{{ fs2022.id }}" || null;
+            const fs2023_id = "{{ fs2023.id }}" || null;
 
-        // None이 아닌 값들만 데이터에 포함
-        const data = {};
-        if (fs2020_id) data.fs2020_id = fs2020_id;
-        if (fs2021_id) data.fs2021_id = fs2021_id;
-        if (fs2022_id) data.fs2022_id = fs2022_id;
-        if (fs2023_id) data.fs2023_id = fs2023_id;
+            // None이 아닌 값들만 데이터에 포함
+            const data = {};
+            if (fs2020_id) data.fs2020_id = fs2020_id;
+            if (fs2021_id) data.fs2021_id = fs2021_id;
+            if (fs2022_id) data.fs2022_id = fs2022_id;
+            if (fs2023_id) data.fs2023_id = fs2023_id;
 
-        // 데이터가 없으면 경고를 띄우고 함수 종료
-        if (Object.keys(data).length === 0) {
-            alert('전송할 데이터가 없습니다.');
-            return;
-        }
-
-        // 비동기 요청 전송
-        fetch('/fs_check_request/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === "success") {
-                alert(data.message);
-            } else {
-                alert('업데이트 실패');
+            // 데이터가 없으면 경고를 띄우고 함수 종료
+            if (Object.keys(data).length === 0) {
+                alert('전송할 데이터가 없습니다.');
+                return;
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('업데이트 중 오류가 발생했습니다.');
-        });
-    }
+
+            // 비동기 요청 전송
+            fetch('/fs_check_request/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        alert(data.message);
+                    } else {
+                        alert('업데이트 실패');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('업데이트 중 오류가 발생했습니다.');
+                });
+        }
 
 
     </script>
@@ -660,16 +705,20 @@
                     <tr>
                         <th class="px-4 py-2 text-center border-b lg:py-4">항목</th>
                         <th class="px-4 py-2 text-center border-b hidden-below-850 lg:py-4">
-                            <a href="{{ fs2020.FS_url }}" class="text-purple-500 hover:underline" target="_blank" rel="noopener noreferrer">2020</a>
+                            <a href="{{ fs2020.FS_url }}" class="text-purple-500 hover:underline" target="_blank"
+                                rel="noopener noreferrer">2020</a>
                         </th>
                         <th class="px-4 py-2 text-center border-b lg:py-4">
-                            <a href="{{ fs2021.FS_url }}" class="text-purple-500 hover:underline" target="_blank" rel="noopener noreferrer">2021</a>
+                            <a href="{{ fs2021.FS_url }}" class="text-purple-500 hover:underline" target="_blank"
+                                rel="noopener noreferrer">2021</a>
                         </th>
                         <th class="px-4 py-2 text-center border-b lg:py-4">
-                            <a href="{{ fs2022.FS_url }}" class="text-purple-500 hover:underline" target="_blank" rel="noopener noreferrer">2022</a>
+                            <a href="{{ fs2022.FS_url }}" class="text-purple-500 hover:underline" target="_blank"
+                                rel="noopener noreferrer">2022</a>
                         </th>
                         <th class="px-4 py-2 text-center border-b lg:py-4">
-                            <a href="{{ fs2023.FS_url }}" class="text-purple-500 hover:underline" target="_blank" rel="noopener noreferrer">2023</a>
+                            <a href="{{ fs2023.FS_url }}" class="text-purple-500 hover:underline" target="_blank"
+                                rel="noopener noreferrer">2023</a>
                         </th>
                     </tr>
                 </thead>
@@ -789,6 +838,35 @@
                     </tr>
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <br /><br />
+
+    <!-- 뉴스 섹션 -->
+    <div class="flex-1 mb-6 bg-white rounded-lg shadow-lg">
+        <div class="p-3 bg-gray-100 border-b border-gray-300 rounded-t-lg">
+            <h2 class="text-xl font-semibold text-gray-800">{{ corporation_name }} 관련 뉴스</h2>
+        </div>
+        <div class="p-6">
+            <div class="news-list">
+                {% if error %}
+                <p style="color: red;">{{ error }}</p>
+                {% elif news %}
+                {% for article in news %}
+                <div class="news-item">
+                    <a href="{{ article.link }}" class="news-link" target="_blank">
+                        <p class="news-title">{{ article.title | safe }}</p>
+                    </a>
+                    <div class="hidden-below-850">
+                        <p class="news-description">{{ article.description | safe }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p>관련 뉴스가 없습니다.</p>
+                {% endif %}
+            </div>
         </div>
     </div>
 
