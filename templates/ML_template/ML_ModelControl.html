@@ -211,6 +211,29 @@ tr.clickable-row {
                 // window.location.href = "/train/";
         }
 
+        // cominfo 가지고 오기
+        function getComInfo() {
+            document.getElementById('modal').style.display = 'block';
+            window.location.href = "/ML_all_ComInfo/";
+                // window.location.href = "/train/";
+        }
+
+        // 재무정보 가지고 오기 
+        function getFssInfo() {
+            document.getElementById('modal').style.display = 'block';
+            window.location.href = "/ML_all_FssInfo/";
+                // window.location.href = "/train/";
+        }
+
+
+        // 주가정보 가지고 오기
+        function getStockInfo() {
+            document.getElementById('modal').style.display = 'block';
+            window.location.href = "/ML_all_StockInfo/";
+                // window.location.href = "/train/";
+        }
+
+
         $(document).ready(function() {
             $('#resultsTable').DataTable();
         });
@@ -263,7 +286,12 @@ tr.clickable-row {
 
     {% include 'header.html' %}
 
-    
+    {% if model_not_found %}
+    <script>
+        alert("모델 파일이 존재하지 않습니다. 이러한 에러는 대부분의 경우 로컬 환경에서 admin으로 접속한 경우 발생합니다. 신용평가 모델추가 버튼을 눌러 모델을 추가하거나, 원격 서버를 통해 접속하세요.");
+        window.location.href = "{{ redirect_url }}";
+    </script>
+    {% endif %}
     <br>
     <div class="container">
         
@@ -310,9 +338,9 @@ tr.clickable-row {
             </div>
             <div class="summary-cards">
                 <button class="bu" onclick="getCreditRates()">평가 등급 보기</button>
-                <button class="bu">기업정보 보기<button>
-                <button class="bu">재무정보 보기</button>
-                <button class="bu">주가정보 보기</button>
+                <button class="bu" onclick="getComInfo()">기업정보 보기<button>
+                <button class="bu" onclick="getFssInfo()">재무정보 보기</button>
+                <button class="bu" onclick="getStockInfo()">주가정보 보기</button>
             </div>
             <br><br>
          

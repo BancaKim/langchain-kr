@@ -1,8 +1,10 @@
 # app/models/data_model.py
 from pydantic import BaseModel
-from sqlalchemy import Column, String, Float, DateTime, Integer, LargeBinary, JSON, Boolean
+from sqlalchemy import Column, String, Float, DateTime, Integer, LargeBinary, JSON, Boolean, Integer
 from database import Base
 from datetime import datetime
+
+from sqlalchemy.ext.declarative import declarative_base
 
 class ModelStorage(Base):
     __tablename__ = "model_storage"
@@ -22,6 +24,37 @@ class ModelStorage(Base):
     class_report = Column(JSON)
     conf_matrix = Column(JSON)
     is_default = Column(Boolean, default=False)  # 디폴트 여부 필드 추가
+    
+    
+    
+
+
+Base = declarative_base()
+
+class CompanyInfo(Base):
+    __tablename__ = 'companyInfo'
+    
+    corp_code = Column(String(8), primary_key=True)
+    corp_name = Column(String(255), nullable=False)
+    corp_name_eng = Column(String(255))
+    stock_name = Column(String(255))
+    stock_code = Column(String(6))
+    ceo_nm = Column(String(255))
+    corp_cls = Column(String(1))
+    jurir_no = Column(String(13), unique=True)
+    bizr_no = Column(String(13))
+    adres = Column(String(255))
+    hm_url = Column(String(255))
+    ir_url = Column(String(255))
+    phn_no = Column(String(20))
+    fax_no = Column(String(20))
+    induty_code = Column(String(10))
+    est_dt = Column(String(8))
+    acc_mt = Column(String(2))
+
+    def __repr__(self):
+        return f"<CompanyInfo(corp_code={self.corp_code}, corp_name={self.corp_name})>"
+
 
 # class DataModel(BaseModel):
 #     loan: float

@@ -8,6 +8,8 @@ from sqlalchemy.orm import Session
 from database import SessionLocal
 from services_def.ML_service import train_model, insert_predictions_into_db, generate_predictions, generate_predictions_dictionary, get_db_predictions
 from services_def.ML_service import save_model_info_to_db, get_all_model_info, get_model_info_by_id, custmomized_train_model, set_default_model, get_default_model
+from models.ML_model import CompanyInfo
+
 import logging
 from fastapi.responses import RedirectResponse
 
@@ -112,9 +114,23 @@ async def view_model_detail(request: Request, model_id: str, db: Session = Depen
     conf_matrix = json.loads(model_info['conf_matrix'])
     credit_ratings = ['A', 'A+', 'A-', 'AA', 'AA+', 'AA-', 'AAA', 'B', 'B+', 'B-', 'BB', 'BB+', 'BB-', 'BBB', 'BBB+', 'BBB-']
     
+    
+    
     # Load the model and scaler if necessary
     model_filepath = model_info['model_filepath']
-    model_store["model"] = joblib.load(model_filepath)
+    try:
+        model_store["model"] = joblib.load(model_filepath)
+    except FileNotFoundError:
+        # 모델 파일이 존재하지 않을 경우 팝업 메시지를 띄우고 리디렉션
+        return templates.TemplateResponse("ML_template/ML_ModelControl.html", {
+            "request": request,
+            "model_not_found": True,
+            "redirect_url": "/modelControl/"
+        })
+    
+    # Load the model and scaler if necessary
+    # model_filepath = model_info['model_filepath']
+    # model_store["model"] = joblib.load(model_filepath)
     model_store["scaler"] = pickle.loads(model_info['scaler'])
     model_store["accuracy"] = accuracy
     model_store["class_report"] = class_report
@@ -433,4 +449,251 @@ async def ML_pretrain(
         "page_size": page_size,
         "total_pages": total_pages,
         "search_query": search_query
+    })
+    
+    
+    
+# Pagination 계산 함수
+def get_pagination_data(current_page, total_pages, display_range=2):
+    start_page = max(current_page - display_range, 1)
+    end_page = min(current_page + display_range, total_pages)
+
+    pages = list(range(start_page, end_page + 1))
+
+    has_previous_gap = start_page > 2
+    has_next_gap = end_page < total_pages - 1
+
+    return {
+        "pages": pages,
+        "has_previous_gap": has_previous_gap,
+        "has_next_gap": has_next_gap,
+        "first_page": 1,
+        "last_page": total_pages
+    }
+
+
+from sqlalchemy import text
+
+
+@machineLearning.get("/ML_all_ComInfo/", response_class=HTMLResponse)
+async def view_company_info(
+    request: Request,
+    db: Session = Depends(get_db),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(100, ge=1),
+    search_query: str = Query("")
+):
+    offset = (page - 1) * page_size
+    search_filter = f"%{search_query}%" if search_query else "%"
+    username = request.session.get("username")
+
+    # 데이터 조회
+    total_query = text(f"""
+        SELECT COUNT(*) FROM companyInfo a
+        LEFT OUTER JOIN FS2023 b ON a.jurir_no = b.jurir_no
+        LEFT OUTER JOIN FS2022 c ON a.jurir_no = c.jurir_no
+        LEFT OUTER JOIN FS2021 d ON a.jurir_no = d.jurir_no
+        LEFT OUTER JOIN FS2020 e ON a.jurir_no = e.jurir_no
+        WHERE a.corp_name LIKE :search_filter OR a.jurir_no LIKE :search_filter
+    """)
+    total_items = db.execute(total_query, {"search_filter": search_filter}).scalar()
+
+    data_query = text(f"""
+        SELECT 
+            a.*, 
+            CASE 
+                WHEN b.totalAsset2023 = 0 OR b.totalAsset2023 IS NULL THEN NULL 
+                ELSE 'loaded' 
+            END AS fs2023,
+            CASE 
+                WHEN c.totalAsset2022 = 0 OR c.totalAsset2022 IS NULL THEN NULL 
+                ELSE 'loaded' 
+            END AS fs2022,
+            CASE 
+                WHEN d.totalAsset2021 = 0 OR d.totalAsset2021 IS NULL THEN NULL 
+                ELSE 'loaded' 
+            END AS fs2021,
+            CASE 
+                WHEN e.totalAsset2020 = 0 OR e.totalAsset2020 IS NULL THEN NULL 
+                ELSE 'loaded' 
+            END AS fs2020
+        FROM 
+            companyInfo a
+        LEFT OUTER JOIN 
+            FS2023 b ON a.jurir_no = b.jurir_no
+        LEFT OUTER JOIN 
+            FS2022 c ON a.jurir_no = c.jurir_no 
+        LEFT OUTER JOIN 
+            FS2021 d ON a.jurir_no = d.jurir_no 
+        LEFT OUTER JOIN 
+            FS2020 e ON a.jurir_no = e.jurir_no
+        WHERE a.corp_name LIKE :search_filter OR a.jurir_no LIKE :search_filter
+        LIMIT :limit OFFSET :offset
+    """)
+    
+    results = db.execute(data_query, {"search_filter": search_filter, "limit": page_size, "offset": offset}).fetchall()
+
+    total_pages = (total_items + page_size - 1) // page_size
+    pagination_data = get_pagination_data(page, total_pages)
+
+    return templates.TemplateResponse("ML_template/company_info.html", {
+        "request": request,
+        "results": results,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": total_pages,
+        "pagination_data": pagination_data,
+        "search_query": search_query if search_query else "",  # 빈 문자열로 처리
+        "username": username,
+    })
+
+
+
+@machineLearning.get("/ML_all_FssInfo/", response_class=HTMLResponse)
+async def view_company_info(
+    request: Request,
+    db: Session = Depends(get_db),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(100, ge=1),
+    search_query: str = Query("")
+):
+    offset = (page - 1) * page_size
+    search_filter = f"%{search_query}%" if search_query else "%"
+    username = request.session.get("username")
+
+    # 데이터 조회
+    total_query = text(f"""
+        SELECT COUNT(*) FROM companyInfo a
+        LEFT OUTER JOIN FS2023 b ON a.jurir_no = b.jurir_no
+        LEFT OUTER JOIN FS2022 c ON a.jurir_no = c.jurir_no
+        LEFT OUTER JOIN FS2021 d ON a.jurir_no = d.jurir_no
+        LEFT OUTER JOIN FS2020 e ON a.jurir_no = e.jurir_no
+        WHERE a.corp_name LIKE :search_filter OR a.jurir_no LIKE :search_filter
+    """)
+    total_items = db.execute(total_query, {"search_filter": search_filter}).scalar()
+
+    data_query = text(f"""
+        SELECT 
+            a.corp_name,
+            a.jurir_no,
+            b.totalAsset2023,
+            b.totalDebt2023,
+            b.totalEquity2023,
+            b.revenue2023,
+            b.operatingIncome2023,
+            b.earningBeforeTax2023,
+            b.netIncome2023,
+            c.totalAsset2022,
+            c.totalDebt2022,
+            c.totalEquity2022,
+            c.revenue2022,
+            c.operatingIncome2022,
+            c.earningBeforeTax2022,
+            c.netIncome2022,
+            d.totalAsset2021,
+            d.totalDebt2021,
+            d.totalEquity2021,
+            d.revenue2021,
+            d.operatingIncome2021,
+            d.earningBeforeTax2021,
+            d.netIncome2021,
+            e.totalAsset2020,
+            e.totalDebt2020,
+            e.totalEquity2020,
+            e.revenue2020,
+            e.operatingIncome2020,
+            e.earningBeforeTax2020,
+            e.netIncome2020
+        FROM 
+            companyInfo a
+        LEFT OUTER JOIN 
+            FS2023 b ON a.jurir_no = b.jurir_no
+        LEFT OUTER JOIN 
+            FS2022 c ON a.jurir_no = c.jurir_no 
+        LEFT OUTER JOIN 
+            FS2021 d ON a.jurir_no = d.jurir_no 
+        LEFT OUTER JOIN 
+            FS2020 e ON a.jurir_no = e.jurir_no
+        WHERE 
+            a.corp_name LIKE :search_filter OR a.jurir_no LIKE :search_filter
+        LIMIT :limit OFFSET :offset
+    """)
+    
+    results = db.execute(data_query, {"search_filter": search_filter, "limit": page_size, "offset": offset}).fetchall()
+
+    total_pages = (total_items + page_size - 1) // page_size
+    pagination_data = get_pagination_data(page, total_pages)
+
+    return templates.TemplateResponse("ML_template/ML_all_FssInfo.html", {
+        "request": request,
+        "results": results,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": total_pages,
+        "pagination_data": pagination_data,
+        "search_query": search_query if search_query else "",  # 빈 문자열로 처리
+        "username": username,
+    })
+    
+    
+@machineLearning.get("/ML_all_StockInfo/", response_class=HTMLResponse)
+async def view_stock_info(
+    request: Request,
+    db: Session = Depends(get_db),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(100, ge=1),
+    search_query: str = Query("")
+):
+    offset = (page - 1) * page_size
+    search_filter = f"%{search_query}%" if search_query else "%"
+    username = request.session.get("username")
+
+    # 데이터 조회
+    total_query = text(f"""
+        SELECT COUNT(*) FROM stock_data
+        WHERE corp_name LIKE :search_filter OR ticker LIKE :search_filter
+    """)
+    total_items = db.execute(total_query, {"search_filter": search_filter}).scalar()
+
+    data_query = text(f"""
+        SELECT 
+            ticker,
+            corp_code,
+            corp_name,
+            listing_date,
+            latest_date,
+            latest_price,
+            cagr_since_listing,
+            vol_since_listing,
+            cagr_1y,
+            vol_1y,
+            cagr_3y,
+            vol_3y,
+            cagr_5y,
+            vol_5y,
+            stock_count,
+            per_value,
+            pbr_value,
+            market_capitalization
+        FROM 
+            stock_data
+        WHERE 
+            corp_name LIKE :search_filter OR ticker LIKE :search_filter
+        LIMIT :limit OFFSET :offset
+    """)
+    
+    results = db.execute(data_query, {"search_filter": search_filter, "limit": page_size, "offset": offset}).fetchall()
+
+    total_pages = (total_items + page_size - 1) // page_size
+    pagination_data = get_pagination_data(page, total_pages)
+
+    return templates.TemplateResponse("ML_template/ML_all_StockInfo.html", {
+        "request": request,
+        "results": results,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": total_pages,
+        "pagination_data": pagination_data,
+        "search_query": search_query if search_query else "",  # 빈 문자열로 처리
+        "username": username,
     })

@@ -107,7 +107,7 @@
     </style>
 </head>
 <body>
-        {% include 'header.html' %}
+    {% include 'header.html' %}
     <div class="container">
         <h1>바로등급 머신러닝 모델 생성</h1>
 
@@ -150,8 +150,17 @@
             <label for="model-select">Select Model:</label>
             <select id="model-select" name="selectedModel" required>
                 <option value="randomforest">Random Forest</option>
-                <!-- Other options can be added here -->
+                <option value="logisticregression">Logistic Regression</option>
+                <option value="decisiontree">Decision Tree</option>
+                <option value="svm">Support Vector Machine (SVM)</option>
+                <option value="knn">K-Nearest Neighbors (KNN)</option>
+                <option value="xgboost">XGBoost</option>
+                <option value="gradientboosting">Gradient Boosting</option>
+                <option value="adaboost">AdaBoost</option>
+                <option value="naivebayes">Naive Bayes</option>
+                <option value="neuralnetwork">Neural Network (MLP)</option>
             </select>
+
 
             <!-- Hyperparameter: Number of Trees -->
             <label for="num-trees">Number of Trees (n_estimators):</label>
@@ -166,9 +175,17 @@
             <input type="number" id="random-state" name="randomState" value="42">
 
             <!-- Submit Button -->
-            <button type="submit" id="train-model"style="color: white;">Train Model</button>
+            <button type="submit" id="train-model" style="color: white;">Train Model</button>
         </form>
         <!-- Form End -->
+
+        <!-- Loading Spinner Modal -->
+        <div id="loadingModal" class="modal">
+            <div class="modal-content">
+                <div class="spinner"></div>
+                <p>Training in progress...</p>
+            </div>
+        </div>
 
         <!-- Result Display -->
         <div class="result" id="result">
@@ -254,6 +271,12 @@
             } else {
                 numTreesField.disabled = true;
             }
+        });
+
+        // Show spinner on form submission
+        document.getElementById('training-form').addEventListener('submit', function() {
+            const loadingModal = document.getElementById('loadingModal');
+            loadingModal.style.display = 'block';
         });
 
         // Ensure only included options in feature-select are submitted as selectedFeatures
