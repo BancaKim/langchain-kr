@@ -156,7 +156,7 @@ async def read_company_info(request: Request, jurir_no: str = Query(...), db: Se
     'CCC_minus': 'CCC-',
     'C': 'C',
     'D': 'D'
-    }
+    }   
     query1 = text("""
     SELECT AAA_plus, AAA, AAA_minus, AA_plus, AA, AA_minus, A_plus, A, A_minus,
         BBB_plus, BBB, BBB_minus, BB_plus, BB, BB_minus, B_plus, B, B_minus,
