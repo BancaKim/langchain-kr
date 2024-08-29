@@ -180,7 +180,12 @@ async def read_company_info(request: Request, jurir_no: str = Query(...), db: Se
 
     credit_rate = db.execute(query1, {"corporate_number": jurir_no}).fetchone()
     
-
+    if not credit_rate:
+        generate_credit(db,jurir_no)
+        
+    credit_rate = db.execute(query1, {"corporate_number": jurir_no}).fetchone()
+    
+    print(credit_rate)
     if not credit_rate:
                         top3_rate = [{"key": "credit_rate", "value": "None"}]
     else:

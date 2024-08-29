@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <title>Company Info</title>
+    <style>
+body {
+    font-family: Arial, sans-serif;
+}
+
+table, th, td {
+    border: 1px solid black;
+    padding: 0; /* th와 td 요소의 패딩을 제거 */
+}
+
+.container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    text-align: center;
+}
+
+thead {
+    background-color: #f1f1f1;
+}
+
+tbody tr:hover {
+    background-color: #e1e1e1;
+}
+
+tbody tr {
+    cursor: pointer;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.pagination a {
+    margin: 0 5px;
+    padding: 10px 20px;
+    border: 1px solid #ddd;
+    text-decoration: none;
+    color: #333;
+}
+
+.pagination a.active {
+    background-color: #333;
+    color: white;
+}
+
+.pagination a:hover {
+    background-color: #ddd;
+}
+
+
+    </style>
+</head>
+
+<body class="bg-gray-100">
+
+    {% include 'header.html' %}
+
+    <div class="container mx-auto p-8">
+
+        <div class="bg-cover bg-center h-72 flex items-center justify-center text-center p-8 text-white"
+            style="background-image: url('/static/images/admin3.jpg');">
+            <div class="max-w-4xl w-full">
+                <h1 class="text-5xl font-bold">회사 정보</h1>
+            </div>
+        </div>
+        <br>
+
+        <div class="container mx-auto p-4 bg-white shadow-lg rounded-lg mb-4">
+            <h2 class="text-3xl font-semibold mt-10 mb-4">회사 정보 목록</h2>
+
+            <div class="mb-4">
+                <form method="get" action="/ML_all_ComInfo/">
+                    <input type="hidden" name="page_size" value="{{ page_size }}">
+                    <input type="text" name="search_query" placeholder="검색어를 입력하세요" value="{{ search_query if search_query and search_query != 'None' else '' }}">
+                    <button type="submit" class="bg-purple-500 text-white px-4 py-2 rounded">검색</button>
+                </form>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table id="resultsTable" class="min-w-full bg-white">
+                    <thead>
+                        <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                            <th class="py-3 px-6 text-left">회사코드</th>
+                            <th class="py-3 px-6 text-left">회사명</th>
+                            <th class="py-3 px-6 text-left">영문명</th>
+                            <th class="py-3 px-6 text-left">주식코드</th>
+                            <th class="py-3 px-6 text-left">CEO 이름</th>
+                            <th class="py-3 px-6 text-left">법인번호</th>
+                            <th class="py-3 px-6 text-left">사업자번호</th>
+                            <th class="py-3 px-6 text-left">주소</th>
+                            <th class="py-3 px-6 text-left">FS2023</th>
+                            <th class="py-3 px-6 text-left">FS2022</th>
+                            <th class="py-3 px-6 text-left">FS2021</th>
+                            <th class="py-3 px-6 text-left">FS2020</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody" class="text-gray-600 text-sm font-light">
+                        {% for result in results %}
+                        <tr class="border-b border-gray-200 hover:bg-gray-100" onclick="redirectToCompanyInfo('{{ result.jurir_no }}')">
+                            <td class="py-3 px-6 text-left whitespace-nowrap">{{ result.corp_code }}</td>
+                            <td class="py-3 px-6 text-left">{{ result.corp_name }}</td>
+                            <td class="py-3 px-6 text-left">{{ result.corp_name_eng }}</td>
+                            <td class="py-3 px-6 text-left">{{ result.stock_code }}</td>
+                            <td class="py-3 px-6 text-left">{{ result.ceo_nm }}</td>
+                            <td class="py-3 px-6 text-left">{{ result.jurir_no }}</td>
+                            <td class="py-3 px-6 text-left">{{ result.bizr_no }}</td>
+                            <td class="py-3 px-6 text-left">{{ result.adres }}</td>
+                            <td class="py-3 px-6 text-left">{% if result.fs2023 is not none %}{{ result.fs2023 }}{% endif %}</td>
+                            <td class="py-3 px-6 text-left">{% if result.fs2022 is not none %}{{ result.fs2022 }}{% endif %}</td>
+                            <td class="py-3 px-6 text-left">{% if result.fs2021 is not none %}{{ result.fs2021 }}{% endif %}</td>
+                            <td class="py-3 px-6 text-left">{% if result.fs2020 is not none %}{{ result.fs2020 }}{% endif %}</td>
+                            
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                
+            </div>
+
+            <div class="pagination">
+                {% if page > 1 %}
+                <a href="?page=1&page_size={{ page_size }}&search_query={{ search_query }}">처음</a>
+                <a href="?page={{ page - 1 }}&page_size={{ page_size }}&search_query={{ search_query }}">이전</a>
+                {% endif %}
+
+                {% if pagination_data.has_previous_gap %}
+                <a href="?page=1&page_size={{ page_size }}&search_query={{ search_query }}">1</a>
+                <span>...</span>
+                {% endif %}
+
+                {% for p in pagination_data.pages %}
+                <a href="?page={{ p }}&page_size={{ page_size }}&search_query={{ search_query }}"
+                    class="{{ 'active' if p == page else '' }}">{{ p }}</a>
+                {% endfor %}
+
+                {% if pagination_data.has_next_gap %}
+                <span>...</span>
+                <a href="?page={{ pagination_data.last_page }}&page_size={{ page_size }}&search_query={{ search_query }}">
+                    {{ pagination_data.last_page }}
+                </a>
+                {% endif %}
+
+                {% if page < total_pages %}
+                <a href="?page={{ page + 1 }}&page_size={{ page_size }}&search_query={{ search_query }}">다음</a>
+                <a href="?page={{ total_pages }}&page_size={{ page_size }}&search_query={{ search_query }}">마지막</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function redirectToCompanyInfo(jurir_no) {
+            window.location.href = "http://127.0.0.1:8000/baro_companyInfo?jurir_no=" + jurir_no;
+        }
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <title>Company Info</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid black;
+            padding: 0;
+            /* th와 td 요소의 패딩을 제거 */
+        }
+
+        .container {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            text-align: center;
+        }
+
+        thead {
+            background-color: #f1f1f1;
+        }
+
+        tbody tr:hover {
+            background-color: #e1e1e1;
+        }
+
+        tbody tr {
+            cursor: pointer;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .pagination a {
+            margin: 0 5px;
+            padding: 10px 20px;
+            border: 1px solid #ddd;
+            text-decoration: none;
+            color: #333;
+        }
+
+        .pagination a.active {
+            background-color: #333;
+            color: white;
+        }
+
+        .pagination a:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+
+    {% include 'header.html' %}
+
+    <div class="container mx-auto p-8">
+
+        <div class="bg-cover bg-center h-72 flex items-center justify-center text-center p-8 text-white"
+            style="background-image: url('/static/images/admin3.jpg');">
+            <div class="max-w-4xl w-full">
+                <h1 class="text-5xl font-bold">회사 정보</h1>
+            </div>
+        </div>
+        <br>
+
+        <div class="container mx-auto p-4 bg-white shadow-lg rounded-lg mb-4">
+            <h2 class="text-3xl font-semibold mt-10 mb-4">회사 정보 목록</h2>
+
+            <div class="mb-4">
+                <form method="get" action="/ML_all_ComInfo/">
+                    <input type="hidden" name="page_size" value="{{ page_size }}">
+                    <input type="text" name="search_query" placeholder="검색어를 입력하세요"
+                        value="{{ search_query if search_query and search_query != 'None' else '' }}">
+                    <button type="submit" class="bg-purple-500 text-white px-4 py-2 rounded">검색</button>
+                </form>
+                <div class="text-right">
+                    단위: 백만원
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table id="resultsTable" class="min-w-full bg-white">
+                    <thead>
+                        <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                            <th class="py-3 px-6 text-left">회사코드</th>
+                            <th class="py-3 px-6 text-left">법인번호</th>
+                            <th class="py-3 px-6 text-left">2023 총자산</th>
+                            <!-- <th class="py-3 px-6 text-left">2023 총부채</th> -->
+                            <th class="py-3 px-6 text-left">2023 총자본</th>
+                            <th class="py-3 px-6 text-left">2023 매출액</th>
+                            <!-- <th class="py-3 px-6 text-left">2023 영업이익</th>
+                            <th class="py-3 px-6 text-left">2023 세전이익</th> -->
+                            <th class="py-3 px-6 text-left">2023 순이익</th>
+                            <th class="py-3 px-6 text-left">2022 총자산</th>
+                            <!-- <th class="py-3 px-6 text-left">2022 총부채</th> -->
+                            <th class="py-3 px-6 text-left">2022 총자본</th>
+                            <th class="py-3 px-6 text-left">2022 매출액</th>
+                            <!-- <th class="py-3 px-6 text-left">2022 영업이익</th>
+                            <th class="py-3 px-6 text-left">2022 세전이익</th> -->
+                            <th class="py-3 px-6 text-left">2022 순이익</th>
+                            <th class="py-3 px-6 text-left">2021 총자산</th>
+                            <!-- <th class="py-3 px-6 text-left">2021 총부채</th> -->
+                            <th class="py-3 px-6 text-left">2021 총자본</th>
+                            <th class="py-3 px-6 text-left">2021 매출액</th>
+                            <!-- <th class="py-3 px-6 text-left">2021 영업이익</th>
+                            <th class="py-3 px-6 text-left">2021 세전이익</th> -->
+                            <th class="py-3 px-6 text-left">2021 순이익</th>
+                            <th class="py-3 px-6 text-left">2020 총자산</th>
+                            <!-- <th class="py-3 px-6 text-left">2020 총부채</th> -->
+                            <th class="py-3 px-6 text-left">2020 총자본</th>
+                            <th class="py-3 px-6 text-left">2020 매출액</th>
+                            <!-- <th class="py-3 px-6 text-left">2020 영업이익</th>
+                            <th class="py-3 px-6 text-left">2020 세전이익</th> -->
+                            <th class="py-3 px-6 text-left">2020 순이익</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody" class="text-gray-600 text-sm font-light">
+                        {% for result in results %}
+                        <tr class="border-b border-gray-200 hover:bg-gray-100" onclick="redirectToCompanyInfo('{{ result.jurir_no }}')">
+                            <td class="py-3 px-6 text-left">{{ result.corp_name }}</td>
+                            <td class="py-3 px-6 text-left">{{ result.jurir_no }}</td>
+                            <td class="py-3 px-6 text-right">
+                                {% if result.totalAsset2023 and result.totalAsset2023 != 0 %}
+                                    {{ '{:,.0f}'.format(result.totalAsset2023 / 1000000) }}
+                                {% endif %}
+                            </td>
+                            <!-- <td class="py-3 px-6 text-right">
+                                {% if result.totalDebt2023 and result.totalDebt2023 != 0 %}
+                                    {{ '{:,.0f}'.format(result.totalDebt2023 / 1000000) }}
+                                {% endif %}
+                            </td> -->
+                            <td class="py-3 px-6 text-right">
+                                {% if result.totalEquity2023 and result.totalEquity2023 != 0 %}
+                                    {{ '{:,.0f}'.format(result.totalEquity2023 / 1000000) }}
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-6 text-right">
+                                {% if result.revenue2023 and result.revenue2023 != 0 %}
+                                    {{ '{:,.0f}'.format(result.revenue2023 / 1000000) }}
+                                {% endif %}
+                            </td>
+                            <!-- <td class="py-3 px-6 text-right">
+                                {% if result.operatingIncome2023 and result.operatingIncome2023 != 0 %}
+                                    {{ '{:,.0f}'.format(result.operatingIncome2023 / 1000000) }}
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-6 text-right">
+                                {% if result.earningBeforeTax2023 and result.earningBeforeTax2023 != 0 %}
+                                    {{ '{:,.0f}'.format(result.earningBeforeTax2023 / 1000000) }}
+                                {% endif %}
+                            </td> -->
+                            <td class="py-3 px-6 text-right">
+                                {% if result.netIncome2023 and result.netIncome2023 != 0 %}
+                                    {{ '{:,.0f}'.format(result.netIncome2023 / 1000000) }}
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-6 text-right">
+                                {% if result.totalAsset2022 and result.totalAsset2022 != 0 %}
+                                    {{ '{:,.0f}'.format(result.totalAsset2022 / 1000000) }}
+                                {% endif %}
+                            </td>
+                            <!-- <td class="py-3 px-6 text-right">
+                                {% if result.totalDebt2022 and result.totalDebt2022 != 0 %}
+                                    {{ '{:,.0f}'.format(result.totalDebt2022 / 1000000) }}
+                                {% endif %}
+                            </td> -->
+                            <td class="py-3 px-6 text-right">
+                                {% if result.totalEquity2022 and result.totalEquity2022 != 0 %}
+                                    {{ '{:,.0f}'.format(result.totalEquity2022 / 1000000) }}
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-6 text-right">
+                                {% if result.revenue2022 and result.revenue2022 != 0 %}
+                                    {{ '{:,.0f}'.format(result.revenue2022 / 1000000) }}
+                                {% endif %}
+                            </td>
+                            <!-- <td class="py-3 px-6 text-right">
+                                {% if result.operatingIncome2022 and result.operatingIncome2022 != 0 %}
+                                    {{ '{:,.0f}'.format(result.operatingIncome2022 / 1000000) }}
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-6 text-right">
+                                {% if result.earningBeforeTax2022 and result.earningBeforeTax2022 != 0 %}
+                                    {{ '{:,.0f}'.format(result.earningBeforeTax2022 / 1000000) }}
+                                {% endif %}
+                            </td> -->
+                            <td class="py-3 px-6 text-right">
+                                {% if result.netIncome2022 and result.netIncome2022 != 0 %}
+                                    {{ '{:,.0f}'.format(result.netIncome2022 / 1000000) }}
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-6 text-right">
+                                {% if result.totalAsset2021 and result.totalAsset2021 != 0 %}
+                                    {{ '{:,.0f}'.format(result.totalAsset2021 / 1000000) }}
+                                {% endif %}
+                            </td>
+                            <!-- <td class="py-3 px-6 text-right">
+                                {% if result.totalDebt2021 and result.totalDebt2021 != 0 %}
+                                    {{ '{:,.0f}'.format(result.totalDebt2021 / 1000000) }}
+                                {% endif %}
+                            </td> -->
+                            <td class="py-3 px-6 text-right">
+                                {% if result.totalEquity2021 and result.totalEquity2021 != 0 %}
+                                    {{ '{:,.0f}'.format(result.totalEquity2021 / 1000000) }}
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-6 text-right">
+                                {% if result.revenue2021 and result.revenue2021 != 0 %}
+                                    {{ '{:,.0f}'.format(result.revenue2021 / 1000000) }}
+                                {% endif %}
+                            </td>
+                            <!-- <td class="py-3 px-6 text-right">
+                                {% if result.operatingIncome2021 and result.operatingIncome2021 != 0 %}
+                                    {{ '{:,.0f}'.format(result.operatingIncome2021 / 1000000) }}
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-6 text-right">
+                                {% if result.earningBeforeTax2021 and result.earningBeforeTax2021 != 0 %}
+                                    {{ '{:,.0f}'.format(result.earningBeforeTax2021 / 1000000) }}
+                                {% endif %}
+                            </td> -->
+                            <td class="py-3 px-6 text-right">
+                                {% if result.netIncome2021 and result.netIncome2021 != 0 %}
+                                    {{ '{:,.0f}'.format(result.netIncome2021 / 1000000) }}
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-6 text-right">
+                                {% if result.totalAsset2020 and result.totalAsset2020 != 0 %}
+                                    {{ '{:,.0f}'.format(result.totalAsset2020 / 1000000) }}
+                                {% endif %}
+                            </td>
+                            <!-- <td class="py-3 px-6 text-right">
+                                {% if result.totalDebt2020 and result.totalDebt2020 != 0 %}
+                                    {{ '{:,.0f}'.format(result.totalDebt2020 / 1000000) }}
+                                {% endif %}
+                            </td> -->
+                            <td class="py-3 px-6 text-right">
+                                {% if result.totalEquity2020 and result.totalEquity2020 != 0 %}
+                                    {{ '{:,.0f}'.format(result.totalEquity2020 / 1000000) }}
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-6 text-right">
+                                {% if result.revenue2020 and result.revenue2020 != 0 %}
+                                    {{ '{:,.0f}'.format(result.revenue2020 / 1000000) }}
+                                {% endif %}
+                            </td>
+                            <!-- <td class="py-3 px-6 text-right">
+                                {% if result.operatingIncome2020 and result.operatingIncome2020 != 0 %}
+                                    {{ '{:,.0f}'.format(result.operatingIncome2020 / 1000000) }}
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-6 text-right">
+                                {% if result.earningBeforeTax2020 and result.earningBeforeTax2020 != 0 %}
+                                    {{ '{:,.0f}'.format(result.earningBeforeTax2020 / 1000000) }}
+                                {% endif %}
+                            </td> -->
+                            <td class="py-3 px-6 text-right">
+                                {% if result.netIncome2020 and result.netIncome2020 != 0 %}
+                                    {{ '{:,.0f}'.format(result.netIncome2020 / 1000000) }}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination">
+                {% if page > 1 %}
+                <a href="?page=1&page_size={{ page_size }}&search_query={{ search_query }}">처음</a>
+                <a href="?page={{ page - 1 }}&page_size={{ page_size }}&search_query={{ search_query }}">이전</a>
+                {% endif %}
+
+                {% if pagination_data.has_previous_gap %}
+                <a href="?page=1&page_size={{ page_size }}&search_query={{ search_query }}">1</a>
+                <span>...</span>
+                {% endif %}
+
+                {% for p in pagination_data.pages %}
+                <a href="?page={{ p }}&page_size={{ page_size }}&search_query={{ search_query }}"
+                    class="{{ 'active' if p == page else '' }}">{{ p }}</a>
+                {% endfor %}
+
+                {% if pagination_data.has_next_gap %}
+                <span>...</span>
+                <a href="?page={{ pagination_data.last_page }}&page_size={{ page_size }}&search_query={{ search_query }}">
+                    {{ pagination_data.last_page }}
+                </a>
+                {% endif %}
+
+                {% if page < total_pages %}
+                <a href="?page={{ page + 1 }}&page_size={{ page_size }}&search_query={{ search_query }}">다음</a>
+                <a href="?page={{ total_pages }}&page_size={{ page_size }}&search_query={{ search_query }}">마지막</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function redirectToCompanyInfo(jurir_no) {
+            window.location.href = "http://127.0.0.1:8000/baro_companyInfo?jurir_no=" + jurir_no;
+        }
+    </script>
+
+</body>
+
+</html>
