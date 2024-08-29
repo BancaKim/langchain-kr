@@ -126,7 +126,7 @@
                     </thead>
                     <tbody id="resultsBody" class="text-gray-600 text-sm font-light">
                         {% for result in results %}
-                        <tr class="border-b border-gray-200 hover:bg-gray-100" onclick="redirectToStockInfo('{{ result.ticker }}')">
+                        <tr class="border-b border-gray-200 hover:bg-gray-100">
                             <td class="py-3 px-6 text-left whitespace-nowrap">{{ result.ticker }}</td>
                             <td class="py-3 px-6 text-left">{{ result.corp_code }}</td>
                             <td class="py-3 px-6 text-left">{{ result.corp_name }}</td>
@@ -183,8 +183,8 @@
     </div>
 
     <script>
-        function redirectToStockInfo(ticker) {
-            window.location.href = "/baro_stockInfo?ticker=" + ticker;
+        function redirectToStockInfo(jurir_no) {
+            window.location.href = "/baro_companyInfo?jurir_no=" + jurir_no;
         }
     </script>
 
